@@ -1,5 +1,6 @@
 import os
 import base64
+import logging
 from flask import request, session, current_app
 from flask_socketio import emit, join_room, leave_room
 from app import socketio, db
@@ -7,33 +8,52 @@ from app.models import User, Message
 from flask_login import current_user
 from datetime import datetime
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 @socketio.on('connect')
 def handle_connect():
     if current_user.is_authenticated:
-        join_room(f'user_{current_user.id}')
-        emit('status', {'msg': f'{current_user.username} connected'})
+        room = f"user_{current_user.id}"
+        join_room(room)
+        logger.info(f"{current_user.username} connected to room {room}")
+        emit('status', {'msg': f'Connected to room {room}'})
+
+@socketio.on('join')
+def handle_join(data):
+    if current_user.is_authenticated:
+        room = f"user_{current_user.id}"
+        join_room(room)
+        logger.info(f"{current_user.username} joined room {room}")
+        emit('status', {'msg': f'Joined room {room}'})
 
 @socketio.on('disconnect')
 def handle_disconnect():
     if current_user.is_authenticated:
-        leave_room(f'user_{current_user.id}')
-        emit('status', {'msg': f'{current_user.username} disconnected'})
+        room = f"user_{current_user.id}"
+        leave_room(room)
+        logger.info(f"{current_user.username} disconnected from room {room}")
+        emit('status', {'msg': f'Disconnected from room {room}'})
 
 @socketio.on('send_message')
 def handle_send_message(data):
     if not current_user.is_authenticated:
+        logger.warning("Unauthorized message attempt")
         return
 
-    sender_id = current_user.id
     recipient_id = data.get('recipient_id')
     content = data.get('content')
     is_face_locked = data.get('is_face_locked', False)
 
-    print(f"[SocketIO] Message from {sender_id} to {recipient_id}: {content} (locked: {is_face_locked})")
+    if not recipient_id or not content:
+        logger.warning("Invalid message data")
+        emit('status', {'msg': 'Invalid message data'})
+        return
 
-    if sender_id and recipient_id and content:
+    try:
         message = Message(
-            sender_id=sender_id,
+            sender_id=current_user.id,
             recipient_id=recipient_id,
             content=content,
             is_face_locked=is_face_locked
@@ -41,9 +61,10 @@ def handle_send_message(data):
         db.session.add(message)
         db.session.commit()
 
-        message_data = {
+        # Emit message to both sender and recipient
+        emit('new_message', {
             'id': message.id,
-            'user_id': sender_id,
+            'user_id': current_user.id,
             'recipient_id': recipient_id,
             'content': content,
             'is_face_locked': is_face_locked,
@@ -52,46 +73,27 @@ def handle_send_message(data):
                 'id': current_user.id,
                 'username': current_user.username
             }
-        }
-
-        room = f"user_{recipient_id}"
-        emit('new_message', message_data, room=room)
-
-@socketio.on('get_messages')
-def handle_get_messages(data):
-    if not current_user.is_authenticated:
-        return
-
-    other_user_id = data.get('user_id')
-    if not other_user_id:
-        return
-
-    messages = Message.query.filter(
-        ((Message.sender_id == current_user.id) & (Message.recipient_id == other_user_id)) |
-        ((Message.sender_id == other_user_id) & (Message.recipient_id == current_user.id))
-    ).order_by(Message.timestamp).all()
-
-    message_list = []
-    for msg in messages:
-        sender = db.session.get(User, msg.sender_id)
-        message_list.append({
-            'id': msg.id,
-            'user_id': msg.sender_id,
-            'recipient_id': msg.recipient_id,
-            'content': msg.content,
-            'file_path': msg.file_path,
-            'is_face_locked': msg.is_face_locked,
-            'timestamp': msg.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+        }, room=f"user_{current_user.id}")
+        
+        emit('new_message', {
+            'id': message.id,
+            'user_id': current_user.id,
+            'recipient_id': recipient_id,
+            'content': content,
+            'is_face_locked': is_face_locked,
+            'timestamp': message.timestamp.isoformat(),
             'author': {
-                'id': sender.id,
-                'username': sender.username
+                'id': current_user.id,
+                'username': current_user.username
             }
-        })
+        }, room=f"user_{recipient_id}")
 
-    emit('message_history', {'messages': message_list})
+        logger.info(f"Message sent from {current_user.id} to {recipient_id}")
+    except Exception as e:
+        logger.error(f"Error sending message: {str(e)}")
+        emit('status', {'msg': f'Error sending message: {str(e)}'})
 
-@socketio.on('join_room')
-def on_join(user_id):
-    room = f"user_{user_id}"
-    join_room(room)
-    print(f"User {user_id} joined room: {room}")
+@socketio.on_error_default
+def default_error_handler(e):
+    logger.error(f"Socket.IO error: {str(e)}")
+    emit('status', {'msg': f'Socket.IO error: {str(e)}'})

@@ -1,15 +1,10 @@
-# --- [same imports as you provided] ---
-from flask import (
-    render_template, request, redirect, url_for, flash, jsonify, session, send_from_directory
-)
-from flask import current_app as app
-from app.models import LoginForm, User, Message, FaceVerificationLog, MessageForm
-from app import db, socketio
-from flask_login import login_required, login_user, logout_user, current_user
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, jsonify, send_from_directory
+from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
-from flask_wtf.csrf import CSRFProtect
-from flask_socketio import join_room, leave_room
+from app import db, socketio
+from app.models import User, Message, LoginForm, MessageForm
+
 import os
 import base64
 import json
@@ -17,286 +12,420 @@ import cv2
 import numpy as np
 from datetime import datetime
 import face_recognition
-from sqlalchemy import or_
-import logging
-import re
 
-csrf = CSRFProtect(app)
-logging.basicConfig(level=logging.INFO)
+# Create a Blueprint
+bp = Blueprint('main', __name__)
 
-UPLOADS_FOLDER = os.path.join(app.static_folder, 'uploads')
-FACE_VERIFICATION_REQUIRED = app.config.get('FACE_VERIFICATION_REQUIRED', False)
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template('404.html'), 404
-
-@app.errorhandler(500)
-def internal_server_error(e):
-    return render_template('500.html'), 500
-
-@app.route('/uploads/<filename>')
-@login_required
-def uploaded_file(filename):
-    filename = secure_filename(filename)
-    return send_from_directory(UPLOADS_FOLDER, filename, as_attachment=True)
-
-@app.route('/')
+# Home route
+@bp.route('/')
 def index():
-    return redirect(url_for('chat')) if current_user.is_authenticated else redirect(url_for('login'))
+    if 'user_id' in session:
+        return redirect(url_for('main.chat'))
+    return redirect(url_for('main.login'))
 
-@app.route('/login', methods=['GET', 'POST'])
+# Login route
+@bp.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+    next_page = request.args.get('next')
+    
     if request.method == 'POST':
         username = form.username.data
         password = form.password.data
+
+        if not username or not password:
+            flash('Username and password are required', 'error')
+            return redirect(url_for('main.login', next=next_page))
+
         user = User.query.filter_by(username=username).first()
 
-        if user and check_password_hash(user.password, password):
-            if user.face_data and FACE_VERIFICATION_REQUIRED:
-                session['temp_user_id'] = user.id
-                return redirect(url_for('face_verification'))
-            login_user(user)
-            user.last_login = datetime.utcnow()
-            db.session.commit()
-            logging.info(f"User {username} logged in.")
-            return redirect(url_for('chat'))
-        flash('Invalid username or password')
-        logging.warning(f"Failed login for {username}")
-    return render_template('login.html', form=form)
+        if not user:
+            flash('Invalid username or password', 'error')
+            return redirect(url_for('main.login', next=next_page))
 
-@app.route('/register', methods=['GET', 'POST'])
+        # Verify password
+        if not check_password_hash(user.password, password):
+            flash('Invalid username or password', 'error')
+            return redirect(url_for('main.login', next=next_page))
+
+        # Clear any existing temp session data
+        session.pop('temp_user_id', None)
+        session.pop('next_page', None)
+        
+        # Store user ID in session for verification
+        session['temp_user_id'] = user.id
+        
+        # Store next page in session
+        if next_page:
+            session['next_page'] = next_page
+        
+        # Check if face verification is required
+        if user.face_data and current_app.config.get('FACE_VERIFICATION_REQUIRED', False):
+            return redirect(url_for('main.face_verification'))
+        
+        # Otherwise log in directly
+        login_user(user)
+        return redirect(next_page or url_for('main.chat'))
+
+    return render_template('login.html', form=form, next=next_page)
+
+# Register route
+@bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
         face_data = request.form.get('faceData')
-
-        if not all([username, password, confirm_password]):
-            flash('All fields are required')
+        
+        # Validate input
+        if not username or not password:
+            flash('Username and password are required')
             return render_template('register.html')
-
+            
         if password != confirm_password:
             flash('Passwords do not match')
             return render_template('register.html')
-
-        password_policy = re.compile(r'''
-            ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=]).{8,}$
-        ''', re.VERBOSE)
-        if not password_policy.match(password):
-            flash('Password must be strong: min 8 chars, with upper, lower, digit, special char.')
-            return render_template('register.html')
-
-        if User.query.filter_by(username=username).first():
+            
+        # Check if username exists
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
             flash('Username already exists')
             return render_template('register.html')
-
+        
+        # Create new user
         hashed_password = generate_password_hash(password)
-        user = User(username=username, password=hashed_password)
-
+        new_user = User(username=username, password=hashed_password)
+        
+        # Save face data if provided
         if face_data:
-            user.face_data = face_data.split(',')[1] if ',' in face_data else face_data
-
-        db.session.add(user)
+            try:
+                # Remove the data URL prefix to get the base64 data
+                face_data = face_data.split(',')[1] if ',' in face_data else face_data
+                
+                # Decode the base64 data
+                img_data = base64.b64decode(face_data)
+                
+                # Convert to numpy array and decode image
+                nparr = np.frombuffer(img_data, np.uint8)
+                img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                
+                # Detect and encode face
+                face_locations = face_recognition.face_locations(img_rgb)
+                if not face_locations:
+                    flash('No face detected in the image. Please try again with a clear face image.')
+                    return render_template('register.html')
+                    
+                # Get the face encoding
+                face_encoding = face_recognition.face_encodings(img_rgb, face_locations)[0]
+                
+                # Convert encoding to string and store
+                new_user.face_data = json.dumps({
+                    'encoding': face_encoding.tolist(),
+                    'timestamp': datetime.utcnow().isoformat()
+                })
+                
+            except Exception as e:
+                flash(f'Error processing face image: {str(e)}')
+                return render_template('register.html')
+        
+        db.session.add(new_user)
         db.session.commit()
+        
         flash('Registration successful! Please login.')
-        return redirect(url_for('login'))
+        return redirect(url_for('main.login'))
+        
     return render_template('register.html')
 
-@app.route('/face_verification')
+# Face verification route
+@bp.route('/face_verification', methods=['GET', 'POST'])
 def face_verification():
-    if 'temp_user_id' not in session:
-        return redirect(url_for('login'))
-    user = User.query.get(session['temp_user_id'])
+    temp_user_id = session.get('temp_user_id')
+    if not temp_user_id:
+        flash('No user session found')
+        return redirect(url_for('main.login'))
+
+    user = User.query.get(temp_user_id)
     if not user:
-        return redirect(url_for('login'))
+        flash('User not found')
+        return redirect(url_for('main.login'))
+
+    if request.method == 'POST':
+        face_image = request.form.get('faceImage')
+        if not face_image:
+            flash('No face image provided')
+            return redirect(url_for('main.face_verification'))
+
+        try:
+            # Process the incoming face image
+            img_data = base64.b64decode(face_image.split(',')[1])
+            nparr = np.frombuffer(img_data, np.uint8)
+            img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            
+            # Load stored face data
+            stored_face_data = user.face_data
+            if not stored_face_data:
+                return jsonify({'success': False, 'message': 'No stored face data found'}), 400
+                
+            try:
+                stored_data = json.loads(stored_face_data)
+                if 'encoding' not in stored_data:
+                    return jsonify({'success': False, 'message': 'Invalid stored face data format'}), 400
+                    
+                stored_face_encoding = np.array(stored_data['encoding'])
+            except json.JSONDecodeError:
+                return jsonify({'success': False, 'message': 'Invalid JSON format in stored face data'}), 400
+            except Exception as e:
+                return jsonify({'success': False, 'message': f'Error processing stored face data: {str(e)}'}), 400
+            
+            # Detect faces
+            face_locations = face_recognition.face_locations(img_rgb)
+            if not face_locations:
+                return jsonify({
+                    'success': False,
+                    'message': 'No face detected in the input image'
+                }), 400
+            
+            # Get the first face encoding
+            face_encoding = face_recognition.face_encodings(img_rgb, face_locations)
+            if not face_encoding:
+                return jsonify({
+                    'success': False,
+                    'message': 'Could not encode face from the input image'
+                }), 400
+            
+            # Compare faces
+            results = face_recognition.compare_faces([stored_face_encoding], face_encoding[0], tolerance=0.6)
+            face_distance = face_recognition.face_distance([stored_face_encoding], face_encoding[0])[0]
+            match_percentage = (1 - face_distance) * 100
+            
+            if results[0]:
+                # Complete login process
+                login_user(user)
+                session.pop('temp_user_id', None)
+                next_page = session.pop('next_page', None)
+                return redirect(next_page or url_for('main.chat'))
+            else:
+                flash(f'Face verification failed ({match_percentage:.1f}% match, 80% required)')
+                return redirect(url_for('main.face_verification'))
+        except Exception as e:
+            print(f"Face verification error: {str(e)}")
+            flash('Error processing face verification')
+            return redirect(url_for('main.face_verification'))
+
     return render_template('face_verification.html', username=user.username)
 
-@app.route('/verify_face', methods=['POST'])
+# API endpoint for face verification
+@bp.route('/verify_face', methods=['POST'])
 def verify_face():
-    if not request.is_json:
-        return jsonify({'success': False, 'message': 'Invalid request format'})
-
-    data = request.json
-    face_image = data.get('faceImage')
-    username = data.get('username')
-
-    user = User.query.get(session.get('temp_user_id')) or User.query.filter_by(username=username).first()
-    if not user or not user.face_data:
-        return jsonify({'success': False, 'message': 'User not found or face data missing'})
+    if request.method != 'POST':
+        return jsonify({'success': False, 'message': 'Method not allowed'}), 405
 
     try:
-        input_image = base64.b64decode(face_image.split(',')[1] if ',' in face_image else face_image)
-        input_np = cv2.imdecode(np.frombuffer(input_image, np.uint8), cv2.IMREAD_COLOR)
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': 'No data received'}), 400
 
-        stored_image = base64.b64decode(user.face_data)
-        stored_np = cv2.imdecode(np.frombuffer(stored_image, np.uint8), cv2.IMREAD_COLOR)
+        face_image = data.get('faceImage')
+        if not face_image:
+            return jsonify({'success': False, 'message': 'No face image provided'}), 400
 
-        input_encoding = face_recognition.face_encodings(cv2.cvtColor(input_np, cv2.COLOR_BGR2RGB))[0]
-        stored_encoding = face_recognition.face_encodings(cv2.cvtColor(stored_np, cv2.COLOR_BGR2RGB))[0]
+        # Get user from session
+        temp_user_id = session.get('temp_user_id')
+        if not temp_user_id:
+            return jsonify({'success': False, 'message': 'No user session found'}), 400
 
-        results = face_recognition.compare_faces([stored_encoding], input_encoding)
-        distance = face_recognition.face_distance([stored_encoding], input_encoding)[0]
-        match_percentage = round((1 - distance) * 100, 2)
+        user = User.query.get(temp_user_id)
+        if not user or not user.face_data:
+            return jsonify({'success': False, 'message': 'User not found or no face data registered'}), 404
 
-        if results[0]:
-            login_user(user)
-            session.pop('temp_user_id', None)
-            user.last_login = datetime.utcnow()
-            db.session.commit()
-
-            log = FaceVerificationLog(user_id=user.id)
-            db.session.add(log)
-            db.session.commit()
-
-            return jsonify({'success': True, 'matchPercentage': match_percentage})
-        return jsonify({'success': False, 'message': f'Face mismatch ({match_percentage:.1f}%)'})
+        try:
+            # Process the incoming face image
+            img_data = base64.b64decode(face_image.split(',')[1])
+            nparr = np.frombuffer(img_data, np.uint8)
+            img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            
+            # Load stored face data
+            stored_face_data = user.face_data
+            if not stored_face_data:
+                return jsonify({'success': False, 'message': 'No stored face data found'}), 400
+                
+            try:
+                stored_data = json.loads(stored_face_data)
+                if 'encoding' not in stored_data:
+                    return jsonify({'success': False, 'message': 'Invalid stored face data format'}), 400
+                    
+                stored_face_encoding = np.array(stored_data['encoding'])
+            except json.JSONDecodeError:
+                return jsonify({'success': False, 'message': 'Invalid JSON format in stored face data'}), 400
+            except Exception as e:
+                return jsonify({'success': False, 'message': f'Error processing stored face data: {str(e)}'}), 400
+            
+            # Detect faces
+            face_locations = face_recognition.face_locations(img_rgb)
+            if not face_locations:
+                return jsonify({
+                    'success': False,
+                    'message': 'No face detected in the input image'
+                }), 400
+            
+            # Get the first face encoding
+            face_encoding = face_recognition.face_encodings(img_rgb, face_locations)
+            if not face_encoding:
+                return jsonify({
+                    'success': False,
+                    'message': 'Could not encode face from the input image'
+                }), 400
+            
+            # Compare faces
+            results = face_recognition.compare_faces([stored_face_encoding], face_encoding[0], tolerance=0.6)
+            face_distance = face_recognition.face_distance([stored_face_encoding], face_encoding[0])[0]
+            match_percentage = (1 - face_distance) * 100
+            
+            if results[0]:
+                # Complete login process
+                login_user(user)
+                session.pop('temp_user_id', None)
+                next_page = session.pop('next_page', None)
+                
+                # Get the redirect URL from session
+                redirect_url = next_page or url_for('main.chat')
+                
+                return jsonify({
+                    'success': True,
+                    'verified': True,
+                    'redirect_url': redirect_url
+                })
+            else:
+                return jsonify({
+                    'success': True,
+                    'verified': False,
+                    'match_percentage': match_percentage
+                })
+        except Exception as e:
+            print(f"Face verification error: {str(e)}")
+            return jsonify({'success': False, 'message': f'Error processing face: {str(e)}'}), 500
 
     except Exception as e:
-        logging.error(f"Face verification error: {str(e)}")
-        return jsonify({'success': False, 'message': str(e)})
+        print(f"General error: {str(e)}")
+        return jsonify({'success': False, 'message': f'Unexpected error: {str(e)}'}), 500
 
-@app.route('/chat')
+    return jsonify({'success': False, 'message': 'Method not allowed'}), 405
+
+# Chat route (protected)
+@bp.route('/chat', methods=['GET', 'POST'])
 @login_required
 def chat():
-    recipient_id = request.args.get('recipient_id', type=int)
-    users = User.query.with_entities(User.id, User.username).filter(User.id != current_user.id).all()
     form = MessageForm()
-    return render_template('chat.html', users=users, recipient_id=recipient_id, form=form)
-
-@app.route('/get_messages', methods=['GET'])
-@login_required
-def get_messages():
-    recipient_id = request.args.get('recipient_id', type=int)
+    users = User.query.filter(User.id != current_user.id).all()
     messages = Message.query.filter(
-        or_(
-            (Message.sender_id == current_user.id) & (Message.recipient_id == recipient_id),
-            (Message.sender_id == recipient_id) & (Message.recipient_id == current_user.id)
-        )
-    ).order_by(Message.timestamp).all()
+        ((Message.sender_id == current_user.id) | (Message.recipient_id == current_user.id))
+    ).order_by(Message.timestamp.desc()).limit(50).all()
+    messages.reverse()
+    recipient_id = request.args.get('recipient_id', type=int)
+    
+    return render_template('chat.html', users=users, messages=messages, recipient_id=recipient_id, form=form)
 
-    return jsonify({'messages': [{
-        'id': m.id,
-        'user_id': m.sender_id,
-        'recipient_id': m.recipient_id,
-        'content': m.content,
-        'timestamp': m.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-        'is_face_locked': m.is_face_locked,
-        'author': {
-            'id': m.sender_id,
-            'username': User.query.get(m.sender_id).username
-        }
-    } for m in messages]})
-
-@app.route('/send_message', methods=['POST'])
+# Send message API
+@bp.route('/send_message', methods=['POST'])
 @login_required
 def send_message():
-    content = request.form.get('content')
-    recipient_id = request.form.get('recipient_id', type=int)
-    is_face_locked = request.form.get('is_face_locked', 'false') == 'true'
-
-    if not content or not recipient_id:
-        return jsonify({'success': False, 'message': 'Missing content or recipient'}), 400
+    recipient_id = request.form.get('recipient_id')
+    if not recipient_id:
+        return jsonify({'success': False, 'message': 'Recipient ID is required'}), 400
 
     recipient = User.query.get(recipient_id)
     if not recipient:
         return jsonify({'success': False, 'message': 'Recipient not found'}), 404
 
+    # Get message content and face_locked from form data
+    content = request.form.get('content', '')  # Default to empty string
+    face_locked = request.form.get('face_locked', 'false').lower() == 'true'
+    file = request.files.get('file')
+
+    # Skip if both content and file are empty
+    if not content.strip() and not file:
+        return jsonify({'success': False, 'message': 'Message content or file is required'}), 400
+
     message = Message(
         sender_id=current_user.id,
         recipient_id=recipient_id,
         content=content,
-        is_face_locked=is_face_locked,
+        is_face_locked=face_locked,
         timestamp=datetime.utcnow()
     )
+
+    # Handle file upload if present
+    if file and file.filename:
+        filename = secure_filename(file.filename)
+        file_path = os.path.join('uploads', filename)
+        
+        # Create uploads directory if it doesn't exist
+        uploads_dir = os.path.join(current_app.static_folder, 'uploads')
+        if not os.path.exists(uploads_dir):
+            os.makedirs(uploads_dir)
+            
+        file.save(os.path.join(uploads_dir, filename))
+        message.file_path = file_path
+
     db.session.add(message)
     db.session.commit()
 
-    message_data = {
-        'id': message.id,
-        'user_id': message.sender_id,
-        'recipient_id': message.recipient_id,
-        'content': message.content,
-        'timestamp': message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-        'is_face_locked': message.is_face_locked,
-        'author': {
-            'id': current_user.id,
-            'username': current_user.username
-        }
-    }
+    # Emit new message event
+    socketio.emit('new_message', {
+        'message': message.content,
+        'sender_id': current_user.id,
+        'sender': {'username': current_user.username},
+        'recipient_id': recipient_id,
+        'recipient': {'username': recipient.username},
+        'timestamp': message.timestamp.isoformat(),
+        'file_path': message.file_path,
+        'is_face_locked': message.is_face_locked
+    }, room=f'user_{recipient_id}')
 
-    socketio.emit('new_message', message_data, room=str(recipient_id))
-    socketio.emit('new_message', message_data, room=str(current_user.id))
-    return jsonify({'success': True, 'message': 'Message sent'})
+    return jsonify({'success': True, 'message_id': message.id})
 
-@app.route('/logout')
+# Get messages API
+@bp.route('/get_messages')
+@login_required
+def get_messages():
+    recipient_id = request.args.get('recipient_id', type=int)
+    if not recipient_id:
+        return jsonify({'success': False, 'message': 'Recipient ID is required'}), 400
+
+    messages = Message.query.filter(
+        ((Message.sender_id == current_user.id) & (Message.recipient_id == recipient_id)) |
+        ((Message.sender_id == recipient_id) & (Message.recipient_id == current_user.id))
+    ).order_by(Message.timestamp.desc()).limit(50).all()
+
+    return jsonify({
+        'success': True,
+        'messages': [
+            {
+                'id': msg.id,
+                'content': msg.content,
+                'sender_id': msg.sender_id,
+                'sender': {'username': msg.sender.username},
+                'recipient_id': msg.recipient_id,
+                'recipient': {'username': msg.recipient.username},
+                'timestamp': msg.timestamp.isoformat(),
+                'file_path': msg.file_path,
+                'is_face_locked': msg.is_face_locked
+            }
+            for msg in reversed(messages)
+        ]
+    })
+
+# File upload route
+@bp.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(os.path.join(current_app.static_folder, 'uploads'), filename)
+
+# Logout route
+@bp.route('/logout')
 @login_required
 def logout():
+    # Emit logout event to user's room
+    socketio.emit('user_logout', room=f'user_{current_user.id}')
     logout_user()
-    session.clear()  # Ensures full logout
-    return redirect(url_for('login'))
-
-# --- Socket.IO Events ---
-
-@socketio.on('join_room')
-def handle_join_room(room_id):
-    if current_user.is_authenticated and str(current_user.id) == str(room_id):
-        join_room(room_id)
-        logging.info(f"{current_user.username} joined room {room_id}")
-
-@socketio.on('connect')
-def handle_connect():
-    if current_user.is_authenticated:
-        join_room(str(current_user.id))
-        logging.info(f"{current_user.username} connected to room {current_user.id}")
-
-@socketio.on('disconnect')
-def handle_disconnect():
-    if current_user.is_authenticated:
-        leave_room(str(current_user.id))
-        logging.info(f"{current_user.username} disconnected")
-
-@socketio.on('send_message')
-def handle_send_message(data):
-    if not current_user.is_authenticated:
-        return {'success': False, 'message': 'Authentication required'}
-
-    content = data.get('content')
-    recipient_id = data.get('recipient_id')
-    is_face_locked = data.get('is_face_locked', False)
-
-    if not content or not recipient_id:
-        return {'success': False, 'message': 'Missing content or recipient'}
-
-    recipient = User.query.get(recipient_id)
-    if not recipient:
-        return {'success': False, 'message': 'Recipient not found'}
-
-    message = Message(
-        sender_id=current_user.id,
-        recipient_id=recipient_id,
-        content=content,
-        timestamp=datetime.utcnow(),
-        is_face_locked=is_face_locked
-    )
-    db.session.add(message)
-    db.session.commit()
-
-    message_data = {
-        'id': message.id,
-        'user_id': message.sender_id,
-        'recipient_id': message.recipient_id,
-        'content': message.content,
-        'timestamp': message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-        'is_face_locked': is_face_locked,
-        'author': {
-            'id': current_user.id,
-            'username': current_user.username
-        }
-    }
-
-    socketio.emit('new_message', message_data, room=str(recipient_id))
-    socketio.emit('new_message', message_data, room=str(current_user.id))
-    return {'success': True, 'message': 'Message sent'}
+    return redirect(url_for('main.login'))
