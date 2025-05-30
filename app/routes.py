@@ -330,6 +330,7 @@ def chat():
 @bp.route('/send_message', methods=['POST'])
 @login_required
 def send_message():
+    print("DEBUG: current_user.id =", current_user.id, "current_user.username =", current_user.username)
     recipient_id = request.form.get('recipient_id')
     if not recipient_id:
         return jsonify({'success': False, 'message': 'Recipient ID is required'}), 400
@@ -371,17 +372,18 @@ def send_message():
     db.session.add(message)
     db.session.commit()
 
-    # Emit new message event
-    socketio.emit('new_message', {
-        'message': message.content,
-        'sender_id': current_user.id,
-        'sender': {'username': current_user.username},
-        'recipient_id': recipient_id,
-        'recipient': {'username': recipient.username},
-        'timestamp': message.timestamp.isoformat(),
-        'file_path': message.file_path,
-        'is_face_locked': message.is_face_locked
-    }, room=f'user_{recipient_id}')
+    # Emit new message event to both sender and recipient
+    for uid in [current_user.id, int(recipient_id)]:
+        socketio.emit('new_message', {
+            'message': message.content,
+            'sender_id': current_user.id,
+            'sender': {'username': current_user.username},
+            'recipient_id': int(recipient_id),
+            'recipient': {'username': recipient.username},
+            'timestamp': message.timestamp.isoformat(),
+            'file_path': message.file_path,
+            'is_face_locked': message.is_face_locked
+        }, room=f'user_{uid}')
 
     return jsonify({'success': True, 'message_id': message.id})
 

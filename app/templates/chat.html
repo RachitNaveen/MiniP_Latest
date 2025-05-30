@@ -6,242 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SecureChatApp</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-8tTwO4A15fK+Sk0QvTCYERhvxDCecVR9dcGzQWs47IhP8OcLylRmkVyGpJ3saxlD" crossorigin="anonymous"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='chat.js') }}"></script>
 </head>
 <body data-user-id="{{ current_user.id }}">
     <div class="container">
         <div class="chat-container">
             <div class="chat-header">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2>SecureChat</h2>
-                    <div>
-                        <span>Welcome, {{ current_user.username }}</span>
-                        <a href="{{ url_for('main.logout') }}" style="color: white; margin-left: 15px;">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
-                    </div>
-                </div>
-                <div style="font-size: 12px; color: rgba(255,255,255,0.7);">
-                    <i class="fas fa-shield-alt"></i> Face verification enabled
-                </div>
+                <h2>SecureChat</h2>
+                <span>Welcome, {{ current_user.username }}</span>
             </div>
 
-            <div class="chat-messages" id="messageContainer">
-                {% for message in messages %}
-                    <div class="message {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}" data-message-id="{{ message.id }}">
-                        <div class="message-user">
-                            {% if message.sender_id == current_user.id %}
-                                You → {{ message.recipient.username }}
-                            {% else %}
-                                {{ message.sender.username }} → You
-                            {% endif %}
-                        </div>
+            <div class="chat-messages" id="messageContainer"></div>
 
-                        {% if message.is_face_locked %}
-                            <div class="locked-message">🔒 Face-locked message</div>
-                        {% else %}
-                            {% if message.content %}
-                                <div>{{ message.content }}</div>
-                            {% endif %}
-                        {% endif %}
-
-                        {% if message.file_path %}
-                            {% set filename = message.file_path.split('/')[-1] %}
-                            <div>
-                                📎 <a href="/uploads/{{ filename }}" target="_blank">{{ filename }}</a>
-                            </div>
-                        {% endif %}
-                        <div class="message-time">
-                            {{ message.timestamp.strftime('%H:%M') }}
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-
-            <!-- Messaging form -->
-            <form class="message-form" id="messageForm" method="POST" enctype="multipart/form-data">
-                {{ form.hidden_tag() }}
-
+            <form class="message-form" id="messageForm">
                 <select name="recipient_id" required class="message-select">
-                    <option value="" disabled {% if not recipient_id %}selected{% endif %}>Select recipient</option>
-                    {% for user in users %}
-                        {% if user.id != current_user.id %}
-                            <option value="{{ user.id }}" {% if user.id == recipient_id %}selected{% endif %}>
-                                {{ user.username }}
-                            </option>
-                        {% endif %}
-                    {% endfor %}
+                    <option value="" disabled selected>Select recipient</option>
                 </select>
-
                 <input type="text" class="message-input" name="content" placeholder="Type a message..." autocomplete="off">
-                <input type="file" name="file" class="message-file">
-
-                <label style="font-size: 12px; margin-left: 10px;">
-                    <input type="checkbox" name="face_locked" id="faceLockedCheckbox"> Face-lock
-                </label>
-
-                <button type="submit" class="send-button">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
+                <button type="submit" class="send-button">Send</button>
             </form>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const socket = io();
-            const messageForm = document.getElementById('messageForm');
-            const messageInput = document.querySelector('.message-input');
-            const messageFile = document.querySelector('.message-file');
-            const messageContainer = document.getElementById('messageContainer');
-            const faceLockedCheckbox = document.getElementById('faceLockedCheckbox');
-            const userId = document.body.dataset.userId;
-
-            // Join the user's room
-            socket.emit('join', { room: `user_${userId}` });
-
-            // Handle new message events
-            socket.on('new_message', function(data) {
-                // Only add messages for the current recipient
-                if (data.recipient_id == messageForm.querySelector('.message-select').value) {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = `message ${data.sender_id == userId ? 'sent' : 'received'}`;
-                    messageDiv.setAttribute('data-message-id', data.message_id);
-
-                    // Add user info
-                    const userDiv = document.createElement('div');
-                    userDiv.className = 'message-user';
-                    userDiv.textContent = data.sender_id == userId 
-                        ? `You → ${data.recipient.username}`
-                        : `${data.sender.username} → You`;
-                    messageDiv.appendChild(userDiv);
-
-                    // Add message content
-                    if (data.is_face_locked) {
-                        const lockedDiv = document.createElement('div');
-                        lockedDiv.className = 'locked-message';
-                        lockedDiv.textContent = '🔒 Face-locked message';
-                        messageDiv.appendChild(lockedDiv);
-                    } else {
-                        if (data.message) {
-                            const contentDiv = document.createElement('div');
-                            contentDiv.textContent = data.message;
-                            messageDiv.appendChild(contentDiv);
-                        }
-                    }
-
-                    // Add file if present
-                    if (data.file_path) {
-                        const fileDiv = document.createElement('div');
-                        fileDiv.innerHTML = `📎 <a href="/uploads/${data.file_path.split('/').pop()}" target="_blank">${data.file_path.split('/').pop()}</a>`;
-                        messageDiv.appendChild(fileDiv);
-                    }
-
-                    // Add timestamp
-                    const timeDiv = document.createElement('div');
-                    timeDiv.className = 'message-time';
-                    timeDiv.textContent = new Date(data.timestamp).toLocaleTimeString();
-                    messageDiv.appendChild(timeDiv);
-
-                    messageContainer.appendChild(messageDiv);
-                    messageContainer.scrollTop = messageContainer.scrollHeight;
-                }
-            });
-
-            // Handle form submission
-            messageForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                const formData = new FormData(messageForm);
-                const recipientId = formData.get('recipient_id');
-                const message = formData.get('content');
-                const faceLocked = faceLockedCheckbox.checked;
-
-                // Send message to server
-                fetch('/send_message', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Clear form
-                        messageInput.value = '';
-                        messageFile.value = '';
-                        faceLockedCheckbox.checked = false;
-                    } else {
-                        alert(data.message || 'Error sending message');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error sending message');
-                });
-            });
-
-            // Update messages when recipient changes
-            messageForm.querySelector('.message-select').addEventListener('change', function() {
-                const recipientId = this.value;
-                if (recipientId) {
-                    fetch(`/get_messages?recipient_id=${recipientId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            messageContainer.innerHTML = '';
-                            data.messages.forEach(msg => {
-                                const messageDiv = document.createElement('div');
-                                messageDiv.className = `message ${msg.sender_id == userId ? 'sent' : 'received'}`;
-                                messageDiv.setAttribute('data-message-id', msg.id);
-
-                                // Add user info
-                                const userDiv = document.createElement('div');
-                                userDiv.className = 'message-user';
-                                userDiv.textContent = msg.sender_id == userId 
-                                    ? `You → ${msg.recipient.username}`
-                                    : `${msg.sender.username} → You`;
-                                messageDiv.appendChild(userDiv);
-
-                                // Add message content
-                                if (msg.is_face_locked) {
-                                    const lockedDiv = document.createElement('div');
-                                    lockedDiv.className = 'locked-message';
-                                    lockedDiv.textContent = '🔒 Face-locked message';
-                                    messageDiv.appendChild(lockedDiv);
-                                } else {
-                                    if (msg.content) {
-                                        const contentDiv = document.createElement('div');
-                                        contentDiv.textContent = msg.content;
-                                        messageDiv.appendChild(contentDiv);
-                                    }
-                                }
-
-                                // Add file if present
-                                if (msg.file_path) {
-                                    const fileDiv = document.createElement('div');
-                                    fileDiv.innerHTML = `📎 <a href="/uploads/${msg.file_path.split('/').pop()}" target="_blank">${msg.file_path.split('/').pop()}</a>`;
-                                    messageDiv.appendChild(fileDiv);
-                                }
-
-                                // Add timestamp
-                                const timeDiv = document.createElement('div');
-                                timeDiv.className = 'message-time';
-                                timeDiv.textContent = new Date(msg.timestamp).toLocaleTimeString();
-                                messageDiv.appendChild(timeDiv);
-
-                                messageContainer.appendChild(messageDiv);
-                            });
-                            messageContainer.scrollTop = messageContainer.scrollHeight;
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Error loading messages');
-                        });
-                }
-            });
-        });
-    </script>
 </body>
 </html>

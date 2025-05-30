@@ -1,99 +1,79 @@
-import os
-import base64
-import logging
-from flask import request, session, current_app
 from flask_socketio import emit, join_room, leave_room
-from app import socketio, db
-from app.models import User, Message
 from flask_login import current_user
-from datetime import datetime
+from flask import request
+from app import socketio
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Track online users: {user_id: {'username': ..., 'sid': ...}}
+online_users = {}
 
 @socketio.on('connect')
-def handle_connect():
+def handle_connect(auth=None):
     if current_user.is_authenticated:
-        room = f"user_{current_user.id}"
-        join_room(room)
-        logger.info(f"{current_user.username} connected to room {room}")
-        emit('status', {'msg': f'Connected to room {room}'})
+        # Add user to online users and join their private room
+        online_users[current_user.id] = {'username': current_user.username, 'sid': request.sid}
+        join_room(f"user_{current_user.id}")
+        print(f"{current_user.username} connected and joined room user_{current_user.id}")
 
-@socketio.on('join')
-def handle_join(data):
-    if current_user.is_authenticated:
-        room = f"user_{current_user.id}"
-        join_room(room)
-        logger.info(f"{current_user.username} joined room {room}")
-        emit('status', {'msg': f'Joined room {room}'})
+        # Debug log: Print the current online users
+        print("Current online users:", online_users)
+
+        # Notify all users about the updated online user list
+        user_list = [
+            {'id': uid, 'username': u['username']}
+            for uid, u in online_users.items()
+        ]
+        print("Emitting user_list event with data:", user_list)  # Debug log
+        emit('user_list', user_list, broadcast=True)
 
 @socketio.on('disconnect')
 def handle_disconnect():
     if current_user.is_authenticated:
-        room = f"user_{current_user.id}"
-        leave_room(room)
-        logger.info(f"{current_user.username} disconnected from room {room}")
-        emit('status', {'msg': f'Disconnected from room {room}'})
+        # Remove user from online users and leave their private room
+        online_users.pop(current_user.id, None)
+        leave_room(f"user_{current_user.id}")
+        print(f"{current_user.username} disconnected")
+
+        # Debug log: Print the current online users
+        print("Current online users after disconnect:", online_users)
+
+        # Notify all users about the updated online user list
+        user_list = [
+            {'id': uid, 'username': u['username']}
+            for uid, u in online_users.items()
+        ]
+        print("Emitting user_list event with data:", user_list)  # Debug log
+        emit('user_list', user_list, broadcast=True)
 
 @socketio.on('send_message')
 def handle_send_message(data):
+    # Debug log to check the current user
+    print(f"[DEBUG] current_user.id: {current_user.id}, current_user.username: {current_user.username}")
+
     if not current_user.is_authenticated:
-        logger.warning("Unauthorized message attempt")
+        print("Unauthorized message attempt")
         return
 
     recipient_id = data.get('recipient_id')
     content = data.get('content')
-    is_face_locked = data.get('is_face_locked', False)
 
     if not recipient_id or not content:
-        logger.warning("Invalid message data")
+        print("Invalid message data")
         emit('status', {'msg': 'Invalid message data'})
         return
 
-    try:
-        message = Message(
-            sender_id=current_user.id,
-            recipient_id=recipient_id,
-            content=content,
-            is_face_locked=is_face_locked
-        )
-        db.session.add(message)
-        db.session.commit()
+    # Emit the message to the sender's and recipient's private rooms
+    payload = {
+        'content': content,
+        'sender_id': current_user.id,
+        'sender_username': current_user.username,
+        'recipient_id': recipient_id
+    }
+    emit('new_message', payload, room=f"user_{current_user.id}")
+    emit('new_message', payload, room=f"user_{recipient_id}")
+    print(f"Message sent from user_{current_user.id} to user_{recipient_id}")
 
-        # Emit message to both sender and recipient
-        emit('new_message', {
-            'id': message.id,
-            'user_id': current_user.id,
-            'recipient_id': recipient_id,
-            'content': content,
-            'is_face_locked': is_face_locked,
-            'timestamp': message.timestamp.isoformat(),
-            'author': {
-                'id': current_user.id,
-                'username': current_user.username
-            }
-        }, room=f"user_{current_user.id}")
-        
-        emit('new_message', {
-            'id': message.id,
-            'user_id': current_user.id,
-            'recipient_id': recipient_id,
-            'content': content,
-            'is_face_locked': is_face_locked,
-            'timestamp': message.timestamp.isoformat(),
-            'author': {
-                'id': current_user.id,
-                'username': current_user.username
-            }
-        }, room=f"user_{recipient_id}")
-
-        logger.info(f"Message sent from {current_user.id} to {recipient_id}")
-    except Exception as e:
-        logger.error(f"Error sending message: {str(e)}")
-        emit('status', {'msg': f'Error sending message: {str(e)}'})
-
-@socketio.on_error_default
-def default_error_handler(e):
-    logger.error(f"Socket.IO error: {str(e)}")
-    emit('status', {'msg': f'Socket.IO error: {str(e)}'})
+    # Emit updated user list
+    emit('user_list', [
+        {'id': uid, 'username': u['username']}
+        for uid, u in online_users.items()
+    ], broadcast=True)
