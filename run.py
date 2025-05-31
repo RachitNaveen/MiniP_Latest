@@ -17,7 +17,7 @@ if __name__ == '__main__':
         print(f"   And place them in: {face_models_dir}\n")
 
     # Run with Flask-SocketIO for real-time messaging
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True, host='0.0.0.0', port=5000)
 
     # For production with SSL, uncomment and configure:
     # socketio.run(
