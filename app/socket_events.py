@@ -77,3 +77,25 @@ def handle_send_message(data):
         {'id': uid, 'username': u['username']}
         for uid, u in online_users.items()
     ], broadcast=True)
+
+@socketio.on('new_file')
+def handle_new_file(data):
+    recipient_id = data.get('recipient_id')
+    file_url = data.get('file_url')
+    file_name = data.get('file_name')
+
+    if not recipient_id or not file_url or not file_name:
+        print("[ERROR] Invalid file data:", data)
+        return
+
+    payload = {
+        'file_url': file_url,
+        'file_name': file_name,
+        'sender_id': current_user.id,
+        'recipient_id': recipient_id
+    }
+    print("[DEBUG] Emitting new_file event with payload:", payload)
+
+    # Emit the event to the sender and recipient
+    socketio.emit('new_file', payload, room=f"user_{current_user.id}")
+    socketio.emit('new_file', payload, room=f"user_{recipient_id}")

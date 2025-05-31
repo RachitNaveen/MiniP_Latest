@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}"> <!-- CSRF token for secure requests -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SecureChatApp</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
@@ -17,14 +17,18 @@
                 <span>Welcome, {{ current_user.username }}</span>
             </div>
 
+            <!-- Chat messages container -->
             <div class="chat-messages" id="messageContainer"></div>
 
+            <!-- Chat form for sending messages and files -->
             <form class="message-form" id="messageForm">
                 <select name="recipient_id" required class="message-select">
                     <option value="" disabled selected>Select recipient</option>
                 </select>
                 <input type="text" class="message-input" name="content" placeholder="Type a message..." autocomplete="off">
                 <button type="submit" class="send-button">Send</button>
+                <input type="file" id="fileInput" name="file" class="file-input">
+                <button type="button" id="sendFileButton" class="send-file-button">Send File</button>
             </form>
         </div>
     </div>

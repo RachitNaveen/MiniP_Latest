@@ -431,3 +431,51 @@ def logout():
     socketio.emit('user_logout', room=f'user_{current_user.id}')
     logout_user()
     return redirect(url_for('main.login'))
+
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@bp.route('/upload_file', methods=['POST'])
+@login_required
+def upload_file():
+    print("[DEBUG] request.files:", request.files)
+    print("[DEBUG] request.form:", request.form)
+
+    if 'file' not in request.files:
+        print("[ERROR] No file part in request")
+        return jsonify({'success': False, 'message': 'No file part'}), 400
+
+    file = request.files['file']
+    recipient_id = request.form.get('recipient_id')
+
+    if not recipient_id or not file:
+        print("[ERROR] Missing recipient ID or file")
+        return jsonify({'success': False, 'message': 'Recipient ID and file are required'}), 400
+
+    if not allowed_file(file.filename):
+        print("[ERROR] File type not allowed:", file.filename)
+        return jsonify({'success': False, 'message': 'File type not allowed'}), 400
+
+    filename = secure_filename(file.filename)
+    uploads_dir = os.path.join(current_app.static_folder, 'uploads')
+    if not os.path.exists(uploads_dir):
+        os.makedirs(uploads_dir)
+
+    file_path = os.path.join(uploads_dir, filename)
+    file.save(file_path)
+
+    file_url = url_for('static', filename=f'uploads/{filename}', _external=True)
+
+    payload = {
+        'file_url': file_url,
+        'file_name': filename,
+        'sender_id': current_user.id,
+        'recipient_id': recipient_id
+    }
+    print("[DEBUG] Emitting new_file event with payload:", payload)
+    socketio.emit('new_file', payload, room=f"user_{current_user.id}")
+    socketio.emit('new_file', payload, room=f"user_{recipient_id}")
+
+    return jsonify({'success': True, 'file_url': file_url, 'file_name': filename})
