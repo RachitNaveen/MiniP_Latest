@@ -77,9 +77,8 @@
             {% endif %}
         {% endwith %}
 
-        <form id="loginForm" method="POST" action="{{ url_for('main.login') }}">
+        <form id="loginForm" method="POST" action="{{ url_for('auth.login') }}">
             {{ form.hidden_tag() }}
-            <input type="hidden" name="face_verified" id="face_verified" value="false">
 
             <div class="form-group">
                 <label for="username">Username</label>
@@ -97,7 +96,16 @@
                 {% endif %}
             </div>
 
-            <button type="submit" class="btn">Login</button>
+            <!-- Add reCAPTCHA -->
+            <div class="form-group">
+                {{ form.recaptcha.label }}
+                {{ form.recaptcha }}
+                {% if form.recaptcha.errors %}
+                    <div class="error">{{ form.recaptcha.errors[0] }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Login</button>
         </form>
 
         <p class="auth-toggle">Don't have an account? <a href="{{ url_for('main.register') }}">Register</a></p>

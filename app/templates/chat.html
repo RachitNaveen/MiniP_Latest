@@ -2,35 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="csrf-token" content="{{ csrf_token() }}"> <!-- CSRF token for secure requests -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SecureChatApp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='chat.js') }}"></script>
 </head>
 <body data-user-id="{{ current_user.id }}">
-    <div class="container">
-        <div class="chat-container">
-            <div class="chat-header">
-                <h2>SecureChat</h2>
-                <span>Welcome, {{ current_user.username }}</span>
-            </div>
-
-            <!-- Chat messages container -->
-            <div class="chat-messages" id="messageContainer"></div>
-
-            <!-- Chat form for sending messages and files -->
-            <form class="message-form" id="messageForm">
-                <select name="recipient_id" required class="message-select">
-                    <option value="" disabled selected>Select recipient</option>
-                </select>
-                <input type="text" class="message-input" name="content" placeholder="Type a message..." autocomplete="off">
-                <button type="submit" class="send-button">Send</button>
-                <input type="file" id="fileInput" name="file" class="file-input">
-                <button type="button" id="sendFileButton" class="send-file-button">Send File</button>
-            </form>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>SecureChat</h2>
+            <span>Welcome, {{ current_user.username }}</span>
         </div>
+
+        <div class="chat-messages" id="messageContainer">
+            </div>
+<form class="message-form" id="messageForm">
+    <div class="form-row recipient-row">
+        <label for="recipient_id">Recipient</label>
+        <select name="recipient_id" id="recipient_id" required class="message-select">
+            <option value="" disabled selected>Select recipient</option>
+            </select>
+    </div>
+
+    <div class="form-row message-input-container">
+        <label for="content">Message</label>
+        <div class="input-with-button">
+            <input
+                type="text"
+                id="content"
+                class="message-input"
+                name="content"
+                placeholder="Type a message..."
+                autocomplete="off">
+            <button type="submit" class="send-button primary-action">
+                <span class="button-text">Send</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="form-row options-and-actions-bar">
+        <label class="face-checkbox">
+            <input type="checkbox" name="face_locked" id="faceLocked">
+            <span class="checkbox-label">Face ID</span>
+        </label>
+
+        <div class="file-input-wrapper">
+            <label for="fileInput" class="file-input-label secondary-action outline">
+                <span class="button-text">Attach File</span>
+            </label>
+            <input type="file" id="fileInput" name="file" class="file-input visually-hidden">
+            <span id="fileNameDisplay" class="file-name-display"></span>
+        </div>
+        
+        <button type="button" id="sendFileButton" class="send-file-button secondary-action">
+            <span class="button-text">Send File</span>
+        </button>
+    </div>
+</form>
     </div>
 </body>
 </html>

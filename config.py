@@ -32,3 +32,7 @@ class Config:
     # SSL/TLS (recommended for production)
     # SSL_CERT = '/path/to/cert.pem'  # Uncomment and set in production
     # SSL_KEY = '/path/to/key.pem'    # Uncomment and set in production
+
+    # reCAPTCHA
+    RECAPTCHA_PUBLIC_KEY = '6Lf7B1QrAAAAAFTql56niE4sxjNxNkOnxG9SSgue'
+    RECAPTCHA_PRIVATE_KEY = '6Lf7B1QrAAAAAFKobCrR5zmgZDlvAd0qlze0fdC0'

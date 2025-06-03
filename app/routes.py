@@ -3,7 +3,8 @@ from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from app import db, socketio
-from app.models import User, Message, LoginForm, MessageForm
+from app.models import User, Message, MessageForm
+from app.forms import LoginForm
 
 import os
 import base64

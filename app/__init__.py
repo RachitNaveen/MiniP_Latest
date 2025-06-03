@@ -38,9 +38,12 @@ def create_app(config_class=Config):
     with app.app_context():
         from app import routes, models, socket_events  
         from app.models import User
+        from app.auth import auth_blueprint  # Import the auth blueprint
 
         # Register the blueprint
         app.register_blueprint(routes.bp)
+        # Register the auth blueprint
+        app.register_blueprint(auth_blueprint, url_prefix='/auth')
 
         @login_manager.user_loader
         def load_user(user_id):

@@ -5,10 +5,6 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, HiddenField
 from wtforms.validators import DataRequired, InputRequired, Length, Regexp, EqualTo
 
-class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[InputRequired()])
-    password = PasswordField('Password', validators=[InputRequired()])
-
 class MessageForm(FlaskForm):
     message = StringField('Message', validators=[DataRequired()])
     submit = SubmitField('Send')
