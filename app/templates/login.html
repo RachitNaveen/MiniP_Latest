@@ -162,16 +162,14 @@
         <p class="auth-toggle">Don't have an account? <a href="{{ url_for('main.register') }}">Register</a></p>
     </div>
 
-    <!-- Pass risk details from server to client-side as a global variable -->
-    <script>
-        // Initialize risk details variable
-        var riskDetailsFromServer = null;
-        
-        {% if session.get('risk_details') %}
-        // If risk details exist in session, assign them to the variable
-        riskDetailsFromServer = {{ session.get('risk_details')|tojson|safe }};
-        {% endif %}
-    </script>
+    <!-- Pass risk details from server to client-side as a data attribute -->
+    <div id="risk-data" 
+         data-has-risk-details="{% if session.get('risk_details') %}true{% else %}false{% endif %}"
+         {% if session.get('risk_details') %}
+         data-risk-details="{{ session.get('risk_details')|tojson|safe }}"
+         {% endif %}
+         style="display: none;">
+    </div>
     
     <script>
         // Function to display security assessment (called when showing assessment results)
@@ -236,7 +234,25 @@
         
         // When the DOM loads, check for risk details and display them if they exist
         document.addEventListener('DOMContentLoaded', function() {
-            displaySecurityAssessment(riskDetailsFromServer);
+            try {
+                // Get the risk data element
+                const riskDataElement = document.getElementById('risk-data');
+                if (!riskDataElement) return;
+                
+                // Check if risk details exist
+                const hasRiskDetails = riskDataElement.getAttribute('data-has-risk-details') === 'true';
+                
+                if (hasRiskDetails) {
+                    // Parse the risk details from the data attribute
+                    const riskDetailsJson = riskDataElement.getAttribute('data-risk-details');
+                    if (riskDetailsJson) {
+                        const riskDetails = JSON.parse(riskDetailsJson);
+                        displaySecurityAssessment(riskDetails);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading risk details:', error);
+            }
         });
     </script>
 </body>
