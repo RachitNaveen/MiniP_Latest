@@ -25,10 +25,10 @@ from app.security_ai import (
 def create_demo_app():
     """Create a minimal Flask app for demo purposes"""
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/db.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.abspath(os.path.join(os.path.dirname(__file__), "instance", "db.db"))}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'demo-key'
-    
+
     with app.app_context():
         db.init_app(app)
         return app
@@ -57,27 +57,27 @@ def print_risk_assessment(username, scenario_name):
 
 def setup_scenarios(username):
     """Setup different risk scenarios for a user"""
-    user = User.query.filter_by(username=username).first()
-    
-    if not user:
-        print(f"User '{username}' not found. Please create this user first.")
-        return
-    
     app = create_demo_app()
-    
+
     with app.app_context():
+        user = User.query.filter_by(username=username).first()
+
+        if not user:
+            print(f"User '{username}' not found. Please create this user first.")
+            return
+
         # Clear any existing logs
         FaceVerificationLog.query.filter_by(user_id=user.id).delete()
         db.session.commit()
-        
+
         # Scenario 1: Low Risk - Regular user with recent login
         user.last_login = datetime.utcnow() - timedelta(hours=2)
         db.session.commit()
-        
-        with app.test_request_context('/'):
+
+        with app.test_request_context('/'):  # Ensure session context
             session['known_ip'] = request.remote_addr
             print_risk_assessment(username, "Low Risk - Regular User")
-        
+
         # Scenario 2: Medium Risk - Few failed logins and older account activity
         for _ in range(2):
             log = FaceVerificationLog(
@@ -86,17 +86,17 @@ def setup_scenarios(username):
                 timestamp=datetime.utcnow() - timedelta(hours=5)
             )
             db.session.add(log)
-        
+
         user.last_login = datetime.utcnow() - timedelta(days=10)
         db.session.commit()
-        
-        with app.test_request_context('/'):
+
+        with app.test_request_context('/'):  # Ensure session context
             session['known_ip'] = request.remote_addr
             print_risk_assessment(username, "Medium Risk - Some Failed Logins")
-        
+
         # Scenario 3: High Risk - Many failed logins, old account, unusual time
         FaceVerificationLog.query.filter_by(user_id=user.id).delete()
-        
+
         for _ in range(4):
             log = FaceVerificationLog(
                 user_id=user.id, 
@@ -104,12 +104,11 @@ def setup_scenarios(username):
                 timestamp=datetime.utcnow() - timedelta(hours=2)
             )
             db.session.add(log)
-        
+
         user.last_login = datetime.utcnow() - timedelta(days=40)
         db.session.commit()
-        
-        with app.test_request_context('/'):
-            # Simulate different IP
+
+        with app.test_request_context('/'):  # Ensure session context
             session['known_ip'] = '1.2.3.4'
             print_risk_assessment(username, "High Risk - Multiple Risk Factors")
 

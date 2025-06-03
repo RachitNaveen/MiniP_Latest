@@ -1,0 +1,91 @@
+
+WELCOME TO THE AI-BASED MFA SYSTEM DEMONSTRATION
+This demo shows how the system adapts security requirements based on risk assessment
+
+
+===== LOW_RISK SECURITY ASSESSMENT =====
+Security Level: Low (Level 1)
+Risk Score: 0.15
+Required Authentication Factors: Password
+
+Risk Factor Breakdown:
+  • Failed Attempts: 0.10
+    No recent failed login attempts
+  • Unusual Location: 0.10
+    Login from familiar location
+  • Time Risk: 0.20
+    Login during normal business hours
+  • Previous Breaches: 0.10
+    Recent login activity (2 days ago)
+  • Device Risk: 0.30
+    Login from desktop with common browser
+
+------------------------------------------------------------
+
+===== MEDIUM_RISK SECURITY ASSESSMENT =====
+Security Level: Medium (Level 2)
+Risk Score: 0.47
+Required Authentication Factors: Password, CAPTCHA
+
+Risk Factor Breakdown:
+  • Failed Attempts: 0.40
+    Few recent failed login attempts
+  • Unusual Location: 0.50
+    Login from new location
+  • Time Risk: 0.50
+    Login during non-standard hours
+  • Previous Breaches: 0.60
+    First login in over a week (10 days)
+  • Device Risk: 0.40
+    Login from mobile device
+
+------------------------------------------------------------
+
+===== HIGH_RISK SECURITY ASSESSMENT =====
+Security Level: High (Level 3)
+Risk Score: 0.81
+Required Authentication Factors: Password, CAPTCHA, Face Verification
+
+Risk Factor Breakdown:
+  • Failed Attempts: 0.80
+    Multiple failed login attempts detected
+  • Unusual Location: 0.90
+    Login location changed during session
+  • Time Risk: 0.80
+    Login during unusual hours (late night/early morning)
+  • Previous Breaches: 0.80
+    First login in over 30 days (45 days)
+  • Device Risk: 0.70
+    Login from uncommon browser
+
+------------------------------------------------------------
+
+Simulated login UI for each scenario:
+
+
+==================================================
+SIMULATED LOGIN PAGE - LOW_RISK RISK SCENARIO
+==================================================
+
+Risk Score: 0.15
+Security Level: Low
+
+Result: User would be logged in with security level 1 (Low)
+
+==================================================
+SIMULATED LOGIN PAGE - MEDIUM_RISK RISK SCENARIO
+==================================================
+
+Risk Score: 0.47
+Security Level: Medium
+
+Result: User would be logged in with security level 2 (Medium)
+
+==================================================
+SIMULATED LOGIN PAGE - HIGH_RISK RISK SCENARIO
+==================================================
+
+Risk Score: 0.81
+Security Level: High
+
+Result: User would be redirected to Face Verification
