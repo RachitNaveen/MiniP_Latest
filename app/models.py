@@ -4,6 +4,7 @@ from flask_login import UserMixin
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, HiddenField
 from wtforms.validators import DataRequired, InputRequired, Length, Regexp, EqualTo
+from werkzeug.security import generate_password_hash, check_password_hash
 
 class MessageForm(FlaskForm):
     message = StringField('Message', validators=[DataRequired()])
@@ -35,7 +36,7 @@ class RegistrationForm(FlaskForm):
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
-    password = db.Column(db.String(128), nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)  # Store hashed passwords
     face_data = db.Column(db.Text, nullable=True)
     last_login = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -50,6 +51,12 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f'<User {self.username}>'
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -67,6 +74,7 @@ class FaceVerificationLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    success = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return f'<FaceLog User {self.user_id} at {self.timestamp}>'

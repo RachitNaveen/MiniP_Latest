@@ -4,10 +4,12 @@ from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_wtf.csrf import CSRFProtect
 from config import Config
+from flask_migrate import Migrate
 import os
 
 # Initialize Flask extensions
 db = SQLAlchemy()
+migrate = Migrate()
 socketio = SocketIO(cors_allowed_origins="*", async_mode="threading")
 login_manager = LoginManager()
 csrf = CSRFProtect()
@@ -21,6 +23,7 @@ def create_app(config_class=Config):
 
     # Initialize extensions with app
     db.init_app(app)
+    migrate.init_app(app, db)  # Initialize Flask-Migrate
     socketio.init_app(app, cors_allowed_origins="*", async_mode="threading")
     login_manager.init_app(app)
     csrf.init_app(app)

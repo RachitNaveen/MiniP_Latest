@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
@@ -6,6 +6,7 @@ from datetime import datetime
 from app import db, socketio
 from app.models import User, FaceVerificationLog
 from app.forms import RegistrationForm, LoginForm  # Import the LoginForm
+from app.security_ai import calculate_security_level, SECURITY_LEVEL_LOW, SECURITY_LEVEL_MEDIUM, SECURITY_LEVEL_HIGH
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -67,19 +68,50 @@ def register():
 
 @auth_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
+    # Check if we need to require face verification based on previous security assessment
+    security_level = session.get('security_level', SECURITY_LEVEL_LOW)
+    require_face = security_level >= SECURITY_LEVEL_HIGH
+    
     form = LoginForm()
     if form.validate_on_submit():  # CAPTCHA is validated here
         username = form.username.data
         password = form.password.data
         remember = form.remember.data
 
+        # Get detailed risk assessment
+        from app.security_ai import get_risk_details
+        risk_details = get_risk_details(username)
+        security_level = risk_details['security_level_num']
+        
+        # Store risk details in session for display
+        session['risk_details'] = risk_details
+        session['security_level'] = security_level
+        session['username'] = username
+        
+        print(f"[SECURITY AI] Security assessment for {username}:")
+        print(f"  - Security Level: {risk_details['security_level']} ({security_level})")
+        print(f"  - Risk Score: {risk_details['risk_score']:.2f}")
+        print(f"  - Required Factors: {', '.join(risk_details['required_factors'])}")
+        
         user = User.query.filter_by(username=username).first()
 
         if not user or not check_password_hash(user.password_hash, password):
             flash('Invalid username or password.', 'danger')
             return redirect(url_for('auth.login'))
 
+        # If high security required, redirect to face verification with risk details
+        if security_level >= SECURITY_LEVEL_HIGH:
+            flash(f'Additional verification required for {username}.', 'info')
+            return redirect(url_for('auth.face_verification'))
+            
+        # Otherwise, complete login
+        user.last_login = datetime.utcnow()
+        db.session.commit()
         login_user(user, remember=remember)
+        
+        # Flash security level info
+        security_level_name = risk_details['security_level']
+        flash(f'Security Level: {security_level_name} - Login successful!', 'info')
         return redirect(url_for('main.chat'))
 
     return render_template('login.html', form=form)
@@ -161,3 +193,19 @@ def logout():
 
     flash('You have been logged out.', 'info')
     return redirect(url_for('auth.login'))
+
+@auth_blueprint.route('/face_verification')
+def face_verification():
+    """Render the face verification page"""
+    # Check if we have a username in session
+    username = session.get('username')
+    if not username:
+        flash('Please log in first.', 'warning')
+        return redirect(url_for('auth.login'))
+    
+    # Get risk details from session
+    risk_details = session.get('risk_details', {})
+    
+    return render_template('face_verification.html', 
+                          username=username, 
+                          risk_details=risk_details)
