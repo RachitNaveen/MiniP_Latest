@@ -4,7 +4,7 @@ Simple Face Verification Demo Script for SecureChat
 """
 
 from app import create_app, db
-from app.models import User
+from app.models.models import User
 from werkzeug.security import generate_password_hash
 import json
 import numpy as np

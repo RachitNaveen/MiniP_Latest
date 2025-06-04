@@ -2,7 +2,7 @@
 # Create a test user with face verification enabled
 import sys
 from app import db, create_app
-from app.models import User
+from app.models.models import User
 from werkzeug.security import generate_password_hash
 import json
 import numpy as np
@@ -19,10 +19,10 @@ def create_face_user(username="testface", password="Face123!"):
         user = User.query.filter_by(username=username).first()
         if user:
             print(f"User '{username}' already exists. Updating password and face data.")
-            user.password_hash = generate_password_hash(password, method='sha256')
+            user.password_hash = generate_password_hash(password)
         else:
             print(f"Creating new user '{username}' with face verification enabled.")
-            user = User(username=username, password_hash=generate_password_hash(password, method='sha256'))
+            user = User(username=username, password_hash=generate_password_hash(password))
             db.session.add(user)
         
         # Use a sample face image

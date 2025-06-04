@@ -13,8 +13,8 @@ from flask import Flask, session
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from app import create_app, db
-from app.models import User, FaceVerificationLog
-from app.security_ai import (
+from app.models.models import User, FaceVerificationLog
+from app.security.security_ai import (
     calculate_security_level, 
     get_risk_details, 
     SECURITY_LEVEL_LOW, 

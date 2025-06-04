@@ -6,7 +6,7 @@ import time
 from datetime import datetime, timedelta
 import ipaddress
 from flask import request, session
-from app.models import FaceVerificationLog, User
+from app.models.models import FaceVerificationLog, User
 
 # Security levels
 SECURITY_LEVEL_LOW = 1      # Password only

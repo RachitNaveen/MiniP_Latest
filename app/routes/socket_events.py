@@ -1,7 +1,7 @@
 from flask_socketio import emit, join_room, leave_room
 from flask_login import current_user
 from flask import request
-from app import socketio # Ensure this is your initialized SocketIO instance
+from app import socketio
 
 # Track online users: {user_id: {'username': ..., 'sid': ...}}
 online_users = {}

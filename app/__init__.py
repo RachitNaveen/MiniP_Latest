@@ -39,19 +39,20 @@ def create_app(config_class=Config):
     os.makedirs(os.path.join(app.static_folder, 'uploads'), exist_ok=True)
 
     with app.app_context():
-        from app import routes, models, socket_events  
-        from app.models import User
-        from app.auth import auth_blueprint  # Import the auth blueprint
+        from app.routes import routes
+        from app.routes import socket_events
+        from app.models.models import User
+        from app.auth.auth import auth_blueprint
+        from app.security.routes_security import security_blueprint
 
         # Register the blueprint
         app.register_blueprint(routes.bp)
         # Register the auth blueprint
         app.register_blueprint(auth_blueprint, url_prefix='/auth')
         # Register the security blueprint
-        from app.routes_security import security_blueprint
-        # Register the face blueprint
-        from app.routes_face import face_blueprint
         app.register_blueprint(security_blueprint)
+        # Register the face blueprint
+        from app.auth.routes_face import face_blueprint
         app.register_blueprint(face_blueprint)
 
         @login_manager.user_loader

@@ -3,8 +3,9 @@ from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from app import db, socketio
-from app.models import User, Message, MessageForm
-from app.forms import LoginForm, RegistrationForm
+from app.models.models import User, Message, MessageForm
+from app.auth.forms import LoginForm, RegistrationForm
+from app.security.security_ai import SECURITY_LEVEL_LOW, SECURITY_LEVEL_MEDIUM, SECURITY_LEVEL_HIGH
 
 import os
 import base64
@@ -29,7 +30,6 @@ def index():
 @login_required
 def profile():
     # Get security level
-    from app.security_ai import SECURITY_LEVEL_LOW, SECURITY_LEVEL_MEDIUM, SECURITY_LEVEL_HIGH
     from sqlalchemy import desc
     
     security_level = session.get('security_level', SECURITY_LEVEL_LOW)

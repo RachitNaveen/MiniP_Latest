@@ -4,12 +4,16 @@ html {
 
 /* Base styles - Updated */
 body {
-    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Roboto', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #e9ecef; /* Light grey background */
+    background-color: #f3f4f6; /* Light grey background */
     color: #343a40; /* Darker text for better contrast */
     line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
 /* Visually hidden class for accessibility */
@@ -26,8 +30,11 @@ body {
 }
 
 .container { /* Original */
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: 400px;
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
 }
 
@@ -57,12 +64,11 @@ form {
     margin-bottom: 15px;
 }
 
-label { /* Updated general label */
+.form-group label {
     display: block;
+    font-weight: bold;
     margin-bottom: 5px;
-    font-weight: 600;
-    color: #495057;
-    font-size: 0.9em;
+    color: #555555;
 }
 
 input[type="text"],
@@ -72,9 +78,9 @@ textarea,
 select { /* Added select to general styling */
     width: 100%;
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid #dddddd;
     border-radius: 4px;
-    font-size: 16px;
+    font-size: 14px;
     box-sizing: border-box; /* Added for consistent sizing */
     transition: border-color 0.3s ease;
     background-color: #fff; /* Ensure inputs have a light background by default */
@@ -86,15 +92,15 @@ input[type="password"]:focus,
 input[type="email"]:focus,
 textarea:focus,
 select:focus { /* Added select to general styling */
-    border-color: #3498db;
+    border-color: #0088cc;
     outline: none;
-    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+    box-shadow: 0 0 4px rgba(0, 136, 204, 0.2);
 }
 
 /* General Button styles - Original (will be overridden by more specific styles) */
 button {
     padding: 10px 20px;
-    background-color: #3498db;
+    background-color: #0088cc;
     color: white;
     border: none;
     border-radius: 4px;
@@ -104,7 +110,7 @@ button {
 }
 
 button:hover {
-    background-color: #2980b9;
+    background-color: #0077b3;
 }
 
 button:disabled {
@@ -114,25 +120,20 @@ button:disabled {
 
 /* Chat styles - Heavily Updated */
 .chat-container {
-    width: 95%;
-    max-width: 800px;
-    margin: 30px auto;
-    border-radius: 10px;
-    background: #ffffff; /* Explicit white background for the main chat box */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 60px); /* Adjust if you have other fixed headers/footers */
+    height: 100%;
+    background-color: #e5eff5;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .chat-header {
-    background-color: #007bff;
-    color: #ffffff;
-    padding: 0.75rem 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    background-color: #0088cc;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
@@ -148,7 +149,7 @@ button:disabled {
 
 .chat-messages { /* This area should be transparent to show .chat-container's white background */
     flex: 1;
-    padding: 1rem;
+    padding: 10px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -445,7 +446,7 @@ button:disabled {
 
 /* Status message styles - Original */
 .success {
-    color: #2ecc71;
+    color: #28a745;
     font-weight: bold;
 }
 .warning {

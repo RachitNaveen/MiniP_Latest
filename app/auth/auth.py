@@ -5,7 +5,7 @@ from datetime import datetime
 
 from app import db, socketio
 from app.models.models import User, FaceVerificationLog
-from app.auth.forms import RegistrationForm, LoginForm
+from app.auth.forms import RegistrationForm, LoginForm  # Import the LoginForm
 from app.security.security_ai import calculate_security_level, SECURITY_LEVEL_LOW, SECURITY_LEVEL_MEDIUM, SECURITY_LEVEL_HIGH, get_risk_details
 
 auth_blueprint = Blueprint('auth', __name__)
@@ -193,9 +193,6 @@ def login():
         session['risk_details'] = json_serializable_risk_details
         session['security_level'] = security_level
         session['username'] = username
-        
-        # Add a console log to the frontend for verification
-        session['risk_details']['frontend_log'] = True
         
         print(f"[SECURITY AI] Security assessment for {username}:")
         print(f"  - Security Level: {risk_details['security_level']} ({security_level})")

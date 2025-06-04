@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, session
-from app.security_ai import SECURITY_LEVEL_LOW, SECURITY_LEVEL_MEDIUM, SECURITY_LEVEL_HIGH
+from app.security.security_ai import SECURITY_LEVEL_LOW, SECURITY_LEVEL_MEDIUM, SECURITY_LEVEL_HIGH
 
 security_blueprint = Blueprint('security', __name__)
 

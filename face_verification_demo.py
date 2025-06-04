@@ -8,7 +8,7 @@ security scenarios.
 """
 
 from app import create_app, db
-from app.models import User, Message, FaceVerificationLog
+from app.models.models import User, Message, FaceVerificationLog
 from werkzeug.security import generate_password_hash
 import os
 import json

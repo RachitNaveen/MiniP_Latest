@@ -16,8 +16,8 @@ Usage:
 
 from flask import Blueprint, jsonify, request, session
 from flask_login import current_user, login_required
-from app.models import Message, User
-from app.auth import verify_user_face
+from app.models.models import Message, User
+from app.auth.auth import verify_user_face
 from app import db
 import logging
 import base64

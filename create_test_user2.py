@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.abspath('.'))
 
 from app import create_app, db
-from app.models import User
+from app.models.models import User
 from werkzeug.security import generate_password_hash
 
 def create_test_user(username='testuser2', password='password123'):
@@ -23,17 +23,22 @@ def create_test_user(username='testuser2', password='password123'):
             print(f"Creating test user: {username}")
             user = User(
                 username=username,
-                password_hash=generate_password_hash(password, method='sha256')
+                password_hash=generate_password_hash(password)
             )
             db.session.add(user)
             db.session.commit()
             print(f"Test user created: {username}")
         else:
             print(f"Test user already exists: {username}")
-            # Update the password hash to use sha256
-            user.password_hash = generate_password_hash(password, method='sha256')
+            # Update the password hash
+            user.password_hash = generate_password_hash(password)
             db.session.commit()
             print(f"Updated password hash for {username} to use sha256")
 
 if __name__ == '__main__':
-    create_test_user()
+    if len(sys.argv) == 3:
+        username = sys.argv[1]
+        password = sys.argv[2]
+        create_test_user(username, password)
+    else:
+        create_test_user()
