@@ -83,8 +83,24 @@ def login():
         risk_details = get_risk_details(username)
         security_level = risk_details['security_level_num']
         
+        # Ensure risk details are JSON serializable
+        json_serializable_risk_details = {
+            'security_level': risk_details['security_level'],
+            'security_level_num': risk_details['security_level_num'],
+            'risk_score': float(risk_details['risk_score']),
+            'required_factors': risk_details['required_factors']
+        }
+        
+        # Add risk factors in a JSON-serializable format
+        json_serializable_risk_details['risk_factors'] = {}
+        for factor_name, factor_data in risk_details['risk_factors'].items():
+            json_serializable_risk_details['risk_factors'][factor_name] = {
+                'score': float(factor_data['score']) if 'score' in factor_data else 0,
+                'description': factor_data.get('description', 'No description')
+            }
+        
         # Store risk details in session for display
-        session['risk_details'] = risk_details
+        session['risk_details'] = json_serializable_risk_details
         session['security_level'] = security_level
         session['username'] = username
         

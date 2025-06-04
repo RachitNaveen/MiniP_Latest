@@ -16,8 +16,19 @@ if __name__ == '__main__':
         print("   https://github.com/justadudewhohacks/face-api.js/tree/master/weights")
         print(f"   And place them in: {face_models_dir}\n")
 
+    # Import argparse to handle command line arguments
+    import argparse
+    
+    # Create argument parser
+    parser = argparse.ArgumentParser(description='Run the SecureChat application')
+    parser.add_argument('--port', type=int, default=5000, help='Port number to run the application on')
+    
+    # Parse arguments
+    args = parser.parse_args()
+    
     # Run with Flask-SocketIO for real-time messaging
-    socketio.run(app, debug=True, allow_unsafe_werkzeug=True, host='0.0.0.0', port=5000)
+    print(f"Starting server on port {args.port}")
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True, host='0.0.0.0', port=args.port)
 
     # For production with SSL, uncomment and configure:
     # socketio.run(

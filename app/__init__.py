@@ -47,6 +47,9 @@ def create_app(config_class=Config):
         app.register_blueprint(routes.bp)
         # Register the auth blueprint
         app.register_blueprint(auth_blueprint, url_prefix='/auth')
+        # Register the security blueprint
+        from app.routes_security import security_blueprint
+        app.register_blueprint(security_blueprint)
 
         @login_manager.user_loader
         def load_user(user_id):
