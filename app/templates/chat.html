@@ -10,7 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="{{ url_for('static', filename='chat.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='face-api.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='chat.js') }}"></script>
 </head>
 <body data-user-id="{{ current_user.id }}">
     <div class="chat-container">

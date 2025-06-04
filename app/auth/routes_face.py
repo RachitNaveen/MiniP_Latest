@@ -26,10 +26,16 @@ import cv2
 import face_recognition
 import json
 from datetime import datetime
+from app.static.face_api_models import FaceAPI
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Initialize FaceAPI with model paths
+face_api = FaceAPI(
+    model_path="/Users/tshreek/minip_latest/app/static/face-api-models"
+)
 
 face_blueprint = Blueprint('face', __name__)
 
@@ -64,55 +70,45 @@ def unlock_item():
     if not all([item_type, item_id, face_image]):
         return jsonify({'success': False, 'message': 'Missing required fields.'}), 400
     
-    # Verify the face matches the current user
-    is_face_match = verify_user_face(current_user, face_image)
+    # First check if the user has face verification enabled
+    if not current_user.face_verification_enabled:
+        logger.warning(f"User {current_user.username} has no face verification enabled")
+        return jsonify({'success': False, 'message': 'Face verification is not enabled for your account. Please set up face verification in your profile.'}), 401
+        
+    # Check if user has face data stored
+    if not current_user.face_data:
+        logger.warning(f"User {current_user.username} has no face data registered")
+        return jsonify({'success': False, 'message': 'No face data found. Please register your face first.'}), 401
     
-    if not is_face_match:
-        return jsonify({'success': False, 'message': 'Face verification failed.'}), 401
-    
-    # If face matches, retrieve the content based on item type
-    if item_type == 'message':
-        message = Message.query.get(item_id)
-        
-        if not message:
-            return jsonify({'success': False, 'message': 'Message not found.'}), 404
-        
-        # Check if the current user is either the sender or the recipient
-        if message.sender_id != current_user.id and message.recipient_id != current_user.id:
-            return jsonify({'success': False, 'message': 'You do not have permission to view this message.'}), 403
-        
-        # Return the unlocked content
-        logger.info(f"Message {item_id} unlocked successfully by {current_user.username}")
-        return jsonify({
-            'success': True,
-            'content': message.content,
-            'itemId': message.id,
-            'timestamp': message.timestamp.isoformat()
-        })
-        
-    elif item_type == 'file':
-        message = Message.query.get(item_id)
-        
-        if not message or not message.file_path:
-            return jsonify({'success': False, 'message': 'File not found.'}), 404
-        
-        # Check if the current user is either the sender or the recipient
-        if message.sender_id != current_user.id and message.recipient_id != current_user.id:
-            return jsonify({'success': False, 'message': 'You do not have permission to view this file.'}), 403
-        
-        # Return the unlocked file info
-        file_name = message.file_path.split('/')[-1]  # Extract filename from path
-        logger.info(f"File {item_id} unlocked successfully by {current_user.username}")
-        return jsonify({
-            'success': True,
-            'fileUrl': f'/uploads/{file_name}',
-            'fileName': file_name,
-            'itemId': message.id,
-            'timestamp': message.timestamp.isoformat()
-        })
-    
-    else:
-        return jsonify({'success': False, 'message': 'Unknown item type.'}), 400
+    try:
+        # Extract face image from request
+        face_image = data.get('face_image')
+        if not face_image:
+            return jsonify({'success': False, 'message': 'Face image is required'}), 400
+
+        # Verify face using FaceAPI
+        is_face_match = face_api.verify_face(current_user.face_data, face_image)
+
+        if is_face_match:
+            # Retrieve the content based on item type
+            if item_type == 'message':
+                message = Message.query.get(item_id)
+                if not message:
+                    return jsonify({'success': False, 'message': 'Message not found.'}), 404
+                return jsonify({'success': True, 'content': message.content}), 200
+            elif item_type == 'file':
+                message = Message.query.get(item_id)
+                if not message or not message.file_path:
+                    return jsonify({'success': False, 'message': 'File not found.'}), 404
+                return jsonify({'success': True, 'fileUrl': message.file_path, 'fileName': message.content}), 200
+            else:
+                return jsonify({'success': False, 'message': 'Invalid item type.'}), 400
+        else:
+            return jsonify({'success': False, 'message': 'Face verification failed'}), 403
+
+    except Exception as e:
+        logger.error(f"Error unlocking item: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred during face verification'}), 500
 
 @face_blueprint.route('/update_face_data', methods=['POST'])
 @login_required

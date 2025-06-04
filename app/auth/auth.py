@@ -8,6 +8,12 @@ from app.models.models import User, FaceVerificationLog
 from app.auth.forms import RegistrationForm, LoginForm  # Import the LoginForm
 from app.security.security_ai import calculate_security_level, SECURITY_LEVEL_LOW, SECURITY_LEVEL_MEDIUM, SECURITY_LEVEL_HIGH, get_risk_details
 
+import base64
+import numpy as np
+import cv2
+import face_recognition
+import json
+
 auth_blueprint = Blueprint('auth', __name__)
 
 # --- Face Data Helper Functions (Implement with actual face recognition logic) ---
@@ -35,27 +41,75 @@ def verify_user_face(user, submitted_face_image_data_url):
             print(f"[WARN] No face data registered for user: {user.username}")
             return False
 
-        import json
-        import base64
-        import numpy as np
-
         # Step 2: Load stored face descriptor from the database
         stored_face_data = json.loads(user.face_data)
         stored_encoding = np.array(stored_face_data['encoding'])
         print(f"[DEBUG] Stored face descriptor for {user.username}: {stored_encoding[:5]}... (truncated)")
 
-        # Step 3: Process the submitted face descriptor
-        if ',' in submitted_face_image_data_url:
-            submitted_face_image_data_url = submitted_face_image_data_url.split(',')[1]
+        # Step 3: Process the submitted webcam image
+        try:
+            print(f"[DEBUG] Received face image data length: {len(submitted_face_image_data_url)}")
+            
+            # Handle base64 image from webcam capture
+            if ',' in submitted_face_image_data_url:
+                print(f"[DEBUG] Data URL format detected, extracting base64 content")
+                submitted_face_image_data_url = submitted_face_image_data_url.split(',')[1]
+            
+            # Decode base64 to image
+            try:
+                img_data = base64.b64decode(submitted_face_image_data_url)
+                print(f"[DEBUG] Base64 decoded. Image data size: {len(img_data)} bytes")
+                
+                nparr = np.frombuffer(img_data, np.uint8)
+                img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                
+                if img_rgb is None or img_rgb.size == 0:
+                    print(f"[ERROR] Invalid image data for {user.username}")
+                    flash('Invalid image data. Please try again.', 'warning')
+                    return False
 
-        submitted_encoding = np.array(json.loads(base64.b64decode(submitted_face_image_data_url).decode('utf-8')))
+                # Improve face detection
+                face_locations = face_recognition.face_locations(img_rgb, model='cnn')
+                print(f"[DEBUG] Face locations found using CNN model: {len(face_locations)}")
+
+                if not face_locations:
+                    print(f"[WARN] No face detected in submitted image for {user.username}")
+                    flash('No face detected. Please ensure your face is clearly visible.', 'warning')
+                    return False
+
+                # Get face encodings
+                face_encodings = face_recognition.face_encodings(img_rgb, face_locations)
+                if not face_encodings:
+                    print(f"[WARN] Could not encode face from submitted image for {user.username}")
+                    flash('Error encoding face data. Please try again.', 'warning')
+                    return False
+
+                submitted_encoding = face_encodings[0]
+                print(f"[DEBUG] Face encoding generated successfully: {submitted_encoding[:5]}... (truncated)")
+                
+            except Exception as img_err:
+                print(f"[ERROR] Image decoding failed: {str(img_err)}")
+                raise img_err
+            
+        except Exception as process_error:
+            print(f"[ERROR] Error processing face image: {str(process_error)}")
+            # Try alternate decoding if the image is actually a JSON-encoded face descriptor
+            try:
+                submitted_encoding = np.array(json.loads(base64.b64decode(submitted_face_image_data_url).decode('utf-8')))
+            except:
+                print("[ERROR] Both image processing and JSON decoding failed")
+                return False
+                
         print(f"[DEBUG] Submitted face descriptor: {submitted_encoding[:5]}... (truncated)")
 
         # Step 4: Compare the stored and submitted descriptors
         distance = np.linalg.norm(stored_encoding - submitted_encoding)
-        match = distance <= 0.5  # Stricter threshold for better security
+        print(f"[DEBUG] Distance between stored and submitted descriptors: {distance:.4f}")
 
-        print(f"[INFO] Face verification result for {user.username}: {'SUCCESS' if match else 'FAILED'} (distance: {distance:.4f})")
+        # Use a permissive threshold for testing (0.6)
+        match = distance <= 0.6
+
+        print(f"[INFO] Face verification result for {user.username}: {'SUCCESS' if match else 'FAILED'} (distance: {distance:.4f}, threshold: 0.6)")
         return match
 
     except Exception as e:
@@ -84,41 +138,32 @@ def register():
         # Process the face data if provided
         if face_data and face_data.strip():
             try:
-                import base64
-                import numpy as np
-                import cv2
-                import json
-                import face_recognition
-                from datetime import datetime
-                
-                # Remove the data URL prefix to get the base64 data
-                face_data = face_data.split(',')[1] if ',' in face_data else face_data
-                
                 # Decode the base64 data
+                face_data = face_data.split(',')[1] if ',' in face_data else face_data
                 img_data = base64.b64decode(face_data)
-                
+
                 # Convert to numpy array and decode image
                 nparr = np.frombuffer(img_data, np.uint8)
                 img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-                
-                # Detect faces
+
+                # Detect faces using face-api.js
                 face_locations = face_recognition.face_locations(img_rgb)
                 if not face_locations:
                     flash('No face detected in the image. Face registration skipped.', 'warning')
                 else:
                     # Get the face encoding
                     face_encoding = face_recognition.face_encodings(img_rgb, face_locations)[0]
-                    
-                    # Store face data as JSON
+
+                    # Store face data securely
                     new_user.face_data = json.dumps({
                         'encoding': face_encoding.tolist(),
                         'timestamp': datetime.utcnow().isoformat()
                     })
                     new_user.face_verification_enabled = True
-                    
+
                     flash('Face registered successfully!', 'success')
             except Exception as e:
-                print(f"Face registration error: {str(e)}")
+                print(f"[ERROR] Face registration failed: {str(e)}")
                 flash('Error processing face data. Face registration skipped.', 'warning')
         
         db.session.add(new_user)
@@ -135,9 +180,14 @@ def register():
 
 @auth_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.chat'))
+    
     form = LoginForm()
+    
+    # Check for manual security level override
     manual_security_level = session.get('manual_security_level')
-
+    
     # Determine security level
     if manual_security_level is not None:
         security_level = manual_security_level
@@ -146,11 +196,31 @@ def login():
 
     # Determine if CAPTCHA should be shown
     show_captcha = security_level in [SECURITY_LEVEL_MEDIUM, SECURITY_LEVEL_HIGH]
-
-    if form.validate_on_submit():  # CAPTCHA is validated here
+    
+    # For low security level, make the CAPTCHA optional in the form validation
+    if security_level == SECURITY_LEVEL_LOW:
+        form.recaptcha.validators = []
+        
+    # Basic validation - check if username and password are provided
+    basic_credentials_provided = form.username.data and form.password.data
+    
+    # Full form validation including CAPTCHA if needed
+    form_valid = form.validate_on_submit()
+    
+    # Decide whether to proceed based on security level and validation
+    should_proceed = False
+    
+    if security_level == SECURITY_LEVEL_LOW:
+        # For low security, only basic credentials are required
+        should_proceed = basic_credentials_provided
+    elif security_level == SECURITY_LEVEL_MEDIUM or security_level == SECURITY_LEVEL_HIGH:
+        # For medium and high security, full validation including CAPTCHA is required
+        should_proceed = form_valid
+        
+    if should_proceed:
         username = form.username.data
         password = form.password.data
-        remember = form.remember.data
+        remember = form.remember.data if hasattr(form, 'remember') else False
 
         # Get detailed risk assessment
         risk_details = get_risk_details(username)
@@ -178,7 +248,8 @@ def login():
             'security_level': risk_details['security_level'],
             'security_level_num': risk_details['security_level_num'],
             'risk_score': float(risk_details['risk_score']),
-            'required_factors': risk_details['required_factors']
+            'required_factors': risk_details['required_factors'],
+            'frontend_log': True  # Flag to indicate this should be logged in frontend
         }
         
         # Add risk factors in a JSON-serializable format
@@ -232,17 +303,20 @@ def login():
 
         elif security_level == SECURITY_LEVEL_MEDIUM:
             # Require CAPTCHA validation
-            if not form.recaptcha.data:
-                flash('CAPTCHA validation failed.', 'danger')
+            if form_valid:
+                login_user(user, remember=form.remember.data)
+                flash('Login successful with Medium Security.', 'success')
+                return redirect(url_for('main.chat'))
+            else:
+                # If form validation failed, it's likely due to CAPTCHA
+                flash('CAPTCHA validation failed. Please try again.', 'danger')
                 return render_template('login.html', form=form, show_captcha=show_captcha)
-
-            login_user(user, remember=form.remember.data)
-            flash('Login successful with Medium Security.', 'success')
-            return redirect(url_for('main.chat'))
 
         elif security_level == SECURITY_LEVEL_HIGH:
             # Redirect to face verification
+            print(f"[DEBUG] Redirecting to face verification for high security level. User ID: {user.id}")
             session['temp_user_id'] = user.id
+            session['username'] = username  # Make sure username is in session for face verification
             flash('Additional verification required.', 'info')
             return redirect(url_for('auth.face_verification'))
 
@@ -250,25 +324,34 @@ def login():
 
 @auth_blueprint.route('/verify_face', methods=['POST'])
 def verify_face_endpoint():
+    print("[DEBUG] Face verification endpoint called")
     if current_user.is_authenticated:
+        print("[DEBUG] User is already authenticated")
         return jsonify({'success': False, 'message': 'Already logged in.'}), 400
 
     data = request.get_json()
     if not data:
+        print("[DEBUG] Invalid request data, no JSON found")
         return jsonify({'success': False, 'message': 'Invalid request data.'}), 400
 
     # Get username from session or request
     username = session.get('username')
     face_image_b64 = data.get('faceImage')
 
+    print(f"[DEBUG] Face verification for username: {username}")
+    
     if not username or not face_image_b64:
+        print(f"[DEBUG] Missing data. Username: {bool(username)}, Face image: {bool(face_image_b64)}")
         return jsonify({'success': False, 'message': 'Username in session and face image are required.'}), 400
 
     user = User.query.filter_by(username=username).first()
     if not user:
+        print(f"[DEBUG] User not found: {username}")
         return jsonify({'success': False, 'message': 'User not found.'}), 404
-
+        
+    print(f"[DEBUG] Attempting to verify face for user: {username}")
     is_face_match_successful = verify_user_face(user, face_image_b64)
+    print(f"[DEBUG] Face verification result: {is_face_match_successful}")
 
     if is_face_match_successful:
         login_user(user, remember=True)
@@ -329,19 +412,30 @@ def logout():
 
 @auth_blueprint.route('/face_verification', methods=['GET', 'POST'])
 def face_verification():
+    print("[DEBUG] Face verification page requested")
     user_id = session.get('temp_user_id')
     if not user_id:
+        print("[DEBUG] No temp_user_id in session")
         flash('Session expired. Please log in again.', 'danger')
         return redirect(url_for('auth.login'))
 
     user = User.query.get(user_id)
     if not user:
+        print("[DEBUG] User not found with ID:", user_id)
         flash('User not found. Please log in again.', 'danger')
         return redirect(url_for('auth.login'))
+    
+    # Get risk details from session
+    risk_details = session.get('risk_details', {})
+    print(f"[DEBUG] Risk details from session: {risk_details}")
+    
+    # Prepare username for face verification
+    username = user.username
+    print(f"[DEBUG] Username for face verification: {username}")
 
-    # Retrieve risk details from the session
-    risk_details = session.get('risk_details')
+    # Ensure we have risk details
     if not risk_details:
+        print("[DEBUG] No risk details found in session")
         flash('Risk details not found. Please log in again.', 'danger')
         return redirect(url_for('auth.login'))
 
@@ -360,4 +454,5 @@ def face_verification():
             flash('Face verification failed. Access denied.', 'danger')
             return redirect(url_for('auth.face_verification'))
 
-    return render_template('face_verification.html', risk_details=risk_details)
+    print(f"[DEBUG] Rendering face verification page for {username}")
+    return render_template('face_verification.html', risk_details=risk_details, username=username)

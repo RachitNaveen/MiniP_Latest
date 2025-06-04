@@ -210,6 +210,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // Also show an alert for better visibility
                         alert(`Security level set to ${data.levelName}.\nRequired factors: ${data.requiredFactors}\n\nTo test this level, use:\nUsername: testuser2\nPassword: password123`);
+                        
+                        // Reload the page to update the form structure based on the new security level
+                        setTimeout(() => {
+                            location.reload();
+                        }, 500);
                     }
                     
                     // If there are risk details in the response, display them

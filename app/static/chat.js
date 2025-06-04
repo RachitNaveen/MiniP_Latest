@@ -299,7 +299,8 @@ document.addEventListener('DOMContentLoaded', function () {
             // This will be a more complex step, for now it's just a button.
             unlockButton.onclick = () => {
                 // Store item data for later use
-                const itemId = itemData.id;
+                // Get the ID from the appropriate property depending on the data structure
+                const itemId = itemData.id || itemData.message_id || itemData.file_id;
                 
                 // Create a modal for face verification
                 const modal = document.createElement('div');
@@ -325,29 +326,125 @@ document.addEventListener('DOMContentLoaded', function () {
                 const cancelBtn = document.getElementById('cancel-unlock-btn');
                 const statusDiv = document.getElementById('face-unlock-status');
                 
-                // Start camera
-                navigator.mediaDevices.getUserMedia({ video: true })
+                // Start camera with high quality settings
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 640 },    // Use smaller resolution for better performance
+                        height: { ideal: 480 },
+                        facingMode: "user"       // Use front camera
+                    } 
+                })
                     .then((stream) => {
                         video.srcObject = stream;
                         
+                        // Wait for video to be initialized
+                        video.onloadedmetadata = () => {
+                            video.play();
+
+                            // Add a delay to ensure camera is fully initialized
+                            setTimeout(async () => {
+                                statusDiv.textContent = 'Camera ready. Center your face and click "Verify Face"';
+                                statusDiv.className = 'message success';
+
+                                // Load face-api.js models if not already loaded
+                                if (!faceapi.nets.tinyFaceDetector.params) {
+                                    await faceapi.nets.tinyFaceDetector.loadFromUri('/static/face-api-models');
+                                    await faceapi.nets.faceLandmark68Net.loadFromUri('/static/face-api-models');
+                                    console.log("Face-api models loaded for modal.");
+                                }
+
+                                // --- Moved Face detection and landmark drawing here ---
+                                const detectFaceFeatures = async () => {
+                                    if (!video || video.paused || video.ended) return; // Ensure video is active
+                                    const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
+                                    let overlayCanvas = video.parentElement.querySelector('.face-overlay-canvas');
+                                    if (!overlayCanvas) {
+                                        overlayCanvas = document.createElement('canvas');
+                                        overlayCanvas.className = 'face-overlay-canvas'; // Add a class for potential styling/selection
+                                        overlayCanvas.style.position = 'absolute';
+                                        overlayCanvas.style.top = video.offsetTop + 'px';
+                                        overlayCanvas.style.left = video.offsetLeft + 'px';
+                                        overlayCanvas.width = video.clientWidth;
+                                        overlayCanvas.height = video.clientHeight;
+                                        video.parentElement.appendChild(overlayCanvas);
+                                    }
+                                    const ctx = overlayCanvas.getContext('2d');
+                                    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height); // Clear previous drawings
+
+                                    if (detections) {
+                                        faceapi.draw.drawFaceLandmarks(ctx, detections.landmarks);
+                                        if (statusDiv.textContent.startsWith('No face detected') || statusDiv.textContent.startsWith('Camera ready')){
+                                            statusDiv.textContent = 'Face detected! Position your face properly.';
+                                            statusDiv.className = 'message success';
+                                        }
+                                    } else {
+                                        if (!statusDiv.textContent.startsWith('Verifying')){
+                                            statusDiv.textContent = 'No face detected. Please position your face in the camera.';
+                                            statusDiv.className = 'message error';
+                                        }
+                                    }
+                                };
+                                // Continuously detect facial features
+                                const detectionInterval = setInterval(detectFaceFeatures, 500);
+
+                                // Clear interval when modal is closed or verification happens
+                                const originalCancelClick = cancelBtn.onclick;
+                                cancelBtn.onclick = () => {
+                                    clearInterval(detectionInterval);
+                                    if(originalCancelClick) originalCancelClick();
+                                };
+
+                                const originalVerifyClick = verifyBtn.onclick;
+                                verifyBtn.onclick = async (event) => {
+                                    clearInterval(detectionInterval);
+                                    if(originalVerifyClick) await originalVerifyClick(event);
+                                };
+
+                            }, 1000);
+                        };
+                        
                         // Handle verify button click
-                        verifyBtn.addEventListener('click', async () => {
-                            try {
-                                statusDiv.textContent = 'Verifying...';
-                                statusDiv.className = 'message info';
-                                
-                                // Capture frame
+                        verifyBtn.addEventListener('click', async () => {                                try {
+                                    statusDiv.textContent = 'Verifying...';
+                                    statusDiv.className = 'message info';
+                                    
+                                    // Wait for video to be ready
+                                    if (!video.videoWidth) {
+                                        statusDiv.textContent = 'Please wait for camera to initialize...';
+                                        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+                                        if (!video.videoWidth) {
+                                            statusDiv.textContent = 'Camera not initialized. Please try again.';
+                                            statusDiv.className = 'message error';
+                                            return;
+                                        }
+                                    }
+                                         // Capture frame
                                 const canvas = document.createElement('canvas');
                                 canvas.width = video.videoWidth;
                                 canvas.height = video.videoHeight;
                                 canvas.getContext('2d').drawImage(video, 0, 0);
-                                const faceImage = canvas.toDataURL('image/jpeg');
                                 
+                                // Use higher quality image format (quality 0.95)
+                                const faceImage = canvas.toDataURL('image/jpeg', 0.95);
+                                
+                                // Add loading spinner
+                                const spinner = document.createElement('div');
+                                spinner.className = 'spinner';
+                                statusDiv.appendChild(spinner);
+
                                 // Send to server
+                                console.log(`[DEBUG] Sending face verification request to unlock ${itemType} with ID ${itemId}`);
+                                statusDiv.textContent = 'Sending face data to server...';
+
+                                const csrfToken = getCSRFToken();
+                                console.log('[DEBUG] CSRF Token available:', !!csrfToken);
+                                console.log(`[DEBUG] Image data size: ${Math.round(faceImage.length / 1024)}KB`);
+
                                 const response = await fetch('/unlock_item', {
                                     method: 'POST',
                                     headers: {
-                                        'Content-Type': 'application/json'
+                                        'Content-Type': 'application/json',
+                                        'X-CSRFToken': csrfToken
                                     },
                                     body: JSON.stringify({
                                         itemType: itemType,
@@ -355,27 +452,48 @@ document.addEventListener('DOMContentLoaded', function () {
                                         faceImage: faceImage
                                     })
                                 });
-                                
+
                                 const data = await response.json();
-                                
+                                console.log(`[DEBUG] Face verification response:`, data);
+
+                                // Remove spinner
+                                spinner.remove();
+
                                 if (data.success) {
-                                    // Stop video
-                                    stream.getTracks().forEach(track => track.stop());
-                                    
-                                    // Remove modal
-                                    document.body.removeChild(modal);
-                                    
-                                    // Replace locked content with unlocked content
-                                    if (itemType === 'message') {
-                                        messageDiv.innerHTML = '';
-                                        addMessageToUI(data.content, senderUsername, false, false);
-                                    } else if (itemType === 'file') {
-                                        messageDiv.innerHTML = '';
-                                        addFileToUI(data.fileUrl, data.fileName, senderUsername, false, false);
-                                    }
+                                    console.log(`[DEBUG] Successfully unlocked ${itemType}:`, data);
+                                    statusDiv.textContent = 'Face verification successful!';
+                                    statusDiv.className = 'message success';
+
+                                    // Add short delay before stopping video and removing modal
+                                    setTimeout(() => {
+                                        // Stop video
+                                        stream.getTracks().forEach(track => track.stop());
+
+                                        // Remove modal
+                                        document.body.removeChild(modal);
+
+                                        // Replace locked content with unlocked content
+                                        if (itemType === 'message') {
+                                            messageDiv.innerHTML = '';
+                                            addMessageToUI(data.content, senderUsername, false, false);
+                                        } else if (itemType === 'file') {
+                                            messageDiv.innerHTML = '';
+                                            addFileToUI(data.fileUrl, data.fileName, senderUsername, false, false);
+                                        }
+
+                                        // Show notification
+                                        showCustomAlert(`Face verification successful! ${itemType} unlocked.`);
+                                    }, 1000);
                                 } else {
-                                    statusDiv.textContent = data.message || 'Face verification failed';
+                                    console.error(`[DEBUG] Failed to unlock ${itemType}:`, data.message);
+                                    statusDiv.textContent = data.message || 'Face verification failed. Please try again.';
                                     statusDiv.className = 'message error';
+                                    
+                                    // Enable retry after a short delay
+                                    setTimeout(() => {
+                                        verifyBtn.disabled = false;
+                                        statusDiv.textContent += ' (You may try again)';
+                                    }, 2000);
                                 }
                             } catch (error) {
                                 console.error('Error verifying face:', error);
@@ -424,12 +542,44 @@ document.addEventListener('DOMContentLoaded', function () {
             messageContainer.scrollTop = messageContainer.scrollHeight;
         }
 
+        // Helper to get CSRF token from meta tag
+        function getCSRFToken() {
+            // Try getting the token from meta tag
+            const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+            if (csrfTokenMeta) {
+                return csrfTokenMeta.getAttribute('content');
+            }
+            
+            // Try getting from cookie as fallback
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith('csrf_token=')) {
+                    return cookie.substring('csrf_token='.length);
+                }
+            }
+            
+            console.warn("CSRF token not found in meta tags or cookies");
+            return '';
+        }
+
         // Simple custom alert (replace with a proper modal in a real app)
         function showCustomAlert(message) {
             console.warn("ALERT (replace with modal):", message);
             // For now, using browser alert. In a real app, use a styled modal.
             alert(message);
         }
+
+        // Load face-api.js models
+        (async () => {
+            try {
+                await faceapi.nets.tinyFaceDetector.loadFromUri('/static/face-api-models');
+                await faceapi.nets.faceLandmark68Net.loadFromUri('/static/face-api-models');
+                console.log("Face-api models loaded.");
+            } catch (error) {
+                console.error("Error loading face-api models:", error);
+            }
+        })();
 
     } catch (e) {
         console.error('Socket.IO initialization or connection failed:', e);
