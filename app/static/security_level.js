@@ -4,6 +4,27 @@
  * Handles the risk level selection UI and logging
  */
 
+// Helper function to decode HTML entities in JSON strings and handle quotes properly
+function decodeHTMLEntities(text) {
+    if (!text) return '';
+    
+    // First use the browser's built-in decoder
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = text;
+    let decoded = textArea.value;
+    
+    // Handle &quot; entities explicitly (sometimes not handled correctly)
+    decoded = decoded.replace(/&quot;/g, '"');
+    
+    // Handle other common entities
+    decoded = decoded.replace(/&apos;/g, "'");
+    decoded = decoded.replace(/&amp;/g, "&");
+    decoded = decoded.replace(/&lt;/g, "<");
+    decoded = decoded.replace(/&gt;/g, ">");
+    
+    return decoded;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Configuration for security levels
     const securityLevels = {
@@ -143,19 +164,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             })
             .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log(`[SECURITY] Security level set to ${data.levelName} successfully`);
-                    console.log(`[SECURITY] Response data:`, data);
-                    
-                    // Update the security info panel
-                    if (securityInfo) {
-                        // Create HTML for the security info
-                        let infoHTML = `
-                            <div style="display: flex; align-items: center; margin-bottom: 5px;">
-                                <span style="font-weight: bold; margin-right: 8px;">Current Mode:</span>
-                                <strong>${data.levelName}</strong>
-                        `;
+            .then(data => {                    if (data.success) {
+                        console.log(`[SECURITY] Security level set to ${data.levelName} successfully`);
+                        console.log(`[SECURITY] Response data:`, data);
+                        
+                        // Show an alert to the user
+                        alert(`Security level set to ${data.levelName}.\nRequired factors: ${data.requiredFactors}`);
+                        
+                        // Update the security info panel
+                        if (securityInfo) {
+                            // Create HTML for the security info
+                            let infoHTML = `
+                                <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                    <span style="font-weight: bold; margin-right: 8px;">Current Mode:</span>
+                                    <strong>${data.levelName}</strong>
+                            `;
                         
                         // Add AI indicator if in AI mode
                         if (selectedLevel === 'ai') {
@@ -169,7 +192,24 @@ document.addEventListener('DOMContentLoaded', function() {
                             <p style="margin: 5px 0 0 0;">Required factors: <strong>${data.requiredFactors}</strong></p>
                         `;
                         
+                        // Add extra information about the security level change
+                        infoHTML += `
+                            <p style="margin: 10px 0; padding: 5px; background-color: #d4edda; color: #155724; border-radius: 4px;">
+                                <strong>✓ Security level updated!</strong> Log in using "testuser2" and "password123" to test this level.
+                            </p>
+                        `;
+                        
                         securityInfo.innerHTML = infoHTML;
+                        
+                        // Add visual feedback
+                        securityInfo.style.transition = 'all 0.3s ease';
+                        securityInfo.style.boxShadow = '0 0 10px rgba(0,128,0,0.5)';
+                        setTimeout(() => {
+                            securityInfo.style.boxShadow = 'none';
+                        }, 1500);
+                        
+                        // Also show an alert for better visibility
+                        alert(`Security level set to ${data.levelName}.\nRequired factors: ${data.requiredFactors}\n\nTo test this level, use:\nUsername: testuser2\nPassword: password123`);
                     }
                     
                     // If there are risk details in the response, display them
@@ -210,11 +250,28 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (riskDetailsJson) {
                 try {
-                    const riskDetails = JSON.parse(riskDetailsJson);
+                    // First decode any HTML entities in the JSON string
+                    const decodedJson = decodeHTMLEntities(riskDetailsJson);
+                    console.log('[SECURITY] Decoded JSON (first 100 chars):', decodedJson.substring(0, 100));
+                    console.log('[SECURITY] Character codes of first 10 chars:', 
+                        Array.from(decodedJson.substring(0, 10)).map(c => c.charCodeAt(0)));
+                    
+                    // Try parsing with a more robust method
+                    let riskDetails;
+                    try {
+                        // Remove any BOM or unexpected characters at the beginning
+                        const cleanJson = decodedJson.replace(/^\s*[^\[{]/, '');
+                        riskDetails = JSON.parse(cleanJson);
+                    } catch (e) {
+                        // If that fails, try again with the original string
+                        riskDetails = JSON.parse(decodedJson);
+                    }
+                    
                     console.log('[SECURITY] Parsed risk details:', riskDetails);
                     displaySecurityAssessment(riskDetails);
                 } catch (error) {
                     console.error('[SECURITY] Error parsing risk details JSON:', error);
+                    console.error('[SECURITY] JSON string causing error:', riskDetailsJson);
                 }
             }
         } else {

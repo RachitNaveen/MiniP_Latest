@@ -18,11 +18,13 @@ A secure real-time chat application featuring an advanced AI-based Multi-Factor 
   - Dynamic security levels based on risk assessment
   - Real-time risk factor evaluation
   - Transparent security decisions with risk visualization
+  - Face registration during signup
   
 - **Multiple Authentication Factors**
   - Password authentication
   - CAPTCHA verification
-  - Facial recognition
+  - Face verification with face-api.js and face_recognition
+  - Face-locked messages and files
   
 - **Advanced Security Features**
   - Password hashing using PBKDF2-SHA256
@@ -237,6 +239,28 @@ For detailed testing instructions, refer to the `TESTING_MFA.md` file.
 ### High Risk Login
 - Multiple failed login attempts
 - Login from an unusual location
+- Login at unusual hours (late night/early morning)
+- Long period of account inactivity (30+ days)
+
+## 👤 Face Verification Features
+
+SecureChat includes comprehensive face verification features:
+
+- **Face Registration During Signup**
+  - Users can register their face during account creation
+  - Face data is securely stored using face_recognition library
+
+- **Face-Based Authentication**
+  - Face verification required for high-security sessions
+  - Seamless verification process with real-time feedback
+  - Protection against unauthorized access
+
+- **Face-Locked Messages**
+  - Users can send face-locked messages for sensitive information
+  - Recipients must verify their face to view face-locked content
+  - Visual indicators for face-locked messages
+
+For more details on the face verification system, see [FACE_VERIFICATION_GUIDE.md](FACE_VERIFICATION_GUIDE.md) and [FACE_VERIFICATION_IMPLEMENTATION.md](FACE_VERIFICATION_IMPLEMENTATION.md).
 - Login at unusual hours (late night/early morning)
 - Long period of account inactivity (30+ days)
 - Login from an uncommon browser or device

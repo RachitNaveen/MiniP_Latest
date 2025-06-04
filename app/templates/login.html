@@ -198,6 +198,14 @@
             <p style="margin: 0;">Current Mode: <strong>AI-Based</strong></p>
             <p style="margin: 5px 0 0 0;">Required factors based on AI risk assessment</p>
         </div>
+        
+        <!-- Face Verification Info -->
+        <div style="margin-top: 15px; padding: 10px; background-color: #e8f4fd; border-left: 4px solid #3498db; border-radius: 4px;">
+            <h4 style="margin-top: 0;">Face Verification</h4>
+            <p>For high-security sessions, face verification provides additional protection.</p>
+            <p>You can set up face verification during <a href="{{ url_for('auth.register') }}">registration</a> to enable face-locked messages and enhanced security.</p>
+            <p>Test users with face verification: <strong>testface</strong> (password: Face123!)</p>
+        </div>
     </div>
     
     <!-- Risk Assessment Panel -->
@@ -208,13 +216,21 @@
         <div id="required-factors" style="margin-top: 15px;"></div>
     </div>
 
-    <!-- Pass risk details from server to client-side as a data attribute -->
+    <!-- Pass risk details from server to client-side using a script variable instead of data attribute -->
     <div id="risk-data" 
          data-has-risk-details="{% if session.get('risk_details') %}true{% else %}false{% endif %}"
-         {% if session.get('risk_details') %}
-         data-risk-details="{{ session.get('risk_details')|tojson|safe }}"
-         {% endif %}
          style="display: none;">
     </div>
+    
+    {% if session.get('risk_details') %}
+    <script>
+        // Store risk details directly in a JavaScript variable to avoid HTML attribute parsing issues
+        window.RISK_DETAILS = {{ session.get('risk_details')|tojson|safe }};
+    </script>
+    {% else %}
+    <script>
+        window.RISK_DETAILS = null;
+    </script>
+    {% endif %}
 </body>
 </html>

@@ -4,7 +4,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from app import db, socketio
 from app.models import User, Message, MessageForm
-from app.forms import LoginForm
+from app.forms import LoginForm, RegistrationForm
 
 import os
 import base64
@@ -23,6 +23,30 @@ def index():
     if 'user_id' in session:
         return redirect(url_for('main.chat'))
     return redirect(url_for('main.login'))
+
+# Profile route
+@bp.route('/profile')
+@login_required
+def profile():
+    # Get security level
+    from app.security_ai import SECURITY_LEVEL_LOW, SECURITY_LEVEL_MEDIUM, SECURITY_LEVEL_HIGH
+    from sqlalchemy import desc
+    
+    security_level = session.get('security_level', SECURITY_LEVEL_LOW)
+    security_level_name = "Low"
+    
+    if security_level == SECURITY_LEVEL_MEDIUM:
+        security_level_name = "Medium"
+    elif security_level == SECURITY_LEVEL_HIGH:
+        security_level_name = "High"
+    
+    # Get face verification logs
+    face_logs = current_user.face_logs.order_by(desc("timestamp")).limit(5).all()
+    
+    return render_template('profile.html', 
+                          current_user=current_user,
+                          security_level=security_level_name,
+                          face_logs=face_logs)
 
 # Login route
 @bp.route('/login', methods=['GET', 'POST'])
@@ -73,26 +97,28 @@ def login():
 # Register route
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        face_data = request.form.get('faceData')
+    form = RegistrationForm()
+
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        confirm_password = form.confirm_password.data
+        face_data = form.face_data.data
         
         # Validate input
         if not username or not password:
             flash('Username and password are required')
-            return render_template('register.html')
+            return render_template('register.html', form=form)
             
         if password != confirm_password:
             flash('Passwords do not match')
-            return render_template('register.html')
+            return render_template('register.html', form=form)
             
         # Check if username exists
         existing_user = User.query.filter_by(username=username).first()
         if existing_user:
             flash('Username already exists')
-            return render_template('register.html')
+            return render_template('register.html', form=form)
         
         # Create new user
         hashed_password = generate_password_hash(password)
@@ -115,7 +141,7 @@ def register():
                 face_locations = face_recognition.face_locations(img_rgb)
                 if not face_locations:
                     flash('No face detected in the image. Please try again with a clear face image.')
-                    return render_template('register.html')
+                    return render_template('register.html', form=form)
                     
                 # Get the face encoding
                 face_encoding = face_recognition.face_encodings(img_rgb, face_locations)[0]
@@ -128,7 +154,7 @@ def register():
                 
             except Exception as e:
                 flash(f'Error processing face image: {str(e)}')
-                return render_template('register.html')
+                return render_template('register.html', form=form)
         
         db.session.add(new_user)
         db.session.commit()
@@ -136,7 +162,7 @@ def register():
         flash('Registration successful! Please login.')
         return redirect(url_for('main.login'))
         
-    return render_template('register.html')
+    return render_template('register.html', form=form)
 
 # Face verification route
 @bp.route('/face_verification', methods=['GET', 'POST'])

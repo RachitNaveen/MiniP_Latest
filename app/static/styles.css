@@ -540,6 +540,51 @@ button:disabled {
     }
 }
 
+/* Face unlock modal */
+.face-unlock-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.face-unlock-modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 100%;
+}
+
+.face-unlock-modal h3 {
+    margin-top: 0;
+}
+
+.face-unlock-modal button {
+    margin-top: 10px;
+    margin-right: 10px;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.face-unlock-modal #verify-unlock-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.face-unlock-modal #cancel-unlock-btn {
+    background-color: #f44336;
+    color: white;
+}
+
 /* Animation for face detection - Original */
 @keyframes pulse {
     0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); } /* Using theme blue */

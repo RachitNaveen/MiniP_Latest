@@ -6,9 +6,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - SecureChatApp</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script defer src="{{ url_for('static', filename='face-api.js') }}"></script>
     <style>
-        /* [Same styles as before] */
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .error {
+            color: #dc3545;
+        }
+        
+        /* Face registration styles */
+        #face-registration-container {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+        #video-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        #face-video {
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #face-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #capture-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .face-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        .face-buttons button {
+            flex: 1;
+            margin: 0 5px;
+        }
     </style>
 </head>
 <body>
@@ -43,6 +136,14 @@
                     <div class="error">{{ form.password.errors[0] }}</div>
                 {% endif %}
             </div>
+            
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password</label>
+                {{ form.confirm_password(class="form-control", id="confirm_password") }}
+                {% if form.confirm_password.errors %}
+                    <div class="error">{{ form.confirm_password.errors[0] }}</div>
+                {% endif %}
+            </div>
 
             <!-- Add reCAPTCHA -->
             <div class="form-group">
@@ -52,25 +153,181 @@
                     <div class="error">{{ form.recaptcha.errors[0] }}</div>
                 {% endif %}
             </div>
+            
+            <!-- Hidden input for face data -->
+            {{ form.face_data(id="face-data-input") }}
+            
+            <!-- Face Registration Section -->
+            <div id="face-registration-container">
+                <h3>Face Registration</h3>
+                <p>Please register your face for enhanced security and to access face-locked messages.</p>
+                
+                <div id="video-container">
+                    <video id="face-video" autoplay muted></video>
+                    <canvas id="face-canvas"></canvas>
+                </div>
+                
+                <div id="capture-status"></div>
+                
+                <div class="face-buttons">
+                    <button type="button" id="start-camera-btn" class="btn">Start Camera</button>
+                    <button type="button" id="capture-face-btn" class="btn" disabled>Capture Face</button>
+                </div>
+                
+                <div class="face-benefits" style="margin-top: 15px; padding: 10px; background-color: #e9f7ef; border-left: 4px solid #2ecc71; border-radius: 4px;">
+                    <h4 style="margin-top: 0;">Benefits of Face Registration:</h4>
+                    <ul>
+                        <li>Securely log in with facial recognition</li>
+                        <li>Send and receive face-locked messages</li>
+                        <li>Enhanced security during high-risk sessions</li>
+                        <li>Protect sensitive files with face verification</li>
+                    </ul>
+                </div>
+            </div>
 
-            <button type="submit" class="btn btn-primary">Register</button>
+            <button type="submit" id="register-btn" class="btn btn-primary">Register</button>
+            <p class="face-requirement" style="color: #856404; margin-top: 5px;">Note: Face registration is recommended but optional</p>
         </form>
 
-        <!-- Face registration section -->
-        <div id="faceRegistration" class="hidden">
-            <h2>Face Registration</h2>
-            <div class="video-container">
-                <video id="faceVideo" width="640" height="480" autoplay muted></video>
-                <canvas id="faceCanvas" width="640" height="480"></canvas>
-            </div>
-            <div class="face-controls">
-                <p id="faceStatus" class="warning">Position your face in the frame...</p>
-                <button id="saveFaceBtn">Capture Face</button>
-                <button type="button" onclick="document.getElementById('faceRegistration').style.display='none'">Cancel</button>
-            </div>
-        </div>
+        <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
     </div>
-
-    <script src="{{ url_for('static', filename='face_auth.js') }}"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const startCameraBtn = document.getElementById('start-camera-btn');
+            const captureFaceBtn = document.getElementById('capture-face-btn');
+            const registerBtn = document.getElementById('register-btn');
+            const faceDataInput = document.getElementById('face-data-input');
+            const captureStatus = document.getElementById('capture-status');
+            const faceVideo = document.getElementById('face-video');
+            const faceCanvas = document.getElementById('face-canvas');
+            const videoContainer = document.getElementById('video-container');
+            
+            let faceDetected = false;
+            let stream = null;
+            
+            // Load face detection models
+            async function loadFaceDetectionModels() {
+                showStatus('Loading face detection models...', 'warning');
+                try {
+                    await faceapi.nets.tinyFaceDetector.loadFromUri('/static/face-api-models');
+                    await faceapi.nets.faceLandmark68Net.loadFromUri('/static/face-api-models');
+                    await faceapi.nets.faceRecognitionNet.loadFromUri('/static/face-api-models');
+                    showStatus('Face detection models loaded!', 'success');
+                    return true;
+                } catch (error) {
+                    console.error('Error loading face detection models:', error);
+                    showStatus('Failed to load face models. Please try again.', 'error');
+                    return false;
+                }
+            }
+            
+            // Start camera when the button is clicked
+            startCameraBtn.addEventListener('click', async () => {
+                try {
+                    await loadFaceDetectionModels();
+                    stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: 'user' } 
+                    });
+                    faceVideo.srcObject = stream;
+                    startCameraBtn.disabled = true;
+                    captureFaceBtn.disabled = false;
+                    
+                    // Start face detection
+                    startFaceDetection();
+                } catch (error) {
+                    console.error('Error starting camera:', error);
+                    showStatus('Could not access camera. Please ensure camera access is allowed.', 'error');
+                }
+            });
+            
+            // Start face detection on video
+            function startFaceDetection() {
+                const displaySize = { width: faceVideo.width, height: faceVideo.height };
+                faceapi.matchDimensions(faceCanvas, displaySize);
+                
+                // Check for faces every 100ms
+                const interval = setInterval(async () => {
+                    if (!faceVideo.paused && !faceVideo.ended) {
+                        const detections = await faceapi.detectAllFaces(
+                            faceVideo, 
+                            new faceapi.TinyFaceDetectorOptions()
+                        ).withFaceLandmarks().withFaceDescriptors();
+                        
+                        // Clear previous drawings
+                        const ctx = faceCanvas.getContext('2d');
+                        ctx.clearRect(0, 0, faceCanvas.width, faceCanvas.height);
+                        
+                        // Draw detections
+                        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                        faceapi.draw.drawDetections(faceCanvas, resizedDetections);
+                        faceapi.draw.drawFaceLandmarks(faceCanvas, resizedDetections);
+                        
+                        // Update face detected status
+                        if (detections.length > 0) {
+                            faceDetected = true;
+                            showStatus('Face detected! You can now capture your face.', 'success');
+                        } else {
+                            faceDetected = false;
+                            showStatus('No face detected. Please position your face in the camera.', 'warning');
+                        }
+                    }
+                }, 100);
+            }
+            
+            // Capture face
+            captureFaceBtn.addEventListener('click', async () => {
+                if (!faceDetected) {
+                    showStatus('No face detected. Please position your face in the camera.', 'warning');
+                    return;
+                }
+                
+                try {
+                    // Capture the current video frame
+                    const canvas = document.createElement('canvas');
+                    canvas.width = faceVideo.videoWidth;
+                    canvas.height = faceVideo.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(faceVideo, 0, 0, canvas.width, canvas.height);
+                    
+                    // Convert to data URL
+                    const dataURL = canvas.toDataURL('image/jpeg');
+                    
+                    // Store the image data in the hidden input
+                    faceDataInput.value = dataURL;
+                    
+                    // Stop the camera
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+                    
+                    // Show success message
+                    showStatus('Face captured successfully! You can now complete registration.', 'success');
+                    
+                    // Display the captured image
+                    faceVideo.style.display = 'none';
+                    const img = document.createElement('img');
+                    img.src = dataURL;
+                    img.style.width = '100%';
+                    img.style.borderRadius = '5px';
+                    videoContainer.appendChild(img);
+                    
+                    // Clear canvas drawings
+                    const canvasCtx = faceCanvas.getContext('2d');
+                    canvasCtx.clearRect(0, 0, faceCanvas.width, faceCanvas.height);
+                } catch (error) {
+                    console.error('Error capturing face:', error);
+                    showStatus('Error capturing face. Please try again.', 'error');
+                }
+            });
+            
+            // Helper function to show status messages
+            function showStatus(message, type) {
+                captureStatus.textContent = message;
+                captureStatus.className = type;
+                captureStatus.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>

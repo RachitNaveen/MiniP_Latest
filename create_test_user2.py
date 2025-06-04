@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Create a test user for the SecureChat application
+Create a test user for the SecureChat application with SHA256 hash
 """
 import os
 import sys
@@ -12,7 +12,7 @@ from app import create_app, db
 from app.models import User
 from werkzeug.security import generate_password_hash
 
-def create_test_user(username='testuser', password='Password123!'):
+def create_test_user(username='testuser2', password='password123'):
     """Create a test user if it doesn't exist"""
     app = create_app()
     
@@ -30,6 +30,10 @@ def create_test_user(username='testuser', password='Password123!'):
             print(f"Test user created: {username}")
         else:
             print(f"Test user already exists: {username}")
+            # Update the password hash to use sha256
+            user.password_hash = generate_password_hash(password, method='sha256')
+            db.session.commit()
+            print(f"Updated password hash for {username} to use sha256")
 
 if __name__ == '__main__':
     create_test_user()

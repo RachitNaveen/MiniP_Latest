@@ -41,9 +41,17 @@ def set_security_level_login():
         # Store the manual override in the session
         if level != 'ai':
             session['manual_security_level'] = level_num
+            print(f"[SECURITY] Set manual security level to {level_name} ({level_num})")
         else:
             # Remove manual override
-            session.pop('manual_security_level', None)
+            if 'manual_security_level' in session:
+                session.pop('manual_security_level', None)
+                print("[SECURITY] Removed manual security level, using AI-based assessment")
+            else:
+                print("[SECURITY] Using AI-based security assessment")
+                
+        # Force the session to update
+        session.modified = True
         
         return jsonify({
             'success': True,
