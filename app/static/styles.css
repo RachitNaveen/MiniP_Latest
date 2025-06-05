@@ -1,76 +1,106 @@
-/* Base styles */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f0f2f5;
-    color: #333;
-    line-height: 1.6;
+html {
+    color-scheme: light; /* Explicitly declare light theme preference */
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
+/* Base styles - Updated */
+body {
+    font-family: 'Roboto', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f3f4f6; /* Light grey background */
+    color: #343a40; /* Darker text for better contrast */
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Visually hidden class for accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+.container { /* Original */
+    max-width: 400px;
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
 }
 
-h1, h2, h3 {
+h1, h2, h3 { /* Original, with potential color adjustments for context */
     color: #2c3e50;
 }
 
-a {
+a { /* Original */
     color: #3498db;
     text-decoration: none;
 }
 
-a:hover {
+a:hover { /* Original */
     text-decoration: underline;
 }
 
-/* Form styles */
+/* General Form styles - Original (will be overridden by more specific styles) */
 form {
-    background-color: #fff;
+    background-color: #fff; /* This is a general default */
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
 }
 
-.form-group {
+.form-group { /* Original */
     margin-bottom: 15px;
 }
 
-label {
+.form-group label {
     display: block;
+    font-weight: bold;
     margin-bottom: 5px;
-    font-weight: 600;
-    color: #2c3e50;
+    color: #555555;
 }
 
 input[type="text"],
 input[type="password"],
 input[type="email"],
-textarea {
+textarea,
+select { /* Added select to general styling */
     width: 100%;
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid #dddddd;
     border-radius: 4px;
-    font-size: 16px;
+    font-size: 14px;
+    box-sizing: border-box; /* Added for consistent sizing */
     transition: border-color 0.3s ease;
+    background-color: #fff; /* Ensure inputs have a light background by default */
+    color: #333; /* Ensure text in inputs is dark by default */
 }
 
 input[type="text"]:focus,
 input[type="password"]:focus,
 input[type="email"]:focus,
-textarea:focus {
-    border-color: #3498db;
+textarea:focus,
+select:focus { /* Added select to general styling */
+    border-color: #0088cc;
     outline: none;
-    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+    box-shadow: 0 0 4px rgba(0, 136, 204, 0.2);
 }
 
+/* General Button styles - Original (will be overridden by more specific styles) */
 button {
     padding: 10px 20px;
-    background-color: #3498db;
+    background-color: #0088cc;
     color: white;
     border: none;
     border-radius: 4px;
@@ -80,7 +110,7 @@ button {
 }
 
 button:hover {
-    background-color: #2980b9;
+    background-color: #0077b3;
 }
 
 button:disabled {
@@ -88,158 +118,277 @@ button:disabled {
     cursor: not-allowed;
 }
 
-/* Chat styles */
+/* Chat styles - Heavily Updated */
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 100px);
-    background-color: #fff;
+    height: 100%;
+    background-color: #e5eff5;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
 .chat-header {
-    padding: 15px;
-    background-color: #3498db;
-    color: #fff;
+    background-color: #0088cc;
+    color: white;
+    padding: 10px;
+    text-align: center;
     font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.chat-messages {
+.chat-header h2 {
+    color: #ffffff;
+    margin: 0;
+    font-size: 1.25em;
+}
+
+.chat-header span {
+    font-size: 0.9em;
+}
+
+.chat-messages { /* This area should be transparent to show .chat-container's white background */
     flex: 1;
-    padding: 15px;
+    padding: 10px;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem; /* Space between message bubbles */
 }
 
 .message {
-    margin-bottom: 15px;
-    padding: 10px 15px;
-    border-radius: 18px;
+    padding: 0.75rem 1rem;
     max-width: 70%;
+    line-height: 1.4;
     word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .message.sent {
-    background-color: #3498db;
-    color: white;
-    margin-left: auto;
-    border-bottom-right-radius: 5px;
+    background-color: #d1ecf1; /* Light blue for sent messages */
+    color: #0c5460; /* Darker text for readability on light blue */
+    align-self: flex-end;
+    border-radius: 15px 15px 5px 15px; /* Asymmetrical bubble */
 }
 
 .message.received {
-    background-color: #f1f0f0;
-    color: #333;
-    margin-right: auto;
-    border-bottom-left-radius: 5px;
+    background-color: #f0f2f5; /* Slightly off-white for received messages, distinct from chat-container bg */
+    color: #495057; /* Darker grey text */
+    align-self: flex-start;
+    border-radius: 15px 15px 15px 5px; /* Asymmetrical bubble */
 }
 
 .message-user {
-    font-size: 12px;
-    margin-bottom: 3px;
-    color: #666;
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+    font-size: 0.85em;
+    color: inherit; /* Inherit color from .message.sent or .message.received */
 }
 
-.message-time {
-    font-size: 10px;
-    text-align: right;
-    color: rgba(255, 255, 255, 0.7);
-}
-
+/* The chat form - Heavily Updated */
 .message-form {
     display: flex;
-    padding: 10px;
-    border-top: 1px solid #ddd;
-    background-color: #f9f9f9;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: 1rem;
+    background: #f8f9fa; /* Light grey form background */
+    border-top: 1px solid #dee2e6;
+    gap: 0.75rem;
+    margin-bottom: 0;
+    box-shadow: none;
+    border-radius: 0 0 10px 10px; /* Match chat container bottom radius */
 }
 
+.message-form .form-row {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.message-form .recipient-row {
+    flex-basis: 200px;
+    flex-grow: 0;
+    min-width: 150px;
+}
+
+.message-form .message-input-row {
+    flex-grow: 1;
+}
+
+.message-form .actions-row {
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.message-form .file-actions-row {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #dee2e6;
+    margin-top: 0.5rem;
+}
+
+
+.message-select,
 .message-input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
+    margin-top: 0.25rem;
+    padding: 0.75rem;
     border-radius: 20px;
-    margin-right: 10px;
+    border: 1px solid #ced4da;
+    font-size: 15px;
+    width: 100%;
+    background-color: #fff; /* Ensure light background */
+    color: #212529; /* Ensure dark text */
+}
+.message-input::placeholder { /* Style placeholder text */
+    color: #6c757d;
 }
 
-.send-button {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
+.face-checkbox {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9em;
+    color: #495057; /* Label color, should be visible on light form bg */
+    white-space: nowrap;
+}
+.face-checkbox input[type="checkbox"] {
+    margin-right: 5px;
+    accent-color: #007bff;
+    width: auto;
+    background-color: #fff; /* For some browsers that might color the box */
 }
 
-/* File link styling */
-.message-content a {
-    background-color: #3498db;
+.send-button,
+.send-file-button {
+    padding: 0.65rem 1.25rem;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    background-color: #007bff;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+    width: auto;
+}
+
+.send-button:hover,
+.send-file-button:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+}
+
+/* Styling file input is tricky across browsers. This provides some basic styling.
+   For a fully custom look, more advanced techniques (like overlaying a styled label) are needed. */
+.file-input {
+    padding: 0.5rem; /* May not apply to the button part directly */
+    border-radius: 20px;
+    border: 1px solid #bfc9d4;
+    font-size: 0.9em;
+    width: auto;
+    background-color: #fff; /* Try to set a background */
+    color: #333; /* Text color for "No file chosen" */
+}
+/* Some browsers style the ::file-selector-button pseudo-element */
+.file-input::file-selector-button {
+    padding: 0.5rem 1rem;
+    border-radius: 18px; /* Slightly smaller to fit */
+    border: none;
+    background-color: #6c757d; /* Secondary button color */
     color: white;
-    margin-left: auto;
-    border-bottom-right-radius: 5px;
-    text-decoration: underline;
-    font-weight: bold;
+    font-weight: 500;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background-color 0.2s ease;
+}
+.file-input::file-selector-button:hover {
+    background-color: #5a6268;
+}
+
+
+/* File link styling - Original */
+.message-content a {
+    background-color: #007bff; /* Use primary color for links */
+    color: white;
+    text-decoration: none; /* Remove underline if background is enough */
+    font-weight: 600; /* Make it bold */
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block; /* Allow padding and margins */
 }
 
 .message.received .message-content a {
-    background-color: #f1f0f0;
-    color: #333;
-    margin-right: auto;
-    border-bottom-left-radius: 5px;
+    background-color: #e9ecef; /* Lighter background for received links */
+    color: #007bff; /* Primary color text */
 }
 
 .message-content a:hover {
+    opacity: 0.85;
     text-decoration: none;
-    opacity: 0.8;
 }
 
-/* Authentication-specific styles */
+/* --- 나머지 스타일 (Authentication, Face Verification 등) --- */
+/* These sections are assumed to be mostly as you had them, with minor consistency tweaks */
+
+/* Authentication-specific styles - Original */
 .auth-container {
     max-width: 500px;
     margin: 50px auto;
+    background-color: #fff; /* Explicit background */
+    padding: 30px; /* More padding */
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .auth-toggle {
     text-align: center;
-    margin-top: 15px;
+    margin-top: 20px;
+}
+.auth-toggle a {
+    font-weight: 600;
 }
 
-/* Face verification styles */
+/* Face verification styles - Original (check for consistency) */
 .video-container {
     position: relative;
     width: 100%;
-    max-width: 640px;
-    margin: 20px auto;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin: 15px 0;
+    overflow: hidden; /* Ensure overlay doesn't spill out */
 }
 
-/* Face Verification Modal */
+/* Face Verification Modal - Original */
 .face-verification-modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.65); /* Slightly darker overlay */
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    padding: 15px;
 }
 
 .modal-content {
     background-color: white;
-    padding: 20px;
+    padding: 25px;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     text-align: center;
-    max-width: 600px;
-    width: 90%;
+    max-width: 500px;
+    width: 100%;
+}
+.modal-content h3 { /* Style for modal title */
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
 }
 
 #verification-video {
@@ -247,108 +396,340 @@ button:disabled {
     max-width: 400px;
     border: 2px solid #ddd;
     border-radius: 4px;
-    margin: 20px 0;
+    margin: 15px 0 20px;
+    background-color: #f0f0f0; /* Placeholder bg for video area */
+}
+
+.modal-content .button-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.modal-content button {
+    padding: 10px 25px;
+    border-radius: 20px;
+    font-weight: 600;
+    border:none; /* Ensure no default border */
 }
 
 .verify-btn {
     background-color: #2ecc71;
     color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin: 0 10px;
+}
+.verify-btn:hover {
+    background-color: #25a25a;
 }
 
 .cancel-btn {
     background-color: #e74c3c;
     color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
+}
+.cancel-btn:hover {
+    background-color: #c0392b;
 }
 
-.verify-btn:hover, .cancel-btn:hover {
-    opacity: 0.9;
-}
 
-/* Face Locked Message */
+/* Face Locked Message in chat - Original (verify context) */
 .locked-message {
-    color: #3498db;
+    color: #007bff; /* Use primary theme color */
     cursor: pointer;
+    font-style: italic;
+    font-size: 0.9em;
+    padding: 5px 0; /* Add some padding */
 }
 
-.verify-btn {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-left: 10px;
-}
-
-.verify-btn:hover {
-    opacity: 0.9;
-}
-
-/* Status message styles */
+/* Status message styles - Original */
 .success {
-    color: #2ecc71;
+    color: #28a745;
     font-weight: bold;
 }
-
 .warning {
     color: #f39c12;
     font-weight: bold;
 }
-
 .error {
     color: #e74c3c;
     font-weight: bold;
 }
 
-/* Flash messages */
+/* Flash messages - Original */
 .flash-messages {
     padding: 15px;
-    margin-bottom: 20px;
+    margin: 0 0 20px 0; /* Consistent margin */
     border-radius: 5px;
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    color: #fff; /* Default text color for flash messages */
+    text-align: center;
 }
-
 .flash-success {
-    background-color: #d4edda;
-    color: #155724;
-    border-color: #c3e6cb;
+    background-color: #2ecc71; /* Green */
+    border-color: #25a25a;
 }
-
 .flash-warning {
-    background-color: #fff3cd;
-    color: #856404;
-    border-color: #ffeeba;
+    background-color: #f39c12; /* Orange */
+    border-color: #da860b;
+}
+.flash-error { /* Original was just base, make it specific */
+    background-color: #e74c3c; /* Red */
+    border-color: #c0392b;
 }
 
-/* Responsive adjustments */
+
+/* Responsive adjustments - Updated */
 @media (max-width: 768px) {
-    .container {
-        padding: 10px;
+    .chat-container {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        height: 100vh;
     }
-    
+
+    .chat-header h2 {
+        font-size: 1.1em;
+    }
+    .chat-header span {
+        font-size: 0.8em;
+    }
+
     .message {
         max-width: 85%;
     }
+
+    .message-form {
+        flex-direction: column;
+        padding: 0.75rem;
+    }
+
+    .message-form .form-row,
+    .message-form .recipient-row,
+    .message-form .message-input-row {
+        flex-basis: auto;
+        width: 100%;
+    }
+
+    .message-form .actions-row,
+    .message-form .file-actions-row {
+        flex-direction: column;
+        width: 100%;
+    }
+    .message-form .actions-row button,
+    .message-form .file-actions-row button,
+    .message-form .file-actions-row .file-input { /* Target file input for full width */
+        width: 100%;
+        margin-bottom: 0.5rem; /* Space between stacked items */
+    }
+    .message-form .actions-row .face-checkbox { /* Better stacking for checkbox */
+        width: 100%;
+        justify-content: flex-start; /* Align to left */
+        padding: 0.5rem 0;
+    }
+
+
+    .modal-content {
+        padding: 20px;
+    }
+    .modal-content .button-group {
+        flex-direction: column;
+    }
+    .modal-content .button-group button {
+        width: 100%;
+    }
 }
 
-/* Animation for face detection */
+/* Face unlock modal */
+.face-unlock-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Ensure highest z-index */
+}
+
+.face-unlock-modal-content {
+    background-color: white;
+    padding: 25px;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.face-unlock-modal h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 22px;
+    margin-bottom: 12px;
+}
+
+/* Video container styling */
+.video-container {
+    position: relative;
+    width: 100%;
+    margin: 15px 0;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: #f0f0f0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Face overlay canvas */
+.face-overlay-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* Allow clicks to pass through */
+    z-index: 2;
+}
+
+/* Buttons container */
+.buttons-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    position: relative;
+    z-index: 10;
+}
+
+/* Button styling */
+.face-unlock-modal button {
+    margin: 0 10px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 30px; /* Rounded buttons */
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    position: relative;
+    z-index: 100;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.face-unlock-modal button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.face-unlock-modal button:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.face-unlock-modal button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.face-unlock-modal .verify-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.face-unlock-modal .cancel-btn {
+    background-color: #f44336;
+    color: white;
+}
+
+/* Spinner for loading state */
+.spinner {
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #4CAF50;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Animation for face detection - Original */
 @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+    0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); } /* Using theme blue */
+    70% { box-shadow: 0 0 0 15px rgba(0, 123, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
 }
 
-.face-detection-active .video-container {
-    animation: pulse 2s infinite;
+/* Face overlay canvas - Fix for face verification modal */
+.face-overlay-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* Allow clicks to pass through the canvas to elements below */
+    z-index: 1; /* Ensure it's above the video but below buttons */
+}
+
+/* Video container for face verification */
+.video-container {
+    position: relative;
+    width: 100%;
+    margin: 15px 0;
+    overflow: hidden; /* Ensure overlay doesn't spill out */
+}
+
+/* Make sure the video sits properly in its container */
+#face-unlock-video {
+    width: 100%;
+    display: block; /* Remove any default spacing */
+    border-radius: 8px;
+}
+
+/* Fix for face verification buttons */
+.face-unlock-modal .buttons-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+    z-index: 10; /* Ensure buttons are on top */
+}
+
+/* Specific styles for the unlock button to ensure no clickability issues */
+.unlock-button {
+    position: relative !important;
+    z-index: 1000 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    display: inline-block !important;
+    margin: 10px 0 !important;
+    background-color: #007bff !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 8px 16px !important;
+    font-weight: bold !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+    transition: background-color 0.3s ease !important;
+}
+
+.unlock-button:hover {
+    background-color: #0056b3 !important;
+    transform: translateY(-2px) !important;
+}
+
+.unlock-button:active {
+    background-color: #004494 !important;
+    transform: translateY(1px) !important;
+}
+
+/* Make sure the message content doesn't have any styles interfering with buttons */
+.message-content {
+    pointer-events: auto !important;
+}
+
+.locked-content {
+    position: relative;
+    padding: 10px;
+    background-color: rgba(0,0,0,0.02);
+    border-left: 3px solid #007bff;
 }

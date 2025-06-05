@@ -1,106 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - SecureChatApp</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
-        .container {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .btn {
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .btn:hover {
-            background-color: #45a049;
-        }
-        .error {
-            color: #dc3545;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 4px;
-            background-color: #f8d7da;
-        }
-        .success {
-            color: #155724;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 4px;
-            background-color: #d4edda;
-        }
-        .message {
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 4px;
-        }
-    </style>
-    <script defer src="{{ url_for('static', filename='face-api.js') }}"></script>
-    <script defer src="{{ url_for('static', filename='face_auth.js') }}"></script>
+  <meta charset="UTF-8">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - SecureChatApp</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    .container {
+      max-width: 400px; margin: 50px auto; padding: 20px; background-color: #f9f9f9; 
+      border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+    .form-group input {
+      width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;
+    }
+    #risk-panel {
+      background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; 
+      padding: 15px; margin-top: 20px; margin-bottom: 20px; display: none;
+    }
+    .risk-score { font-size: 18px; margin-bottom: 15px; }
+    .btn {
+      width: 100%; padding: 10px; background-color: #4CAF50; color: white; 
+      border: none; border-radius: 4px; cursor: pointer; font-size: 16px;
+    }
+    .btn:hover { background-color: #45a049; }
+    .security-selection { margin-top: 20px; }
+    .error {
+      color: #dc3545; margin: 10px 0; padding: 10px; border-radius: 4px; background-color: #f8d7da;
+    }
+  </style>
+  <script defer src="{{ url_for('static', filename='face-api.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='face_auth.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='security_level.js') }}"></script>
 </head>
 <body>
-    <div class="container auth-container">
-        <h1>Login to SecureChat</h1>
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+  <div class="container auth-container">
+    <h1>Login to SecureChat</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <form id="loginForm" method="POST" action="{{ url_for('auth.login') }}">
+      {{ form.hidden_tag() }}
+      
+      <div class="form-group">
+        <label for="username">Username</label>
+        {{ form.username(class="form-control", id="username") }}
+        {% if form.username.errors %}
+          <div class="error">{{ form.username.errors[0] }}</div>
+        {% endif %}
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        {{ form.password(class="form-control", id="password") }}
+        {% if form.password.errors %}
+          <div class="error">{{ form.password.errors[0] }}</div>
+        {% endif %}
+      </div>
+      
+      {% if show_captcha %}
+      <div class="form-group">
+        {{ form.recaptcha.label }}
+        {{ form.recaptcha }}
+        {% if form.recaptcha.errors %}
+          <div class="error">{{ form.recaptcha.errors[0] }}</div>
+        {% endif %}
+      </div>
+      {% endif %}
+      
+      <button type="submit" class="btn">Login</button>
+    </form>
+    <p class="auth-toggle">
+      Don't have an account? <a href="{{ url_for('main.register') }}">Register</a>
+    </p>
+  </div>
 
-        <form id="loginForm" method="POST" action="{{ url_for('main.login') }}">
-            {{ form.hidden_tag() }}
-            <input type="hidden" name="face_verified" id="face_verified" value="false">
-
-            <div class="form-group">
-                <label for="username">Username</label>
-                {{ form.username(class="form-control", id="username") }}
-                {% if form.username.errors %}
-                    <div class="error">{{ form.username.errors[0] }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Password</label>
-                {{ form.password(class="form-control", id="password") }}
-                {% if form.password.errors %}
-                    <div class="error">{{ form.password.errors[0] }}</div>
-                {% endif %}
-            </div>
-
-            <button type="submit" class="btn">Login</button>
-        </form>
-
-        <p class="auth-toggle">Don't have an account? <a href="{{ url_for('main.register') }}">Register</a></p>
+  <div class="container security-selection">
+    <h2>Security Level Control</h2>
+    <div class="form-group">
+      <label for="security-level">Select Security Level:</label>
+      <select id="security-level" class="form-control">
+        <option value="ai" selected>AI-Based Risk Assessment</option>
+        <option value="low">Low (Password only)</option>
+        <option value="medium">Medium (Password + CAPTCHA)</option>
+        <option value="high">High (Password + CAPTCHA + Face Verification)</option>
+      </select>
     </div>
+    <button id="set-level-btn" class="btn">Apply Level</button>
+    <div id="security-info" style="margin-top: 15px; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
+      <p style="margin: 0;">Current Mode: <strong>AI-Based</strong></p>
+      <p style="margin: 5px 0 0 0;">Required factors based on AI risk assessment</p>
+    </div>
+    <div style="margin-top: 15px; padding: 10px; background-color: #e8f4fd; border-left: 4px solid #3498db; border-radius: 4px;">
+      <h4 style="margin-top: 0;">Face Verification</h4>
+      <p>For high-security sessions, face verification provides additional protection.</p>
+      <p>Set up face verification during <a href="{{ url_for('auth.register') }}">registration</a> for face-locked messages.</p>
+      <p>Test user: <strong>testface</strong> (password: Face123!)</p>
+    </div>
+  </div>
+
+  <div id="risk-panel" class="container">
+    <h2>Risk Assessment</h2>
+    <div id="risk-score" class="risk-score"></div>
+    <div id="risk-factors"></div>
+    <div id="required-factors" style="margin-top: 15px;"></div>
+  </div>
+
+  <div id="risk-data"
+       data-has-risk-details="{% if session.get('risk_details') %}true{% else %}false{% endif %}"
+       style="display: none;">
+  </div>
+
+  <!-- Safely convert risk_details to a string, then parse into an object -->
+  <script>
+  var riskDetailsStr = "{{ session.get('risk_details')|tojson|safe if session.get('risk_details') else '{}' }}";
+  window.RISK_DETAILS = JSON.parse(riskDetailsStr);
+  console.log('Risk Details received from backend:', window.RISK_DETAILS);
+  </script>
+
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+  var riskPanel = document.getElementById('risk-panel');
+  var riskDetails = window.RISK_DETAILS;
+  
+  if (riskDetails && Object.keys(riskDetails).length > 0) {
+    riskPanel.style.display = 'block';
+    document.getElementById('risk-score').innerText = 'Risk Score: ' + riskDetails.risk_score;
+  }
+
+  var setLevelBtn = document.getElementById('set-level-btn');
+  setLevelBtn.addEventListener('click', function() {
+    var selectedLevel = document.getElementById('security-level').value;
+    fetch('/set_security_level_login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify({ security_level: selectedLevel })
+    })
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(data) {
+      if (data.success) {
+        document.getElementById('security-info').innerHTML =
+          '<p>Current Mode: <strong>' + data.security_level + '</strong></p>';
+      }
+    });
+  });
+});
+</script>
 </body>
 </html>

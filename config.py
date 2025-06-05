@@ -8,7 +8,7 @@ class Config:
     # SQLAlchemy
     # Flask config.py
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f'sqlite:///{os.path.join(BASE_DIR, "instance", "chat.db")}'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f'sqlite:///{os.path.abspath(os.path.join(BASE_DIR, "instance", "db.db"))}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Session
@@ -32,3 +32,7 @@ class Config:
     # SSL/TLS (recommended for production)
     # SSL_CERT = '/path/to/cert.pem'  # Uncomment and set in production
     # SSL_KEY = '/path/to/key.pem'    # Uncomment and set in production
+
+    # reCAPTCHA
+    RECAPTCHA_PUBLIC_KEY = '6Lf7B1QrAAAAAFTql56niE4sxjNxNkOnxG9SSgue'
+    RECAPTCHA_PRIVATE_KEY = '6Lf7B1QrAAAAAFKobCrR5zmgZDlvAd0qlze0fdC0'

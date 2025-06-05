@@ -130,7 +130,16 @@ function startFaceDetection() {
 
     clearInterval(detectionInterval);
 
-    const displaySize = { width: video.width, height: video.height };
+    const displaySize = { width: video.videoWidth, height: video.videoHeight };
+
+    // Check for valid video dimensions
+    if (displaySize.width === 0 || displaySize.height === 0) {
+        console.error('Invalid video dimensions:', displaySize);
+        faceStatus.innerText = 'Error initializing face detection. Please ensure the camera is working.';
+        faceStatus.className = 'error';
+        return;
+    }
+
     faceapi.matchDimensions(canvas, displaySize);
 
     detectionInterval = setInterval(async () => {

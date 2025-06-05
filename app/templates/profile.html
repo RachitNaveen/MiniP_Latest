@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - SecureChatApp</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script defer src="{{ url_for('static', filename='face-api.js') }}"></script>
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-right: 20px;
+        }
+        .profile-info h1 {
+            margin: 0 0 5px 0;
+        }
+        .profile-info p {
+            margin: 0;
+            color: #666;
+        }
+        .profile-section {
+            margin-bottom: 30px;
+        }
+        .profile-section h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .security-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .security-item-info {
+            display: flex;
+            align-items: center;
+        }
+        .security-item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e9f7ef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        .security-item-icon.enabled {
+            background-color: #d5f5e3;
+            color: #27ae60;
+        }
+        .security-item-icon.disabled {
+            background-color: #f8f9fa;
+            color: #adb5bd;
+        }
+        .security-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .status-enabled {
+            background-color: #d5f5e3;
+            color: #27ae60;
+        }
+        .status-disabled {
+            background-color: #f8f9fa;
+            color: #adb5bd;
+        }
+        .btn-manage {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-manage:hover {
+            background-color: #45a049;
+        }
+        .face-verification-section {
+            padding: 20px;
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .video-container {
+            display: none;
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        #face-video {
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #face-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .status-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .success-text {
+            color: #27ae60;
+        }
+        .error-text {
+            color: #e74c3c;
+        }
+        .nav-links {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                {{ current_user.username[0].upper() }}
+            </div>
+            <div class="profile-info">
+                <h1>{{ current_user.username }}</h1>
+                <p>Member since: {{ current_user.last_login.strftime('%B %d, %Y') if current_user.last_login else 'Unknown' }}</p>
+            </div>
+        </div>
+        
+        <div class="profile-section face-verification-section">
+            <h2>Face Verification Status</h2>
+            <div class="security-item">
+                <div class="security-item-info">
+                    <div class="security-item-icon {{ 'enabled' if current_user.face_verification_enabled else 'disabled' }}">
+                        <i class="fa fa-user"></i>👤
+                    </div>
+                    <div>
+                        <h3>Face Authentication</h3>
+                        <p>Use your face to verify your identity for high-security logins and to access face-locked messages.</p>
+                    </div>
+                </div>
+                <div>
+                    <span class="security-status {{ 'status-enabled' if current_user.face_verification_enabled else 'status-disabled' }}">
+                        {{ 'Enabled' if current_user.face_verification_enabled else 'Disabled' }}
+                    </span>
+                </div>
+            </div>
+            
+            <div id="face-verification-controls" style="margin-top: 20px;">
+                {% if current_user.face_verification_enabled %}
+                <p>Face verification is currently enabled for your account. You can use it for:</p>
+                <ul>
+                    <li>High-security logins</li>
+                    <li>Accessing face-locked messages</li>
+                    <li>Sending face-locked messages</li>
+                </ul>
+                <button id="update-face-btn" class="btn-manage">Update Face Data</button>
+                <button id="disable-face-btn" class="btn-manage" style="background-color: #e74c3c;">Disable Face Verification</button>
+                {% else %}
+                <p>Face verification is currently disabled for your account. Enable it to:</p>
+                <ul>
+                    <li>Add an extra layer of security to your account</li>
+                    <li>Send and receive face-locked messages</li>
+                    <li>Protect sensitive information</li>
+                </ul>
+                <button id="enable-face-btn" class="btn-manage">Enable Face Verification</button>
+                {% endif %}
+            </div>
+            
+            <!-- Face registration UI (hidden by default) -->
+            <div id="face-registration-container" style="display: none; margin-top: 20px;">
+                <h3>Face Registration</h3>
+                <p>Please position your face in the camera view and follow the instructions.</p>
+                
+                <div class="video-container" id="video-container">
+                    <video id="face-video" autoplay muted></video>
+                    <canvas id="face-canvas"></canvas>
+                </div>
+                
+                <div id="capture-status" class="status-message" style="display: none;"></div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button id="start-camera-btn" class="btn-manage">Start Camera</button>
+                    <button id="capture-face-btn" class="btn-manage" disabled>Capture Face</button>
+                    <button id="cancel-face-btn" class="btn-manage" style="background-color: #e74c3c;">Cancel</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <h2>Security Settings</h2>
+            <div class="security-item">
+                <div class="security-item-info">
+                    <div class="security-item-icon enabled">
+                        <i class="fa fa-lock"></i>🔒
+                    </div>
+                    <div>
+                        <h3>Password</h3>
+                        <p>Last changed: {{ current_user.last_login.strftime('%B %d, %Y') }}</p>
+                    </div>
+                </div>
+                <button class="btn-manage">Change Password</button>
+            </div>
+            
+            <div class="security-item">
+                <div class="security-item-info">
+                    <div class="security-item-icon enabled">
+                        <i class="fa fa-shield"></i>🛡️
+                    </div>
+                    <div>
+                        <h3>Security Level</h3>
+                        <p>Current security level: {{ security_level }}</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('security.security_dashboard') }}" class="btn-manage">Manage</a>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <h2>Login Activity</h2>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: #f2f2f2;">
+                        <th style="text-align: left; padding: 10px;">Date & Time</th>
+                        <th style="text-align: left; padding: 10px;">Activity</th>
+                        <th style="text-align: left; padding: 10px;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if face_logs %}
+                      {% for log in face_logs %}
+                      <tr style="border-bottom: 1px solid #f2f2f2;">
+                          <td style="padding: 10px;">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                          <td style="padding: 10px;">Face Verification</td>
+                          <td style="padding: 10px;" class="{{ 'success-text' if log.success else 'error-text' }}">
+                              {% if log.success %}Success{% else %}Failed{% endif %}
+                          </td>
+                      </tr>
+                      {% endfor %}
+                    {% else %}
+                      <tr>
+                          <td colspan="3" style="padding: 10px; text-align: center;">No recent login activity.</td>
+                      </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="nav-links">
+            <a href="{{ url_for('main.chat') }}">Back to Chat</a>
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const enableFaceBtn = document.getElementById('enable-face-btn');
+            const updateFaceBtn = document.getElementById('update-face-btn');
+            const disableFaceBtn = document.getElementById('disable-face-btn');
+            const faceRegistrationContainer = document.getElementById('face-registration-container');
+            const startCameraBtn = document.getElementById('start-camera-btn');
+            const captureFaceBtn = document.getElementById('capture-face-btn');
+            const cancelFaceBtn = document.getElementById('cancel-face-btn');
+            const videoContainer = document.getElementById('video-container');
+            const faceVideo = document.getElementById('face-video');
+            const faceCanvas = document.getElementById('face-canvas');
+            const captureStatus = document.getElementById('capture-status');
+            
+            let faceDetected = false;
+            let stream = null;
+            
+            // Enable face verification
+            if (enableFaceBtn) {
+                enableFaceBtn.addEventListener('click', function() {
+                    faceRegistrationContainer.style.display = 'block';
+                });
+            }
+            
+            // Update face data
+            if (updateFaceBtn) {
+                updateFaceBtn.addEventListener('click', function() {
+                    faceRegistrationContainer.style.display = 'block';
+                });
+            }
+            
+            // Disable face verification
+            if (disableFaceBtn) {
+                disableFaceBtn.addEventListener('click', function() {
+                    if (confirm("Are you sure you want to disable face verification for your account?")) {
+                        fetch('/disable_face_verification', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert("Face verification has been disabled.");
+                                location.reload();
+                            } else {
+                                alert("Error: " + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert("An error occurred while disabling face verification.");
+                        });
+                    }
+                });
+            }
+            
+            // Cancel face registration
+            cancelFaceBtn.addEventListener('click', function() {
+                faceRegistrationContainer.style.display = 'none';
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                if (detectionInterval) {
+                    clearInterval(detectionInterval);
+                }
+            });
+            
+            // Load face detection models
+            async function loadFaceDetectionModels() {
+                showStatus('Loading face detection models...', 'warning');
+                try {
+                    await faceapi.nets.tinyFaceDetector.loadFromUri('/static/face-api-models');
+                    await faceapi.nets.faceLandmark68Net.loadFromUri('/static/face-api-models');
+                    await faceapi.nets.faceRecognitionNet.loadFromUri('/static/face-api-models');
+                    showStatus('Face detection models loaded!', 'success');
+                    return true;
+                } catch (error) {
+                    console.error('Error loading face detection models:', error);
+                    showStatus('Failed to load face models. Please try again.', 'error');
+                    return false;
+                }
+            }
+            
+            // Start camera
+            startCameraBtn.addEventListener('click', async function() {
+                try {
+                    await loadFaceDetectionModels();
+                    stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: 'user' } 
+                    });
+                    faceVideo.srcObject = stream;
+                    videoContainer.style.display = 'block';
+                    startCameraBtn.disabled = true;
+                    captureFaceBtn.disabled = false;
+                    
+                    // Start face detection
+                    startFaceDetection();
+                } catch (error) {
+                    console.error('Error starting camera:', error);
+                    showStatus('Could not access camera. Please ensure camera access is allowed.', 'error');
+                }
+            });
+            
+            // Variable to store detection interval
+            let detectionInterval;
+            
+            // Start face detection
+            function startFaceDetection() {
+                const displaySize = { width: faceVideo.videoWidth || 400, height: faceVideo.videoHeight || 300 };
+                faceapi.matchDimensions(faceCanvas, displaySize);
+                
+                // Check for faces every 100ms
+                detectionInterval = setInterval(async () => {
+                    if (!faceVideo.paused && !faceVideo.ended && faceVideo.readyState >= 2) {
+                        const detections = await faceapi.detectAllFaces(
+                            faceVideo, 
+                            new faceapi.TinyFaceDetectorOptions()
+                        ).withFaceLandmarks().withFaceDescriptors();
+                        
+                        // Clear previous drawings
+                        const ctx = faceCanvas.getContext('2d');
+                        ctx.clearRect(0, 0, faceCanvas.width, faceCanvas.height);
+                        
+                        // Draw detections
+                        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                        faceapi.draw.drawDetections(faceCanvas, resizedDetections);
+                        faceapi.draw.drawFaceLandmarks(faceCanvas, resizedDetections);
+                        
+                        // Update face detected status
+                        if (detections.length > 0) {
+                            faceDetected = true;
+                            showStatus('Face detected! You can now capture your face.', 'success');
+                        } else {
+                            faceDetected = false;
+                            showStatus('No face detected. Please position your face in the camera.', 'warning');
+                        }
+                    }
+                }, 100);
+            }
+            
+            // Capture face
+            captureFaceBtn.addEventListener('click', async function() {
+                if (!faceDetected) {
+                    showStatus('No face detected. Please position your face in the camera.', 'warning');
+                    return;
+                }
+                
+                try {
+                    // Capture the current video frame
+                    const canvas = document.createElement('canvas');
+                    const videoWidth = faceVideo.videoWidth || 400;
+                    const videoHeight = faceVideo.videoHeight || 300;
+                    canvas.width = videoWidth;
+                    canvas.height = videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(faceVideo, 0, 0, canvas.width, canvas.height);
+                    
+                    // Convert to data URL
+                    const dataURL = canvas.toDataURL('image/jpeg');
+                    
+                    // Send to server
+                    fetch('/update_face_data', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            faceData: dataURL
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showStatus('Face data updated successfully!', 'success');
+                            
+                            // Stop the camera
+                            if (stream) {
+                                stream.getTracks().forEach(track => track.stop());
+                            }
+                            
+                            // Stop face detection interval
+                            if (detectionInterval) {
+                                clearInterval(detectionInterval);
+                            }
+                            
+                            // Display the captured image
+                            faceVideo.style.display = 'none';
+                            const img = document.createElement('img');
+                            img.src = dataURL;
+                            img.style.width = '100%';
+                            img.style.borderRadius = '5px';
+                            videoContainer.appendChild(img);
+                            
+                            // Clear canvas drawings
+                            const canvasCtx = faceCanvas.getContext('2d');
+                            canvasCtx.clearRect(0, 0, faceCanvas.width, faceCanvas.height);
+                            
+                            // Reload after 2 seconds
+                            setTimeout(() => {
+                                location.reload();
+                            }, 2000);
+                        } else {
+                            showStatus('Error: ' + data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showStatus('An error occurred while updating face data.', 'error');
+                    });
+                } catch (error) {
+                    console.error('Error capturing face:', error);
+                    showStatus('Error capturing face. Please try again.', 'error');
+                }
+            });
+            
+            // Helper function to show status messages
+            function showStatus(message, type) {
+                captureStatus.textContent = message;
+                captureStatus.className = 'status-message ' + type;
+                captureStatus.style.display = 'block';
+                
+                if (type === 'success') {
+                    captureStatus.style.backgroundColor = '#d4edda';
+                    captureStatus.style.color = '#155724';
+                } else if (type === 'warning') {
+                    captureStatus.style.backgroundColor = '#fff3cd';
+                    captureStatus.style.color = '#856404';
+                } else if (type === 'error') {
+                    captureStatus.style.backgroundColor = '#f8d7da';
+                    captureStatus.style.color = '#721c24';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

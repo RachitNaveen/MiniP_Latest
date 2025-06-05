@@ -50,17 +50,119 @@
             background-color: #f2dede;
             color: #a94442;
         }
+        
+        /* Risk Details Panel Styles */
+        .risk-panel {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .risk-score {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .risk-level {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .risk-level.low {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .risk-level.medium {
+            background-color: #fcf8e3;
+            color: #8a6d3b;
+        }
+        .risk-level.high {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .risk-factor {
+            margin-bottom: 10px;
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .risk-factor-name {
+            font-weight: bold;
+        }
+        .risk-factor-value {
+            float: right;
+        }
+        details {
+            margin-top: 10px;
+        }
+        summary {
+            cursor: pointer;
+            color: #337ab7;
+        }
+        .required-factors {
+            margin-top: 15px;
+        }
+        .required-factor {
+            display: inline-block;
+            margin-right: 10px;
+            padding: 5px;
+            background-color: #e9ecef;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
     <div class="verification-container">
         <h2>Face Verification Required</h2>
-        <p>Please verify your face to continue</p>
+        <p>High security level detected - please verify your face to continue</p>
         <div id="message" class="message"></div>
-        <video id="verification-video" autoplay></video>
+        <video id="verification-video" autoplay width="400" height="300"></video>
         <div class="verification-buttons">
             <button id="verify-btn">Verify Face</button>
             <button id="cancel-btn">Cancel</button>
+        </div>
+        
+        <!-- Instructions -->
+        <div style="margin-top: 20px; text-align: left; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+            <h4>Face Verification Instructions:</h4>
+            <ol>
+                <li>Make sure your face is well-lit and visible</li>
+                <li>Center your face in the camera</li>
+                <li>Remove sunglasses or any face coverings</li>
+                <li>Click "Verify Face" when ready</li>
+            </ol>
+            <p><small>If verification fails, you can try again or contact support for assistance.</small></p>
+        </div>
+        
+        <!-- Risk Details Panel -->
+        <div class="risk-panel">
+            <h3>Security Assessment</h3>
+            <div class="risk-score">
+                Risk Score: <strong>{{ "%.2f"|format(risk_details.risk_score|float) }}</strong>
+                <span class="risk-level {{ risk_details.security_level|lower }}">{{ risk_details.security_level }} Security</span>
+            </div>
+            
+            <details open>
+                <summary>Risk Factor Details</summary>
+                <div class="risk-factors">
+                    {% for factor_name, factor_data in risk_details.risk_factors.items() %}
+                    <div class="risk-factor">
+                        <span class="risk-factor-name">{{ factor_name|replace('_', ' ')|title }}:</span> 
+                        <span class="risk-factor-value">{{ "%.2f"|format(factor_data.score|float) }}</span>
+                        <div>{{ factor_data.description }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </details>
+            
+            <div class="required-factors">
+                <strong>Required Authentication Factors:</strong><br>
+                {% for factor in risk_details.required_factors %}
+                <span class="required-factor">{{ factor }}</span>
+                {% endfor %}
+            </div>
         </div>
     </div>
 
@@ -78,8 +180,10 @@
                         showMessage('Verifying face...', 'success');
                         
                         const canvas = document.createElement('canvas');
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
+                        const videoWidth = video.videoWidth || 400;
+                        const videoHeight = video.videoHeight || 300;
+                        canvas.width = videoWidth;
+                        canvas.height = videoHeight;
                         canvas.getContext('2d').drawImage(video, 0, 0);
                         
                         const faceImage = canvas.toDataURL('image/jpeg');
@@ -92,26 +196,26 @@
                                 'X-CSRFToken': '{{ csrf_token() }}'
                             },
                             body: JSON.stringify({
-                                faceImage: faceImage
+                                faceImage: faceImage,
+                                username: '{{ username }}'
                             })
                         });
                         
                         const data = await response.json();
                         
                         if (data.success) {
-                            if (data.verified) {
-                                // Stop video stream
-                                stream.getTracks().forEach(track => track.stop());
-                                
-                                // Redirect to chat
-                                if (data.redirect_url) {
-                                    window.location.href = data.redirect_url;
-                                } else {
-                                    window.location.href = '/chat';
-                                }
-                            } else {
-                                showMessage(`Face verification failed (${data.match_percentage.toFixed(1)}% match, 80% required)`, 'error');
-                            }
+                            // Stop video stream
+                            stream.getTracks().forEach(track => track.stop());
+                            
+                            showMessage('Face verified! Redirecting...', 'success');
+                            
+                            // Redirect to chat
+                            setTimeout(() => {
+                                window.location.href = '/chat';
+                            }, 1500);
+                        } else if (data.match_percentage) {
+                            showMessage(`Face verification failed (${data.match_percentage.toFixed(1)}% match, 80% required)`, 'error');
+                            showRiskDetails(data.risk_details);
                         } else {
                             showMessage(data.message || 'Error during face verification', 'error');
                         }
@@ -136,6 +240,50 @@
             const messageDiv = document.getElementById('message');
             messageDiv.textContent = message;
             messageDiv.className = `message ${type}`;
+        }
+
+        function showRiskDetails(riskDetails) {
+            if (!riskDetails) return;
+            
+            const riskPanel = document.getElementById('risk-panel');
+            const riskScore = document.getElementById('risk-score');
+            const riskFactors = document.getElementById('risk-factors');
+            const requiredFactors = document.getElementById('required-factors');
+
+            // Clear previous risk details
+            if (riskFactors) {
+                riskFactors.innerHTML = '';
+            }
+            
+            if (requiredFactors) {
+                requiredFactors.style.display = 'none';
+            }
+
+            // Set risk score
+            if (riskScore && riskDetails.score !== undefined) {
+                riskScore.textContent = `Risk Score: ${riskDetails.score}`;
+                riskScore.className = `risk-score ${riskDetails.level || 'medium'}`;
+            }
+
+            // Show risk factors
+            if (riskFactors && riskDetails.factors && Array.isArray(riskDetails.factors)) {
+                riskDetails.factors.forEach(factor => {
+                    const factorDiv = document.createElement('div');
+                    factorDiv.className = 'risk-factor';
+                    factorDiv.innerHTML = `<span class="risk-factor-name">${factor.name || 'Unknown'}:</span> <span class="risk-factor-value">${factor.value || '0.00'}</span>`;
+                    riskFactors.appendChild(factorDiv);
+                });
+            }
+
+            // Show required factors if verification failed
+            if (requiredFactors && riskDetails.verified === false) {
+                requiredFactors.style.display = 'block';
+            }
+
+            // Show risk panel
+            if (riskPanel) {
+                riskPanel.style.display = 'block';
+            }
         }
     </script>
 </body>
