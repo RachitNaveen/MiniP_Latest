@@ -243,11 +243,10 @@ def face_verification():
     return render_template('face_verification.html', username=user.username)
 
 # API endpoint for face verification
+from io import BytesIO
+
 @bp.route('/verify_face', methods=['POST'])
 def verify_face():
-    if request.method != 'POST':
-        return jsonify({'success': False, 'message': 'Method not allowed'}), 405
-
     try:
         data = request.get_json()
         if not data:
@@ -266,78 +265,51 @@ def verify_face():
         if not user or not user.face_data:
             return jsonify({'success': False, 'message': 'User not found or no face data registered'}), 404
 
+        # Decode base64 image
         try:
-            # Process the incoming face image
             img_data = base64.b64decode(face_image.split(',')[1])
-            nparr = np.frombuffer(img_data, np.uint8)
-            img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-            
-            # Load stored face data
-            stored_face_data = user.face_data
-            if not stored_face_data:
-                return jsonify({'success': False, 'message': 'No stored face data found'}), 400
-                
-            try:
-                stored_data = json.loads(stored_face_data)
-                if 'encoding' not in stored_data:
-                    return jsonify({'success': False, 'message': 'Invalid stored face data format'}), 400
-                    
-                stored_face_encoding = np.array(stored_data['encoding'])
-            except json.JSONDecodeError:
-                return jsonify({'success': False, 'message': 'Invalid JSON format in stored face data'}), 400
-            except Exception as e:
-                return jsonify({'success': False, 'message': f'Error processing stored face data: {str(e)}'}), 400
-            
-            # Detect faces
-            face_locations = face_recognition.face_locations(img_rgb)
-            if not face_locations:
-                return jsonify({
-                    'success': False,
-                    'message': 'No face detected in the input image'
-                }), 400
-            
-            # Get the first face encoding
-            face_encoding = face_recognition.face_encodings(img_rgb, face_locations)
-            if not face_encoding:
-                return jsonify({
-                    'success': False,
-                    'message': 'Could not encode face from the input image'
-                }), 400
-            
-            # Compare faces
-            results = face_recognition.compare_faces([stored_face_encoding], face_encoding[0], tolerance=0.6)
-            face_distance = face_recognition.face_distance([stored_face_encoding], face_encoding[0])[0]
-            match_percentage = (1 - face_distance) * 100
-            
-            if results[0]:
-                # Complete login process
-                login_user(user)
-                session.pop('temp_user_id', None)
-                next_page = session.pop('next_page', None)
-                
-                # Get the redirect URL from session
-                redirect_url = next_page or url_for('main.chat')
-                
-                return jsonify({
-                    'success': True,
-                    'verified': True,
-                    'redirect_url': redirect_url
-                })
-            else:
-                return jsonify({
-                    'success': True,
-                    'verified': False,
-                    'match_percentage': match_percentage
-                })
+            img_buffer = BytesIO(img_data)
+            img_rgb = face_recognition.load_image_file(img_buffer)
         except Exception as e:
-            print(f"Face verification error: {str(e)}")
-            return jsonify({'success': False, 'message': f'Error processing face: {str(e)}'}), 500
+            return jsonify({'success': False, 'message': f'Invalid image data: {str(e)}'}), 400
+
+        # Load stored face encoding
+        try:
+            stored_data = json.loads(user.face_data)
+            stored_face_encoding = np.array(stored_data['encoding'])
+        except Exception as e:
+            return jsonify({'success': False, 'message': f'Error processing stored face data: {str(e)}'}), 400
+
+        # Get face encoding from uploaded image
+        face_locations = face_recognition.face_locations(img_rgb)
+        if not face_locations:
+            return jsonify({'success': False, 'message': 'No face detected in the image'}), 400
+
+        face_encodings = face_recognition.face_encodings(img_rgb, face_locations)
+        if not face_encodings:
+            return jsonify({'success': False, 'message': 'Unable to encode face from image'}), 400
+
+        # Compare face encodings
+        result = face_recognition.compare_faces([stored_face_encoding], face_encodings[0], tolerance=0.6)[0]
+        distance = face_recognition.face_distance([stored_face_encoding], face_encodings[0])[0]
+        match_percentage = (1 - distance) * 100
+
+        if result:
+            login_user(user)
+            session.pop('temp_user_id', None)
+            next_page = session.pop('next_page', None)
+            return jsonify({'success': True, 'verified': True, 'redirect_url': next_page or url_for('main.chat')})
+        else:
+            return jsonify({
+                'success': True,
+                'verified': False,
+                'match_percentage': match_percentage,
+                'distance': distance
+            })
 
     except Exception as e:
-        print(f"General error: {str(e)}")
         return jsonify({'success': False, 'message': f'Unexpected error: {str(e)}'}), 500
 
-    return jsonify({'success': False, 'message': 'Method not allowed'}), 405
 
 # Chat route (protected)
 @bp.route('/chat', methods=['GET', 'POST'])

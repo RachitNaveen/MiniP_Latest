@@ -28,8 +28,16 @@ import json
 from datetime import datetime
 from app.static.face_api_models import FaceAPI
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
+# Set up logging to a file
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("/Users/tshreek/MiniP_Latest/logs/routes_face.log"),
+        logging.StreamHandler()
+    ]
+)
+
 logger = logging.getLogger(__name__)
 
 # Initialize FaceAPI with model paths
@@ -59,15 +67,15 @@ def face_status():
 def unlock_item():
     """Endpoint to unlock a face-locked message or file"""
     data = request.get_json()
-    
+
     if not data:
         logger.warning("[WARNING] Request data is empty or invalid.")
         return jsonify({'success': False, 'message': 'Invalid request data.'}), 400
-    
+
     item_type = data.get('itemType')
     item_id = data.get('itemId')
     face_image = data.get('faceImage')
-    
+
     # Log missing fields
     missing_fields = []
     if not item_type:
@@ -76,13 +84,14 @@ def unlock_item():
         missing_fields.append('itemId')
     if not face_image:
         missing_fields.append('faceImage')
-    
+
     if missing_fields:
         logger.warning(f"[WARNING] Missing required fields: {', '.join(missing_fields)}")
         return jsonify({'success': False, 'message': f"Missing required fields: {', '.join(missing_fields)}"}), 400
 
     # Debugging: Log the received faceImage
-    logger.debug(f"[DEBUG] Received faceImage: {face_image[:30] if face_image else 'None'}")
+    logger.debug(f"[DEBUG] Received request payload: {data}")
+    logger.debug(f"[DEBUG] faceImage content: {face_image[:30] if face_image else 'None'}")
     logger.debug(f"[DEBUG] Stored face data: {current_user.face_data[:30] if current_user.face_data else 'None'}")
 
     # Ensure faceImage is base64-decoded
@@ -97,46 +106,30 @@ def unlock_item():
         if img_rgb is None:
             logger.error("[ERROR] Failed to decode face image")
             return jsonify({'success': False, 'message': 'Invalid face image format.'}), 400
+        logger.debug("[DEBUG] Face image successfully decoded")
 
     except Exception as e:
         logger.error(f"[ERROR] Error decoding face image: {str(e)}")
         return jsonify({'success': False, 'message': 'Error processing face image.'}), 400
 
-    # First check if the user has face verification enabled
-    if not current_user.face_verification_enabled:
-        logger.warning(f"User {current_user.username} has no face verification enabled")
-        return jsonify({'success': False, 'message': 'Face verification is not enabled for your account. Please set up face verification in your profile.'}), 401
-        
-    # Check if user has face data stored
-    if not current_user.face_data:
-        logger.warning(f"User {current_user.username} has no face data registered")
-        return jsonify({'success': False, 'message': 'No face data found. Please register your face first.'}), 401
-    
+    # Verify face using FaceAPI
     try:
-        logger.debug(f"[DEBUG] Received request data: {data}")
-        logger.debug(f"[DEBUG] User face verification enabled: {current_user.face_verification_enabled}")
-        logger.debug(f"[DEBUG] User face data exists: {'Yes' if current_user.face_data else 'No'}")
+        face_locations = face_recognition.face_locations(img_rgb)
+        if not face_locations:
+            return jsonify({'success': False, 'message': 'No face detected in the input image'}), 400
 
-        if current_user.face_data:
-            try:
-                face_data_json = json.loads(current_user.face_data)
-                logger.debug(f"[DEBUG] User face encoding: {face_data_json.get('encoding', 'Not found')[:5]}... (truncated)")
-            except Exception as e:
-                logger.error(f"[ERROR] Failed to parse user face data: {e}")
+        face_encoding = face_recognition.face_encodings(img_rgb, face_locations)
+        if not face_encoding:
+            return jsonify({'success': False, 'message': 'Could not encode face from the input image'}), 400
 
-        logger.debug(f"[DEBUG] Submitted face image data length: {len(face_image) if face_image else 'None'}")
+        stored_data = json.loads(current_user.face_data)
+        stored_face_encoding = np.array(stored_data['encoding'])
 
-        # Extract face image from request
-        if not face_image:
-            return jsonify({'success': False, 'message': 'Face image is required'}), 400
+        results = face_recognition.compare_faces([stored_face_encoding], face_encoding[0], tolerance=0.6)
+        face_distance = face_recognition.face_distance([stored_face_encoding], face_encoding[0])[0]
+        match_percentage = (1 - face_distance) * 100
 
-        if ',' in face_image:
-            face_image = face_image.split(',')[1]
-
-        # Verify face using FaceAPI
-        is_face_match = face_api.verify_face(current_user.face_data, face_image)
-
-        if is_face_match:
+        if results[0]:
             # Retrieve the content based on item type
             if item_type == 'message':
                 message = Message.query.get(item_id)
@@ -151,10 +144,11 @@ def unlock_item():
             else:
                 return jsonify({'success': False, 'message': 'Invalid item type.'}), 400
         else:
+            logger.warning(f"[WARNING] Face verification failed ({match_percentage:.1f}% match, 80% required)")
             return jsonify({'success': False, 'message': 'Face verification failed'}), 403
 
     except Exception as e:
-        logger.error(f"Error unlocking item: {e}")
+        logger.error(f"[ERROR] Error unlocking item: {e}")
         return jsonify({'success': False, 'message': 'An error occurred during face verification'}), 500
 
 @face_blueprint.route('/update_face_data', methods=['POST'])

@@ -154,42 +154,49 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                     // Define face detection function
                     const detectFaces = async () => {
                         if (!video || video.paused || video.ended) return;
-                        
+
                         try {
                             const detections = await faceapi.detectSingleFace(
                                 video, 
                                 new faceapi.TinyFaceDetectorOptions()
                             ).withFaceLandmarks();
-                            
+
+                            // Log detected landmarks for debugging
+                            if (detections && detections.landmarks) {
+                                console.log('[FACE-MODAL] Detected landmarks:', detections.landmarks.positions);
+                            } else {
+                                console.warn('[FACE-MODAL] No landmarks detected.');
+                            }
+
                             // Get canvas context and clear it
                             const ctx = overlayCanvas.getContext('2d');
                             ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-                            
+
                             if (detections) {
                                 // Draw face landmarks
                                 faceapi.draw.drawFaceLandmarks(ctx, detections.landmarks);
-                                
+
                                 // Draw face positioning guide
                                 const displaySize = { width: video.videoWidth, height: video.videoHeight };
-                                const center = { x: displaySize.width/2, y: displaySize.height/2 };
-                                
+                                const center = { x: displaySize.width / 2, y: displaySize.height / 2 };
+
                                 ctx.strokeStyle = "#00ff00";
                                 ctx.lineWidth = 2;
                                 ctx.beginPath();
                                 ctx.arc(center.x, center.y, 100, 0, 2 * Math.PI);
                                 ctx.stroke();
-                                
+
                                 // Update status
                                 statusDiv.textContent = 'Face detected! Click "Verify Face" to continue.';
                                 statusDiv.className = 'message success';
-                                
+
                                 // Enable verify button
                                 verifyBtn.disabled = false;
                             } else {
                                 // Update status
                                 statusDiv.textContent = 'No face detected. Please position your face in the camera.';
                                 statusDiv.className = 'message warning';
-                                
+
                                 // Disable verify button
                                 verifyBtn.disabled = true;
                             }
@@ -197,7 +204,7 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                             console.error('[FACE-MODAL] Face detection error:', error);
                         }
                     };
-                    
+                    window.detectFaces = detectFaces;
                     // Start face detection interval
                     if (currentDetectionInterval) {
                         clearInterval(currentDetectionInterval);
