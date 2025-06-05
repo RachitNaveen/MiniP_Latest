@@ -50,6 +50,10 @@ def set_security_level_login():
             else:
                 print("[SECURITY] Using AI-based security assessment")
                 
+        # Update session with required factors for medium and high levels
+        session['captcha_enabled'] = level in ['medium', 'high']
+        session['face_verification_enabled'] = level == 'high'
+        
         # Force the session to update
         session.modified = True
         
@@ -63,3 +67,49 @@ def set_security_level_login():
     except Exception as e:
         print(f"Error setting security level: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
+
+@security_blueprint.route('/get_security_metrics', methods=['GET'])
+def get_security_metrics():
+    """
+    Get security metrics for the current user including:
+    - Risk assessment
+    - Face verification accuracy
+    """
+    from flask_login import current_user
+    from app.security.security_ai import get_risk_details, get_face_verification_accuracy
+    
+    print(f"[DEBUG] get_security_metrics called, authenticated: {current_user.is_authenticated}")
+    
+    if not current_user.is_authenticated:
+        print("[DEBUG] User not authenticated, returning 401")
+        return jsonify({'success': False, 'message': 'Authentication required'}), 401
+    
+    try:
+        print(f"[DEBUG] Getting risk details for user: {current_user.username}")
+        # Get risk details
+        risk_details = get_risk_details(current_user.username)
+        
+        print(f"[DEBUG] Getting face verification accuracy for user ID: {current_user.id}")
+        # Get face verification accuracy
+        accuracy_metrics = get_face_verification_accuracy(current_user.id)
+        
+        print(f"[DEBUG] Risk details: {risk_details}, Face metrics: {accuracy_metrics}")
+        
+        # Combine and return metrics
+        metrics = {
+            'success': True,
+            'risk': {
+                'score': round(risk_details['risk_score'] * 100, 2),  # Convert to percentage
+                'level': risk_details['security_level'],
+                'factors': risk_details['risk_factors']
+            },
+            'face_verification': accuracy_metrics
+        }
+        
+        return jsonify(metrics)
+    except Exception as e:
+        print(f"Error retrieving security metrics: {str(e)}")
+        return jsonify({
+            'success': False, 
+            'message': 'Error retrieving security metrics'
+        }), 500

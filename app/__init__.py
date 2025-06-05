@@ -50,7 +50,7 @@ def create_app(config_class=Config):
         # Register the auth blueprint
         app.register_blueprint(auth_blueprint, url_prefix='/auth')
         # Register the security blueprint
-        app.register_blueprint(security_blueprint)
+        app.register_blueprint(security_blueprint, url_prefix='/security')
         # Register the face blueprint
         from app.auth.routes_face import face_blueprint
         app.register_blueprint(face_blueprint)

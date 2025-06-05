@@ -13,59 +13,156 @@
     <script defer src="{{ url_for('static', filename='face-api.js') }}"></script>
     <script defer src="{{ url_for('static', filename='face_modal.js') }}"></script>
     <script defer src="{{ url_for('static', filename='chat.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='security_metrics.js') }}"></script>
 </head>
 <body data-user-id="{{ current_user.id }}">
     <div class="chat-container">
         <div class="chat-header">
             <h2>SecureChat</h2>
             <span>Welcome, {{ current_user.username }}</span>
+            <button id="logoutButton" class="logout-button">Logout</button>
+            <div class="security-metrics">
+                <div class="security-status" id="securityStatus">
+                    <span id="securityRisk" class="security-badge">Risk: Loading...</span>
+                    <span id="faceAccuracy" class="security-badge">Face AI: Loading...</span>
+                </div>
+                <button id="securityDetailsBtn" class="security-details-btn">Security Details</button>
+            </div>
         </div>
 
         <div class="chat-messages" id="messageContainer">
+        </div>
+
+        <form class="message-form" id="messageForm">
+            <div class="form-row recipient-row">
+                <label for="recipient_id">Recipient</label>
+                <select name="recipient_id" id="recipient_id" required class="message-select">
+                    <option value="" disabled selected>Select recipient</option>
+                </select>
             </div>
-<form class="message-form" id="messageForm">
-    <div class="form-row recipient-row">
-        <label for="recipient_id">Recipient</label>
-        <select name="recipient_id" id="recipient_id" required class="message-select">
-            <option value="" disabled selected>Select recipient</option>
-            </select>
-    </div>
 
-    <div class="form-row message-input-container">
-        <label for="content">Message</label>
-        <div class="input-with-button">
-            <input
-                type="text"
-                id="content"
-                class="message-input"
-                name="content"
-                placeholder="Type a message..."
-                autocomplete="off">
-            <button type="submit" class="send-button primary-action">
-                <span class="button-text">Send</span>
-            </button>
+            <div class="form-row message-input-container">
+                <div class="input-with-button">
+                    <input
+                        type="text"
+                        id="content"
+                        class="message-input"
+                        name="content"
+                        placeholder="Type a message..."
+                        autocomplete="off">
+                    <label class="face-checkbox">
+                        <input type="checkbox" name="face_locked" id="faceLocked">
+                        <span class="checkbox-label">Face ID</span>
+                    </label>
+                    <button type="submit" class="send-button primary-action">Send</button>
+                </div>
+            </div>
+
+            <div class="form-row options-and-actions-bar">
+                <div class="file-input-wrapper">
+                    <label for="fileInput" class="file-input-label secondary-action outline">
+                        <span class="button-text">Attach File</span>
+                    </label>
+                    <input type="file" id="fileInput" name="file" class="file-input visually-hidden">
+                    <span id="fileNameDisplay" class="file-name-display"></span>
+                </div>
+                <button type="button" id="sendFileButton" class="send-file-button secondary-action">Send File</button>
+            </div>
+        </form>
+
+        <!-- Risk Level Indicator at Bottom Right -->
+        <div id="riskLevelIndicator" class="risk-indicator">
+            <span id="riskIndicatorDot" class="risk-indicator-dot"></span>
+            <span id="riskIndicatorText" class="risk-indicator-text">Risk Level by AI: Analyzing...</span>
+        </div>
+    </div>
+    
+    <!-- Security Details Modal -->
+    <div id="securityDetailsModal" class="security-details-modal">
+        <div class="security-details-content">
+            <div class="security-details-header">
+                <h3>Security Details</h3>
+                <button class="security-details-close" id="closeSecurityDetails">&times;</button>
+            </div>
+            <div class="security-details-body">
+                <div class="security-section">
+                    <h4>Risk Assessment</h4>
+                    <div class="security-metric">
+                        <span class="metric-label">Overall Risk:</span>
+                        <span id="overallRiskLevel" class="metric-value">Loading...</span>
+                    </div>
+                    <div class="security-metric">
+                        <span class="metric-label">Risk Score:</span>
+                        <span id="riskScore" class="metric-value">Loading...</span>
+                    </div>
+                    <div id="riskFactors">
+                        <!-- Risk factors will be populated here -->
+                    </div>
+                </div>
+                <div class="security-section">
+                    <h4>Face Recognition</h4>
+                    <div class="security-metric">
+                        <span class="metric-label">Accuracy:</span>
+                        <span id="faceAccuracyValue" class="metric-value">Loading...</span>
+                    </div>
+                    <div class="security-metric">
+                        <span class="metric-label">Total Attempts:</span>
+                        <span id="totalFaceAttempts" class="metric-value">Loading...</span>
+                    </div>
+                    <div class="security-metric">
+                        <span class="metric-label">Success Rate:</span>
+                        <span id="faceSuccessRate" class="metric-value">Loading...</span>
+                    </div>
+                    <div class="security-metric">
+                        <span class="metric-label">Confidence:</span>
+                        <span id="faceConfidence" class="metric-value">Loading...</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="form-row options-and-actions-bar">
-        <label class="face-checkbox">
-            <input type="checkbox" name="face_locked" id="faceLocked">
-            <span class="checkbox-label">Face ID</span>
-        </label>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const securityLevelSelect = document.getElementById('securityLevelSelect');
+            const captchaSection = document.querySelector('.captcha-section');
+            const faceVerificationSection = document.querySelector('.face-verification-section');
 
-        <div class="file-input-wrapper">
-            <label for="fileInput" class="file-input-label secondary-action outline">
-                <span class="button-text">Attach File</span>
-            </label>
-            <input type="file" id="fileInput" name="file" class="file-input visually-hidden">
-            <span id="fileNameDisplay" class="file-name-display"></span>
-        </div>
-        
-        <button type="button" id="sendFileButton" class="send-file-button secondary-action">
-            <span class="button-text">Send File</span>
-        </button>
-    </div>
-</form>
-    </div>
+            function updateUIBasedOnSecurityLevel(level) {
+                if (level === 'low') {
+                    captchaSection.style.display = 'none';
+                    faceVerificationSection.style.display = 'none';
+                } else if (level === 'medium') {
+                    captchaSection.style.display = 'block';
+                    faceVerificationSection.style.display = 'none';
+                } else if (level === 'high') {
+                    captchaSection.style.display = 'block';
+                    faceVerificationSection.style.display = 'block';
+                }
+            }
+
+            securityLevelSelect.addEventListener('change', function () {
+                const selectedLevel = securityLevelSelect.value;
+                updateUIBasedOnSecurityLevel(selectedLevel);
+
+                fetch('/security/set_security_level_login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ level: selectedLevel })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Security level updated:', data);
+                });
+            });
+
+            // Initialize UI based on the current security level
+            const initialLevel = securityLevelSelect.value;
+            updateUIBasedOnSecurityLevel(initialLevel);
+        });
+    </script>
 </body>
 </html>

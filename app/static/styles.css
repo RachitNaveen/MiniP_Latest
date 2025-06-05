@@ -1,735 +1,661 @@
-html {
-    color-scheme: light; /* Explicitly declare light theme preference */
+/* Global Resets & Base Styles */
+:root {
+    --primary-color: #007bff;
+    --primary-color-dark: #0056b3;
+    --secondary-color: #6c757d;
+    --secondary-color-dark: #5a6268;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+
+    --light-bg: #f8f9fa;
+    --white-bg: #ffffff;
+    --dark-text: #212529;
+    --medium-text: #495057;
+    --light-text: #6c757d;
+    --border-color: #dee2e6;
+
+    --font-family-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --border-radius: 0.375rem; /* 6px */
+    --border-radius-pill: 50rem;
+    --box-shadow-sm: 0 .125rem .25rem rgba(0,0,0,.075);
+    --box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
 }
 
-/* Base styles - Updated */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: 'Roboto', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f3f4f6; /* Light grey background */
-    color: #343a40; /* Darker text for better contrast */
+    font-family: var(--font-family-sans-serif);
+    font-size: 1rem;
+    font-weight: 400;
     line-height: 1.6;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    color: var(--dark-text);
+    background-color: #e9ecef; /* Page background */
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Visually hidden class for accessibility */
-.sr-only {
+/* Chat Container Layout */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Full viewport height */
+    max-width: 1200px; /* Max width for larger screens */
+    margin: 0 auto;   /* Center on larger screens */
+    background-color: var(--white-bg);
+    box-shadow: 0 0 25px rgba(0,0,0,0.1); /* Soft shadow for the container */
+}
+
+/* Chat Header */
+.chat-header {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    background-color: var(--primary-color);
+    color: var(--white-bg);
+    flex-shrink: 0;
+    gap: 1rem;
+    box-shadow: var(--box-shadow-sm);
+    z-index: 10;
+}
+
+.chat-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: inherit;
+}
+
+.chat-header > span { /* Welcome message */
+    margin-left: auto; /* Pushes welcome message and security metrics to the right */
+    font-size: 0.9rem;
+}
+
+.logout-button {
+    background-color: transparent;
+    color: var(--white-bg);
+    border: 1px solid var(--white-bg);
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--border-radius-pill);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.logout-button:hover {
+    background-color: var(--white-bg);
+    color: var(--primary-color);
+}
+
+.security-metrics {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: 1rem; /* Space from welcome message */
+}
+
+.security-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.security-badge {
+    background-color: rgba(255,255,255,0.2);
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--border-radius-pill);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.security-details-btn {
+    background-color: rgba(255,255,255,0.15);
+    color: var(--white-bg);
+    border: 1px solid rgba(255,255,255,0.5);
+    padding: 0.3rem 0.6rem;
+    border-radius: var(--border-radius);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.security-details-btn:hover {
+    background-color: rgba(255,255,255,0.3);
+}
+
+/* Chat Messages Area */
+.chat-messages {
+    flex-grow: 1;
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+    background-color: #f4f7f9; /* Slightly different background for message area */
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.message {
+    display: flex;
+    flex-direction: column;
+    max-width: 70%;
+    padding: 0.6rem 1rem;
+    border-radius: var(--border-radius);
+    line-height: 1.4;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.message .message-user {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--medium-text);
+}
+
+.message .message-content {
+    font-size: 0.95rem;
+}
+.message .message-content a { /* File links */
+    color: var(--primary-color);
+    text-decoration: underline;
+    font-weight: 500;
+}
+.message .message-content a:hover {
+    color: var(--primary-color-dark);
+}
+
+
+.message.sent {
+    background-color: var(--primary-color);
+    color: var(--white-bg);
+    align-self: flex-end;
+    border-radius: 1rem 1rem 0.25rem 1rem; /* Chat bubble tail */
+}
+.message.sent .message-user {
+    color: rgba(255,255,255,0.8);
+}
+.message.sent .message-content a {
+    color: #cce5ff; /* Lighter link color for sent messages */
+}
+.message.sent .message-content a:hover {
+    color: #e6f2ff;
+}
+
+
+.message.received {
+    background-color: var(--white-bg);
+    color: var(--dark-text);
+    align-self: flex-start;
+    border: 1px solid var(--border-color);
+    border-radius: 1rem 1rem 1rem 0.25rem; /* Chat bubble tail */
+}
+
+/* System Notifications & Locked Item Placeholders */
+.message.system-notification,
+.message.locked-item-placeholder {
+    align-self: center;
+    background-color: var(--light-bg);
+    color: var(--light-text);
+    text-align: center;
+    font-style: italic;
+    padding: 0.5rem 1rem;
+    margin: 0.5rem auto;
+    max-width: 80%;
+    border-radius: var(--border-radius-pill);
+    font-size: 0.8rem;
+    border: 1px solid #e0e0e0;
+}
+.message.system-notification p,
+.message.locked-item-placeholder p {
+    margin:0;
+}
+.message.locked-item-placeholder .message-content.locked-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-style: normal; /* Override italic from parent */
+}
+.lock-icon {
+    font-size: 1.1em;
+}
+.unlock-button { /* General button styling will be applied if classes match */
+    padding: 0.25rem 0.6rem !important; /* Override general button padding */
+    font-size: 0.8em !important; /* Override general button font-size */
+    margin-left: 0.5rem;
+}
+
+
+/* Message Form */
+.message-form {
+    display: flex;
+    flex-direction: column; /* Stack rows vertically */
+    padding: 1rem 1.25rem;
+    background-color: var(--white-bg);
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+    gap: 0.75rem; /* Space between form rows */
+}
+
+.message-form .form-row {
+    display: flex;
+    flex-direction: column; /* Label above input */
+}
+.message-form .form-row label:not(.face-checkbox .checkbox-label) { /* For select and message input label */
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: var(--medium-text);
+}
+
+/* Recipient Select */
+.message-form .recipient-row { /* Target the specific row for recipient */
+    max-width: 320px; /* Constrain width on larger screens */
+}
+.message-select {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: var(--white-bg);
+    font-size: 0.9rem;
+    width: 100%; /* Will take width of its parent, .recipient-row */
+}
+.message-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+/* Message Input Area */
+.message-input-container .input-with-button {
+    display: flex;
+    align-items: center; /* Align input, checkbox, and button vertically */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-pill);
+    padding-left: 0.5rem; /* Padding for the whole group */
+    background-color: var(--white-bg); /* To cover borders between elements */
+}
+.message-input-container .input-with-button:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.message-input {
+    flex-grow: 1;
+    padding: 0.6rem 0.5rem; /* Adjust padding */
+    border: none; /* Border handled by wrapper */
+    outline: none;
+    font-size: 0.95rem;
+    background-color: transparent;
+}
+
+.face-checkbox {
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem 0 0.75rem; /* Adjusted margin for better spacing */
+    cursor: pointer;
+    flex-shrink: 0; /* Prevent checkbox area from shrinking too much */
+}
+.face-checkbox input[type="checkbox"] {
+    margin-right: 0.4rem;
+    width: 1em;
+    height: 1em;
+    accent-color: var(--primary-color);
+}
+.face-checkbox .checkbox-label {
+    font-size: 0.8rem;
+    color: var(--medium-text);
+    user-select: none;
+    white-space: nowrap; /* Prevent "Face ID" from wrapping */
+}
+
+/* Buttons (General - can be overridden by specific classes like .primary-action) */
+button, .button-like-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4em;
+    font-weight: 500;
+    padding: 0.6rem 1.1rem;
+    border-radius: var(--border-radius-pill);
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-align: center;
+    line-height: 1.3;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    user-select: none;
+}
+button:hover, .button-like-label:hover {
+    transform: translateY(-1px);
+}
+button:active, .button-like-label:active {
+    transform: translateY(0px);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+button:disabled, .button-like-label.disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.primary-action {
+    background-color: var(--primary-color);
+    color: var(--white-bg);
+    border-color: var(--primary-color);
+}
+.primary-action:hover {
+    background-color: var(--primary-color-dark);
+    border-color: var(--primary-color-dark);
+}
+
+.secondary-action {
+    background-color: var(--secondary-color);
+    color: var(--white-bg);
+    border-color: var(--secondary-color);
+}
+.secondary-action:hover {
+    background-color: var(--secondary-color-dark);
+    border-color: var(--secondary-color-dark);
+}
+
+.secondary-action.outline {
+    background-color: transparent;
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.secondary-action.outline:hover {
+    background-color: var(--primary-color);
+    color: var(--white-bg);
+}
+
+/* Specific Button Placements */
+.input-with-button .send-button { /* Send button inside input group */
+    border-radius: var(--border-radius-pill);
+    padding: 0.6rem 1.25rem;
+    margin: -1px -1px -1px 0; /* Overlap wrapper border */
+    flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+/* File Actions Bar */
+.options-and-actions-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color); /* Separator line */
+}
+.file-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-grow: 0; /* Do not allow wrapper to grow excessively */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+.file-input-label { /* This gets .secondary-action.outline */
+    /* Styles inherited, will size to content */
+}
+.visually-hidden {
     position: absolute;
     width: 1px;
     height: 1px;
     padding: 0;
     margin: -1px;
     overflow: hidden;
-    clip: rect(0, 0, 0, 0);
+    clip: rect(0,0,0,0);
     white-space: nowrap;
     border-width: 0;
 }
-
-.container { /* Original */
-    max-width: 400px;
-    width: 100%;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-}
-
-h1, h2, h3 { /* Original, with potential color adjustments for context */
-    color: #2c3e50;
-}
-
-a { /* Original */
-    color: #3498db;
-    text-decoration: none;
-}
-
-a:hover { /* Original */
-    text-decoration: underline;
-}
-
-/* General Form styles - Original (will be overridden by more specific styles) */
-form {
-    background-color: #fff; /* This is a general default */
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
-.form-group { /* Original */
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: #555555;
-}
-
-input[type="text"],
-input[type="password"],
-input[type="email"],
-textarea,
-select { /* Added select to general styling */
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #dddddd;
-    border-radius: 4px;
-    font-size: 14px;
-    box-sizing: border-box; /* Added for consistent sizing */
-    transition: border-color 0.3s ease;
-    background-color: #fff; /* Ensure inputs have a light background by default */
-    color: #333; /* Ensure text in inputs is dark by default */
-}
-
-input[type="text"]:focus,
-input[type="password"]:focus,
-input[type="email"]:focus,
-textarea:focus,
-select:focus { /* Added select to general styling */
-    border-color: #0088cc;
-    outline: none;
-    box-shadow: 0 0 4px rgba(0, 136, 204, 0.2);
-}
-
-/* General Button styles - Original (will be overridden by more specific styles) */
-button {
-    padding: 10px 20px;
-    background-color: #0088cc;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-}
-
-button:hover {
-    background-color: #0077b3;
-}
-
-button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-}
-
-/* Chat styles - Heavily Updated */
-.chat-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background-color: #e5eff5;
-    border-radius: 8px;
+.file-name-display {
+    font-size: 0.8rem;
+    color: var(--light-text);
+    max-width: 150px; /* Constrain file name display width */
     overflow: hidden;
-}
-
-.chat-header {
-    background-color: #0088cc;
-    color: white;
-    padding: 10px;
-    text-align: center;
-    font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.chat-header h2 {
-    color: #ffffff;
-    margin: 0;
-    font-size: 1.25em;
-}
-
-.chat-header span {
-    font-size: 0.9em;
-}
-
-.chat-messages { /* This area should be transparent to show .chat-container's white background */
-    flex: 1;
-    padding: 10px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem; /* Space between message bubbles */
-}
-
-.message {
-    padding: 0.75rem 1rem;
-    max-width: 70%;
-    line-height: 1.4;
-    word-wrap: break-word;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.message.sent {
-    background-color: #d1ecf1; /* Light blue for sent messages */
-    color: #0c5460; /* Darker text for readability on light blue */
-    align-self: flex-end;
-    border-radius: 15px 15px 5px 15px; /* Asymmetrical bubble */
-}
-
-.message.received {
-    background-color: #f0f2f5; /* Slightly off-white for received messages, distinct from chat-container bg */
-    color: #495057; /* Darker grey text */
-    align-self: flex-start;
-    border-radius: 15px 15px 15px 5px; /* Asymmetrical bubble */
-}
-
-.message-user {
-    font-weight: bold;
-    margin-bottom: 0.3rem;
-    font-size: 0.85em;
-    color: inherit; /* Inherit color from .message.sent or .message.received */
-}
-
-/* The chat form - Heavily Updated */
-.message-form {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    padding: 1rem;
-    background: #f8f9fa; /* Light grey form background */
-    border-top: 1px solid #dee2e6;
-    gap: 0.75rem;
-    margin-bottom: 0;
-    box-shadow: none;
-    border-radius: 0 0 10px 10px; /* Match chat container bottom radius */
-}
-
-.message-form .form-row {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.message-form .recipient-row {
-    flex-basis: 200px;
-    flex-grow: 0;
-    min-width: 150px;
-}
-
-.message-form .message-input-row {
-    flex-grow: 1;
-}
-
-.message-form .actions-row {
-    width: auto;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.message-form .file-actions-row {
-    width: 100%;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.75rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid #dee2e6;
-    margin-top: 0.5rem;
-}
-
-
-.message-select,
-.message-input {
-    margin-top: 0.25rem;
-    padding: 0.75rem;
-    border-radius: 20px;
-    border: 1px solid #ced4da;
-    font-size: 15px;
-    width: 100%;
-    background-color: #fff; /* Ensure light background */
-    color: #212529; /* Ensure dark text */
-}
-.message-input::placeholder { /* Style placeholder text */
-    color: #6c757d;
-}
-
-.face-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9em;
-    color: #495057; /* Label color, should be visible on light form bg */
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
-.face-checkbox input[type="checkbox"] {
-    margin-right: 5px;
-    accent-color: #007bff;
-    width: auto;
-    background-color: #fff; /* For some browsers that might color the box */
+.send-file-button { /* This gets .secondary-action */
+    margin-left: auto; /* Push to the right */
+    flex-shrink: 0; /* Prevent button from shrinking */
 }
 
-.send-button,
-.send-file-button {
-    padding: 0.65rem 1.25rem;
-    border-radius: 20px;
-    border: none;
-    cursor: pointer;
-    background-color: #007bff;
-    color: #fff;
-    font-weight: 600;
-    font-size: 0.9em;
-    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
-    width: auto;
-}
-
-.send-button:hover,
-.send-file-button:hover {
-    background-color: #0056b3;
-    transform: translateY(-1px);
-}
-
-/* Styling file input is tricky across browsers. This provides some basic styling.
-   For a fully custom look, more advanced techniques (like overlaying a styled label) are needed. */
-.file-input {
-    padding: 0.5rem; /* May not apply to the button part directly */
-    border-radius: 20px;
-    border: 1px solid #bfc9d4;
-    font-size: 0.9em;
-    width: auto;
-    background-color: #fff; /* Try to set a background */
-    color: #333; /* Text color for "No file chosen" */
-}
-/* Some browsers style the ::file-selector-button pseudo-element */
-.file-input::file-selector-button {
-    padding: 0.5rem 1rem;
-    border-radius: 18px; /* Slightly smaller to fit */
-    border: none;
-    background-color: #6c757d; /* Secondary button color */
-    color: white;
-    font-weight: 500;
-    cursor: pointer;
-    margin-right: 10px;
-    transition: background-color 0.2s ease;
-}
-.file-input::file-selector-button:hover {
-    background-color: #5a6268;
-}
-
-
-/* File link styling - Original */
-.message-content a {
-    background-color: #007bff; /* Use primary color for links */
-    color: white;
-    text-decoration: none; /* Remove underline if background is enough */
-    font-weight: 600; /* Make it bold */
-    padding: 4px 8px;
-    border-radius: 4px;
-    display: inline-block; /* Allow padding and margins */
-}
-
-.message.received .message-content a {
-    background-color: #e9ecef; /* Lighter background for received links */
-    color: #007bff; /* Primary color text */
-}
-
-.message-content a:hover {
-    opacity: 0.85;
-    text-decoration: none;
-}
-
-/* --- 나머지 스타일 (Authentication, Face Verification 등) --- */
-/* These sections are assumed to be mostly as you had them, with minor consistency tweaks */
-
-/* Authentication-specific styles - Original */
-.auth-container {
-    max-width: 500px;
-    margin: 50px auto;
-    background-color: #fff; /* Explicit background */
-    padding: 30px; /* More padding */
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.auth-toggle {
-    text-align: center;
-    margin-top: 20px;
-}
-.auth-toggle a {
-    font-weight: 600;
-}
-
-/* Face verification styles - Original (check for consistency) */
-.video-container {
-    position: relative;
-    width: 100%;
-    margin: 15px 0;
-    overflow: hidden; /* Ensure overlay doesn't spill out */
-}
-
-/* Face Verification Modal - Original */
-.face-verification-modal {
+/* Risk Indicator (Bottom Right) */
+.risk-indicator {
     position: fixed;
-    top: 0;
+    bottom: 1rem;
+    right: 1rem;
+    background-color: rgba(0,0,0,0.7);
+    color: var(--white-bg);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius-pill);
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+    box-shadow: var(--box-shadow);
+    z-index: 100;
+}
+.risk-indicator-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    background-color: var(--secondary-color); /* Default color */
+}
+.risk-indicator-dot.risk-low { background-color: var(--success-color); }
+.risk-indicator-dot.risk-medium { background-color: var(--warning-color); }
+.risk-indicator-dot.risk-high { background-color: var(--danger-color); }
+
+/* Security Details Modal */
+.security-details-modal {
+    display: none; /* Hidden by default, JS will toggle */
+    position: fixed;
+    z-index: 1050;
     left: 0;
+    top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.65); /* Slightly darker overlay */
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5); /* Dim overlay */
+    align-items: center; /* For flex centering if JS adds it */
+    justify-content: center; /* For flex centering */
+}
+.security-details-modal.active { /* Add this class with JS to show */
     display: flex;
-    justify-content: center;
+}
+
+.security-details-content {
+    background-color: var(--white-bg);
+    margin: auto; /* Center in viewport */
+    padding: 1.5rem 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+}
+
+.security-details-header {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    z-index: 1000;
-    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
 }
-
-.modal-content {
-    background-color: white;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    max-width: 500px;
-    width: 100%;
+.security-details-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: var(--dark-text);
 }
-.modal-content h3 { /* Style for modal title */
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: #333;
-}
-
-#verification-video {
-    width: 100%;
-    max-width: 400px;
-    border: 2px solid #ddd;
-    border-radius: 4px;
-    margin: 15px 0 20px;
-    background-color: #f0f0f0; /* Placeholder bg for video area */
-}
-
-.modal-content .button-group {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 15px;
-}
-
-.modal-content button {
-    padding: 10px 25px;
-    border-radius: 20px;
-    font-weight: 600;
-    border:none; /* Ensure no default border */
-}
-
-.verify-btn {
-    background-color: #2ecc71;
-    color: white;
-}
-.verify-btn:hover {
-    background-color: #25a25a;
-}
-
-.cancel-btn {
-    background-color: #e74c3c;
-    color: white;
-}
-.cancel-btn:hover {
-    background-color: #c0392b;
-}
-
-
-/* Face Locked Message in chat - Original (verify context) */
-.locked-message {
-    color: #007bff; /* Use primary theme color */
+.security-details-close {
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    font-weight: 300;
+    color: var(--light-text);
     cursor: pointer;
-    font-style: italic;
-    font-size: 0.9em;
-    padding: 5px 0; /* Add some padding */
+    padding: 0;
+    line-height: 1;
+}
+.security-details-close:hover {
+    color: var(--dark-text);
 }
 
-/* Status message styles - Original */
-.success {
-    color: #28a745;
-    font-weight: bold;
+.security-details-body .security-section {
+    margin-bottom: 1.5rem;
 }
-.warning {
-    color: #f39c12;
-    font-weight: bold;
+.security-details-body .security-section:last-child {
+    margin-bottom: 0;
 }
-.error {
-    color: #e74c3c;
-    font-weight: bold;
-}
-
-/* Flash messages - Original */
-.flash-messages {
-    padding: 15px;
-    margin: 0 0 20px 0; /* Consistent margin */
-    border-radius: 5px;
-    color: #fff; /* Default text color for flash messages */
-    text-align: center;
-}
-.flash-success {
-    background-color: #2ecc71; /* Green */
-    border-color: #25a25a;
-}
-.flash-warning {
-    background-color: #f39c12; /* Orange */
-    border-color: #da860b;
-}
-.flash-error { /* Original was just base, make it specific */
-    background-color: #e74c3c; /* Red */
-    border-color: #c0392b;
+.security-details-body .security-section h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.3rem;
 }
 
+.security-metric {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    padding: 0.3rem 0;
+}
+.metric-label {
+    color: var(--medium-text);
+    font-weight: 500;
+}
+.metric-value {
+    color: var(--dark-text);
+    font-weight: 500;
+}
+#riskFactors {
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+#riskFactors .factor {
+    background-color: #f0f0f0;
+    padding: 0.3rem 0.5rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 0.3rem;
+}
 
-/* Responsive adjustments - Updated */
+
+/* Responsive Adjustments */
 @media (max-width: 768px) {
     .chat-container {
-        width: 100%;
-        margin: 0;
-        border-radius: 0;
-        height: 100vh;
+        height: 100vh; /* Ensure it still takes full height */
     }
-
+    .chat-header {
+        padding: 0.5rem 1rem;
+        flex-wrap: wrap; /* Allow header items to wrap */
+    }
     .chat-header h2 {
-        font-size: 1.1em;
+        font-size: 1.1rem;
     }
-    .chat-header span {
-        font-size: 0.8em;
+    .chat-header > span { /* Welcome message */
+        font-size: 0.8rem;
+        margin-left: 0; /* Reset margin for wrapping */
+        width: 100%;
+        text-align: right;
+        order: 3; /* Move below h2 and metrics if wrapping */
+    }
+    .security-metrics {
+        margin-left: auto; /* Push to right of h2 */
+        order: 2;
+    }
+    .logout-button {
+        order: 1; /* Make logout first if needed or adjust */
+        margin-right: auto;
     }
 
+    .chat-messages {
+        padding: 0.75rem;
+    }
     .message {
         max-width: 85%;
     }
 
     .message-form {
-        flex-direction: column;
         padding: 0.75rem;
     }
-
-    .message-form .form-row,
-    .message-form .recipient-row,
-    .message-form .message-input-row {
-        flex-basis: auto;
-        width: 100%;
+    /* Ensure recipient row takes full width on mobile */
+    .message-form .recipient-row {
+        max-width: 100%;
     }
 
-    .message-form .actions-row,
-    .message-form .file-actions-row {
-        flex-direction: column;
-        width: 100%;
+    .message-input-container .input-with-button {
+        flex-wrap: wrap; 
     }
-    .message-form .actions-row button,
-    .message-form .file-actions-row button,
-    .message-form .file-actions-row .file-input { /* Target file input for full width */
-        width: 100%;
-        margin-bottom: 0.5rem; /* Space between stacked items */
+    .input-with-button .message-input { /* Allow input to take more space before checkbox/button wrap */
+        min-width: 150px; /* Adjust as needed */
     }
-    .message-form .actions-row .face-checkbox { /* Better stacking for checkbox */
-        width: 100%;
-        justify-content: flex-start; /* Align to left */
+    .input-with-button .send-button {
+        margin-top: 0.5rem; 
+        width: 100%; 
+    }
+    .face-checkbox {
+        width: 100%; 
+        justify-content: flex-start;
         padding: 0.5rem 0;
+        margin: 0.5rem 0 0 0; /* Adjust margin when wrapped */
     }
-
-
-    .modal-content {
-        padding: 20px;
-    }
-    .modal-content .button-group {
+    .options-and-actions-bar {
         flex-direction: column;
+        align-items: stretch; 
     }
-    .modal-content .button-group button {
+    .options-and-actions-bar .file-input-wrapper,
+    .options-and-actions-bar .send-file-button {
         width: 100%;
     }
+    .send-file-button {
+        margin-left: 0;
+    }
+
+    .risk-indicator {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.6rem;
+    }
+    .security-details-content {
+        width: 95%;
+        padding: 1rem 1.25rem;
+    }
+    .security-details-header h3 {
+        font-size: 1.1rem;
+    }
 }
 
-/* Face unlock modal */
-.face-unlock-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999; /* Ensure highest z-index */
+/* Styles for elements mentioned in inline script (captcha, face verification on other pages) */
+.captcha-section, .face-verification-section {
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-top: 1rem;
+    background-color: var(--light-bg);
 }
-
-.face-unlock-modal-content {
-    background-color: white;
-    padding: 25px;
-    border-radius: 10px;
-    max-width: 500px;
-    width: 90%;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.face-unlock-modal h3 {
+.captcha-section h4, .face-verification-section h4 {
     margin-top: 0;
-    color: #333;
-    font-size: 22px;
-    margin-bottom: 12px;
+    color: var(--primary-color);
 }
 
-/* Video container styling */
-.video-container {
-    position: relative;
-    width: 100%;
-    margin: 15px 0;
+/* Utility for visually hidden */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
     overflow: hidden;
-    border-radius: 8px;
-    background-color: #f0f0f0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-/* Face overlay canvas */
-.face-overlay-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    pointer-events: none; /* Allow clicks to pass through */
-    z-index: 2;
-}
-
-/* Buttons container */
-.buttons-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-    position: relative;
-    z-index: 10;
-}
-
-/* Button styling */
-.face-unlock-modal button {
-    margin: 0 10px;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 30px; /* Rounded buttons */
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 16px;
-    position: relative;
-    z-index: 100;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.face-unlock-modal button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.face-unlock-modal button:active {
-    transform: translateY(1px);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-.face-unlock-modal button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.face-unlock-modal .verify-btn {
-    background-color: #4CAF50;
-    color: white;
-}
-
-.face-unlock-modal .cancel-btn {
-    background-color: #f44336;
-    color: white;
-}
-
-/* Spinner for loading state */
-.spinner {
-    display: inline-block;
-    width: 25px;
-    height: 25px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: #4CAF50;
-    animation: spin 1s ease-in-out infinite;
-    margin-left: 10px;
-    vertical-align: middle;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Animation for face detection - Original */
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); } /* Using theme blue */
-    70% { box-shadow: 0 0 0 15px rgba(0, 123, 255, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
-}
-
-/* Face overlay canvas - Fix for face verification modal */
-.face-overlay-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    pointer-events: none; /* Allow clicks to pass through the canvas to elements below */
-    z-index: 1; /* Ensure it's above the video but below buttons */
-}
-
-/* Video container for face verification */
-.video-container {
-    position: relative;
-    width: 100%;
-    margin: 15px 0;
-    overflow: hidden; /* Ensure overlay doesn't spill out */
-}
-
-/* Make sure the video sits properly in its container */
-#face-unlock-video {
-    width: 100%;
-    display: block; /* Remove any default spacing */
-    border-radius: 8px;
-}
-
-/* Fix for face verification buttons */
-.face-unlock-modal .buttons-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 15px;
-    z-index: 10; /* Ensure buttons are on top */
-}
-
-/* Specific styles for the unlock button to ensure no clickability issues */
-.unlock-button {
-    position: relative !important;
-    z-index: 1000 !important;
-    cursor: pointer !important;
-    pointer-events: auto !important;
-    display: inline-block !important;
-    margin: 10px 0 !important;
-    background-color: #007bff !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 4px !important;
-    padding: 8px 16px !important;
-    font-weight: bold !important;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
-    transition: background-color 0.3s ease !important;
-}
-
-.unlock-button:hover {
-    background-color: #0056b3 !important;
-    transform: translateY(-2px) !important;
-}
-
-.unlock-button:active {
-    background-color: #004494 !important;
-    transform: translateY(1px) !important;
-}
-
-/* Make sure the message content doesn't have any styles interfering with buttons */
-.message-content {
-    pointer-events: auto !important;
-}
-
-.locked-content {
-    position: relative;
-    padding: 10px;
-    background-color: rgba(0,0,0,0.02);
-    border-left: 3px solid #007bff;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border-width: 0;
 }
