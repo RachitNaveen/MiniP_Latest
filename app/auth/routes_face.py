@@ -61,15 +61,47 @@ def unlock_item():
     data = request.get_json()
     
     if not data:
+        logger.warning("[WARNING] Request data is empty or invalid.")
         return jsonify({'success': False, 'message': 'Invalid request data.'}), 400
     
     item_type = data.get('itemType')
     item_id = data.get('itemId')
     face_image = data.get('faceImage')
     
-    if not all([item_type, item_id, face_image]):
-        return jsonify({'success': False, 'message': 'Missing required fields.'}), 400
+    # Log missing fields
+    missing_fields = []
+    if not item_type:
+        missing_fields.append('itemType')
+    if not item_id:
+        missing_fields.append('itemId')
+    if not face_image:
+        missing_fields.append('faceImage')
     
+    if missing_fields:
+        logger.warning(f"[WARNING] Missing required fields: {', '.join(missing_fields)}")
+        return jsonify({'success': False, 'message': f"Missing required fields: {', '.join(missing_fields)}"}), 400
+
+    # Debugging: Log the received faceImage
+    logger.debug(f"[DEBUG] Received faceImage: {face_image[:30] if face_image else 'None'}")
+    logger.debug(f"[DEBUG] Stored face data: {current_user.face_data[:30] if current_user.face_data else 'None'}")
+
+    # Ensure faceImage is base64-decoded
+    if ',' in face_image:
+        face_image = face_image.split(',')[1]
+
+    try:
+        img_data = base64.b64decode(face_image)
+        nparr = np.frombuffer(img_data, np.uint8)
+        img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        if img_rgb is None:
+            logger.error("[ERROR] Failed to decode face image")
+            return jsonify({'success': False, 'message': 'Invalid face image format.'}), 400
+
+    except Exception as e:
+        logger.error(f"[ERROR] Error decoding face image: {str(e)}")
+        return jsonify({'success': False, 'message': 'Error processing face image.'}), 400
+
     # First check if the user has face verification enabled
     if not current_user.face_verification_enabled:
         logger.warning(f"User {current_user.username} has no face verification enabled")
@@ -81,10 +113,25 @@ def unlock_item():
         return jsonify({'success': False, 'message': 'No face data found. Please register your face first.'}), 401
     
     try:
+        logger.debug(f"[DEBUG] Received request data: {data}")
+        logger.debug(f"[DEBUG] User face verification enabled: {current_user.face_verification_enabled}")
+        logger.debug(f"[DEBUG] User face data exists: {'Yes' if current_user.face_data else 'No'}")
+
+        if current_user.face_data:
+            try:
+                face_data_json = json.loads(current_user.face_data)
+                logger.debug(f"[DEBUG] User face encoding: {face_data_json.get('encoding', 'Not found')[:5]}... (truncated)")
+            except Exception as e:
+                logger.error(f"[ERROR] Failed to parse user face data: {e}")
+
+        logger.debug(f"[DEBUG] Submitted face image data length: {len(face_image) if face_image else 'None'}")
+
         # Extract face image from request
-        face_image = data.get('face_image')
         if not face_image:
             return jsonify({'success': False, 'message': 'Face image is required'}), 400
+
+        if ',' in face_image:
+            face_image = face_image.split(',')[1]
 
         # Verify face using FaceAPI
         is_face_match = face_api.verify_face(current_user.face_data, face_image)
@@ -171,3 +218,6 @@ def disable_face_verification():
         logger.error(f"Error disabling face verification for {current_user.username}: {str(e)}")
         db.session.rollback()
         return jsonify({'success': False, 'message': f'Error: {str(e)}'})
+
+    logger.debug(f"[DEBUG] Face verification enabled for user {current_user.username}: {current_user.face_verification_enabled}")
+    logger.debug(f"[DEBUG] Face data stored for user {current_user.username}: {'Yes' if current_user.face_data else 'No'}")

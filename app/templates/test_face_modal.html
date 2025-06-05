@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Modal Test</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script defer src="/static/face-api.js"></script>
+    <script defer src="/static/face_modal.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            display: block;
+            height: auto;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result-box {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+            min-height: 100px;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Face Verification Modal Test</h1>
+        
+        <div class="test-section">
+            <h2>Test 1: Basic Modal Functionality</h2>
+            <p>Tests that the face verification modal displays properly and can be closed.</p>
+            <button id="test1-btn">Show Face Modal</button>
+            <div id="test1-result" class="result-box">
+                <p>Results will appear here</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test 2: Verification Process</h2>
+            <p>Tests the complete verification process, including API calls.</p>
+            <button id="test2-btn">Test Verification Process</button>
+            <div id="test2-result" class="result-box">
+                <p>Results will appear here</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test 3: Button Click Handling</h2>
+            <p>Specifically tests that buttons are clickable and respond correctly.</p>
+            <button id="test3-btn">Test Button Clicks</button>
+            <div id="test3-result" class="result-box">
+                <p>Results will appear here</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test 4: Resource Cleanup</h2>
+            <p>Tests that resources are properly cleaned up after modal is closed.</p>
+            <button id="test4-btn">Test Resource Cleanup</button>
+            <div id="test4-result" class="result-box">
+                <p>Results will appear here</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Override the fetch call to /unlock_item for testing
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options) {
+            if (url === '/unlock_item') {
+                console.log('Mock fetch for /unlock_item');
+                return originalFetch('/mock_unlock_item', options);
+            }
+            return originalFetch(url, options);
+        };
+        
+        // Test 1: Basic Modal Functionality
+        document.getElementById('test1-btn').addEventListener('click', () => {
+            const result = document.getElementById('test1-result');
+            result.innerHTML = '<p>Opening modal...</p>';
+            
+            try {
+                const modal = showFaceVerificationModal('message', '123', 'testuser', (data) => {
+                    result.innerHTML += '<p class="success">Modal callback executed successfully!</p>';
+                });
+                
+                result.innerHTML += '<p>Modal displayed. Try using the Cancel button to close it.</p>';
+                
+                // Add a success message after 500ms to avoid race conditions
+                setTimeout(() => {
+                    if (document.querySelector('.face-unlock-modal')) {
+                        result.innerHTML += '<p class="success">Modal rendered successfully!</p>';
+                    } else {
+                        result.innerHTML += '<p class="error">Modal failed to render!</p>';
+                    }
+                }, 500);
+            } catch (error) {
+                result.innerHTML += `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+        
+        // Test 2: Verification Process
+        document.getElementById('test2-btn').addEventListener('click', () => {
+            const result = document.getElementById('test2-result');
+            result.innerHTML = '<p>Testing verification process...</p>';
+            
+            try {
+                showFaceVerificationModal('message', '123', 'testuser', (data) => {
+                    result.innerHTML += `<p class="success">Verification successful! Data: ${JSON.stringify(data)}</p>`;
+                });
+                
+                result.innerHTML += '<p>Modal displayed. When you see "Face detected!", click the Verify Face button.</p>';
+            } catch (error) {
+                result.innerHTML += `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+        
+        // Test 3: Button Click Handling
+        document.getElementById('test3-btn').addEventListener('click', () => {
+            const result = document.getElementById('test3-result');
+            result.innerHTML = '<p>Testing button click handling...</p>';
+            
+            try {
+                const modal = showFaceVerificationModal('message', '123', 'testuser', (data) => {
+                    result.innerHTML += '<p class="success">Verify button click worked correctly!</p>';
+                });
+                
+                // Monitor button clicks
+                setTimeout(() => {
+                    const verifyBtn = document.querySelector('.face-unlock-modal .verify-btn');
+                    const cancelBtn = document.querySelector('.face-unlock-modal .cancel-btn');
+                    
+                    if (verifyBtn && cancelBtn) {
+                        verifyBtn.addEventListener('click', () => {
+                            result.innerHTML += '<p class="success">Verify button clicked!</p>';
+                        });
+                        
+                        cancelBtn.addEventListener('click', () => {
+                            result.innerHTML += '<p class="success">Cancel button clicked!</p>';
+                        });
+                        
+                        result.innerHTML += '<p>Buttons found! Try clicking Verify and Cancel buttons.</p>';
+                    } else {
+                        result.innerHTML += '<p class="error">Button elements not found!</p>';
+                    }
+                }, 1000);
+            } catch (error) {
+                result.innerHTML += `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+        
+        // Test 4: Resource Cleanup
+        document.getElementById('test4-btn').addEventListener('click', () => {
+            const result = document.getElementById('test4-result');
+            result.innerHTML = '<p>Testing resource cleanup...</p>';
+            
+            try {
+                // Create and immediately clean up a modal
+                const modal = showFaceVerificationModal('message', '123', 'testuser', () => {});
+                
+                // Give it a moment to initialize
+                setTimeout(() => {
+                    // Check resources before cleanup
+                    result.innerHTML += `<p>Before cleanup: Modal exists: ${!!document.querySelector('.face-unlock-modal')}, 
+                        Stream active: ${!!currentVideoStream}, Interval active: ${!!currentDetectionInterval}</p>`;
+                    
+                    // Manually clean up
+                    cleanupFaceVerificationResources();
+                    
+                    // Check resources after cleanup
+                    setTimeout(() => {
+                        result.innerHTML += `<p>After cleanup: Modal exists: ${!!document.querySelector('.face-unlock-modal')}, 
+                            Stream active: ${!!currentVideoStream}, Interval active: ${!!currentDetectionInterval}</p>`;
+                            
+                        if (!document.querySelector('.face-unlock-modal') && !currentVideoStream && !currentDetectionInterval) {
+                            result.innerHTML += '<p class="success">All resources cleaned up successfully!</p>';
+                        } else {
+                            result.innerHTML += '<p class="error">Some resources were not properly cleaned up!</p>';
+                        }
+                    }, 500);
+                }, 1000);
+            } catch (error) {
+                result.innerHTML += `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

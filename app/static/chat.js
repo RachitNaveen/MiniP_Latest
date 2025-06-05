@@ -61,9 +61,15 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log("[DEBUG] Received new_message event with data:", data);
             const isCurrentUserSender = String(data.sender_id) === String(currentUserId);
             if (isCurrentUserSender || String(data.recipient_id) === String(currentUserId)) {
+                console.log("[DEBUG] Processing new_message event:", data);
                 // --- MODIFICATION: Check for is_face_locked ---
                 if (data.is_face_locked && !isCurrentUserSender) { // Only show locked for recipient
-                    addLockedItemToUI('message', data.sender_username, data); // Pass full data for potential future use (e.g. messageId)
+                    // Ensure we have an ID for the message
+                    if (!data.id && !data.message_id) {
+                        data.id = 'msg_' + Date.now();
+                    }
+                    console.log("[DEBUG] Adding locked message from socket event:", data);
+                    addLockedItemToUI('message', data.sender_username, data); // Pass full data for potential future use
                 } else {
                     addMessageToUI(data.content, data.sender_username, isCurrentUserSender, data.is_face_locked);
                 }
@@ -213,7 +219,12 @@ document.addEventListener('DOMContentLoaded', function () {
         function addMessageToUI(content, senderUsername, isCurrentUserSender, isLockedForSender = false) {
             // For face-locked messages that need to be unlocked
             if (isLockedForSender && !isCurrentUserSender) {
-                addLockedItemToUI('message', senderUsername, { id: content.id, type: 'message' });
+                // Ensure we have a proper ID structure, content could be string or object
+                const messageId = typeof content === 'object' && content.id ? content.id : 
+                                 typeof content === 'object' && content._id ? content._id : 'msg_' + Date.now();
+                
+                console.log("[DEBUG] Adding locked message UI with ID:", messageId);
+                addLockedItemToUI('message', senderUsername, { id: messageId, type: 'message' });
                 return;
             }
             if (!messageContainer) return;
@@ -271,253 +282,122 @@ document.addEventListener('DOMContentLoaded', function () {
             messageContainer.scrollTop = messageContainer.scrollHeight;
         }
 
-        // --- NEW FUNCTION: To display a locked item placeholder ---
+        // --- Function to display a locked item placeholder ---
         function addLockedItemToUI(itemType, senderUsername, itemData) {
             if (!messageContainer) return;
+            
+            // Create message container
             const messageDiv = document.createElement('div');
-            // Note: For recipients, locked items are always 'received'
             messageDiv.className = 'message received locked-item-placeholder'; 
 
+            // Create user info
             const userDiv = document.createElement('div');
             userDiv.className = 'message-user';
             userDiv.textContent = senderUsername;
 
+            // Create content container
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content locked-content';
             
+            // Add lock icon
             const lockIcon = document.createElement('span');
-            lockIcon.className = 'lock-icon'; // Style this with a lock icon (e.g., emoji or SVG)
+            lockIcon.className = 'lock-icon';
             lockIcon.innerHTML = '&#x1F512; '; // Lock emoji 🔒
 
+            // Add lock text
             const lockText = document.createElement('span');
             lockText.textContent = `This ${itemType} is Face Locked. `;
             
+            // Create unlock button with proper styling
             const unlockButton = document.createElement('button');
-            unlockButton.className = 'unlock-button secondary-action outline'; // Use your button styles
+            unlockButton.className = 'unlock-button';
+            unlockButton.style.backgroundColor = '#007bff';  // Use blue color
+            unlockButton.style.color = 'white';
+            unlockButton.style.border = 'none';
+            unlockButton.style.borderRadius = '4px';
+            unlockButton.style.padding = '8px 16px';
+            unlockButton.style.margin = '5px 0';
+            unlockButton.style.cursor = 'pointer';
+            unlockButton.style.fontWeight = 'bold';
+            unlockButton.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+            unlockButton.style.position = 'relative';
+            unlockButton.style.zIndex = '1000'; // Ensure it's above other elements
             unlockButton.textContent = 'Unlock';
-            // TODO: Add event listener to unlockButton to trigger face verification for this item
-            // This will be a more complex step, for now it's just a button.
-            unlockButton.onclick = () => {
-                // Store item data for later use
-                // Get the ID from the appropriate property depending on the data structure
-                const itemId = itemData.id || itemData.message_id || itemData.file_id;
+            
+            // Add a direct onclick handler as a backup method
+            unlockButton.onclick = function(e) {
+                console.log("[DEBUG] Unlock button clicked via onclick property");
                 
-                // Create a modal for face verification
-                const modal = document.createElement('div');
-                modal.className = 'face-unlock-modal';
-                modal.innerHTML = `
-                    <div class="face-unlock-modal-content">
-                        <h3>Face Verification Required</h3>
-                        <p>Please verify your face to unlock this ${itemType}</p>
-                        <div id="face-unlock-status" class="message"></div>
-                        <video id="face-unlock-video" autoplay style="width: 100%; border: 1px solid #ccc;"></video>
-                        <div>
-                            <button id="verify-unlock-btn" class="btn">Verify Face</button>
-                            <button id="cancel-unlock-btn" class="btn">Cancel</button>
-                        </div>
-                    </div>
-                `;
-                
-                document.body.appendChild(modal);
-                
-                // Get video element and buttons
-                const video = document.getElementById('face-unlock-video');
-                const verifyBtn = document.getElementById('verify-unlock-btn');
-                const cancelBtn = document.getElementById('cancel-unlock-btn');
-                const statusDiv = document.getElementById('face-unlock-status');
-                
-                // Start camera with high quality settings
-                navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        width: { ideal: 640 },    // Use smaller resolution for better performance
-                        height: { ideal: 480 },
-                        facingMode: "user"       // Use front camera
-                    } 
-                })
-                    .then((stream) => {
-                        video.srcObject = stream;
-                        
-                        // Wait for video to be initialized
-                        video.onloadedmetadata = () => {
-                            video.play();
-
-                            // Add a delay to ensure camera is fully initialized
-                            setTimeout(async () => {
-                                statusDiv.textContent = 'Camera ready. Center your face and click "Verify Face"';
-                                statusDiv.className = 'message success';
-
-                                // Load face-api.js models if not already loaded
-                                if (!faceapi.nets.tinyFaceDetector.params) {
-                                    await faceapi.nets.tinyFaceDetector.loadFromUri('/static/face-api-models');
-                                    await faceapi.nets.faceLandmark68Net.loadFromUri('/static/face-api-models');
-                                    console.log("Face-api models loaded for modal.");
-                                }
-
-                                // --- Moved Face detection and landmark drawing here ---
-                                const detectFaceFeatures = async () => {
-                                    if (!video || video.paused || video.ended) return; // Ensure video is active
-                                    const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
-                                    let overlayCanvas = video.parentElement.querySelector('.face-overlay-canvas');
-                                    if (!overlayCanvas) {
-                                        overlayCanvas = document.createElement('canvas');
-                                        overlayCanvas.className = 'face-overlay-canvas'; // Add a class for potential styling/selection
-                                        overlayCanvas.style.position = 'absolute';
-                                        overlayCanvas.style.top = video.offsetTop + 'px';
-                                        overlayCanvas.style.left = video.offsetLeft + 'px';
-                                        overlayCanvas.width = video.clientWidth;
-                                        overlayCanvas.height = video.clientHeight;
-                                        video.parentElement.appendChild(overlayCanvas);
-                                    }
-                                    const ctx = overlayCanvas.getContext('2d');
-                                    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height); // Clear previous drawings
-
-                                    if (detections) {
-                                        faceapi.draw.drawFaceLandmarks(ctx, detections.landmarks);
-                                        if (statusDiv.textContent.startsWith('No face detected') || statusDiv.textContent.startsWith('Camera ready')){
-                                            statusDiv.textContent = 'Face detected! Position your face properly.';
-                                            statusDiv.className = 'message success';
-                                        }
-                                    } else {
-                                        if (!statusDiv.textContent.startsWith('Verifying')){
-                                            statusDiv.textContent = 'No face detected. Please position your face in the camera.';
-                                            statusDiv.className = 'message error';
-                                        }
-                                    }
-                                };
-                                // Continuously detect facial features
-                                const detectionInterval = setInterval(detectFaceFeatures, 500);
-
-                                // Clear interval when modal is closed or verification happens
-                                const originalCancelClick = cancelBtn.onclick;
-                                cancelBtn.onclick = () => {
-                                    clearInterval(detectionInterval);
-                                    if(originalCancelClick) originalCancelClick();
-                                };
-
-                                const originalVerifyClick = verifyBtn.onclick;
-                                verifyBtn.onclick = async (event) => {
-                                    clearInterval(detectionInterval);
-                                    if(originalVerifyClick) await originalVerifyClick(event);
-                                };
-
-                            }, 1000);
-                        };
-                        
-                        // Handle verify button click
-                        verifyBtn.addEventListener('click', async () => {                                try {
-                                    statusDiv.textContent = 'Verifying...';
-                                    statusDiv.className = 'message info';
-                                    
-                                    // Wait for video to be ready
-                                    if (!video.videoWidth) {
-                                        statusDiv.textContent = 'Please wait for camera to initialize...';
-                                        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
-                                        if (!video.videoWidth) {
-                                            statusDiv.textContent = 'Camera not initialized. Please try again.';
-                                            statusDiv.className = 'message error';
-                                            return;
-                                        }
-                                    }
-                                         // Capture frame
-                                const canvas = document.createElement('canvas');
-                                canvas.width = video.videoWidth;
-                                canvas.height = video.videoHeight;
-                                canvas.getContext('2d').drawImage(video, 0, 0);
-                                
-                                // Use higher quality image format (quality 0.95)
-                                const faceImage = canvas.toDataURL('image/jpeg', 0.95);
-                                
-                                // Add loading spinner
-                                const spinner = document.createElement('div');
-                                spinner.className = 'spinner';
-                                statusDiv.appendChild(spinner);
-
-                                // Send to server
-                                console.log(`[DEBUG] Sending face verification request to unlock ${itemType} with ID ${itemId}`);
-                                statusDiv.textContent = 'Sending face data to server...';
-
-                                const csrfToken = getCSRFToken();
-                                console.log('[DEBUG] CSRF Token available:', !!csrfToken);
-                                console.log(`[DEBUG] Image data size: ${Math.round(faceImage.length / 1024)}KB`);
-
-                                const response = await fetch('/unlock_item', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRFToken': csrfToken
-                                    },
-                                    body: JSON.stringify({
-                                        itemType: itemType,
-                                        itemId: itemId,
-                                        faceImage: faceImage
-                                    })
-                                });
-
-                                const data = await response.json();
-                                console.log(`[DEBUG] Face verification response:`, data);
-
-                                // Remove spinner
-                                spinner.remove();
-
-                                if (data.success) {
-                                    console.log(`[DEBUG] Successfully unlocked ${itemType}:`, data);
-                                    statusDiv.textContent = 'Face verification successful!';
-                                    statusDiv.className = 'message success';
-
-                                    // Add short delay before stopping video and removing modal
-                                    setTimeout(() => {
-                                        // Stop video
-                                        stream.getTracks().forEach(track => track.stop());
-
-                                        // Remove modal
-                                        document.body.removeChild(modal);
-
-                                        // Replace locked content with unlocked content
-                                        if (itemType === 'message') {
-                                            messageDiv.innerHTML = '';
-                                            addMessageToUI(data.content, senderUsername, false, false);
-                                        } else if (itemType === 'file') {
-                                            messageDiv.innerHTML = '';
-                                            addFileToUI(data.fileUrl, data.fileName, senderUsername, false, false);
-                                        }
-
-                                        // Show notification
-                                        showCustomAlert(`Face verification successful! ${itemType} unlocked.`);
-                                    }, 1000);
-                                } else {
-                                    console.error(`[DEBUG] Failed to unlock ${itemType}:`, data.message);
-                                    statusDiv.textContent = data.message || 'Face verification failed. Please try again.';
-                                    statusDiv.className = 'message error';
-                                    
-                                    // Enable retry after a short delay
-                                    setTimeout(() => {
-                                        verifyBtn.disabled = false;
-                                        statusDiv.textContent += ' (You may try again)';
-                                    }, 2000);
-                                }
-                            } catch (error) {
-                                console.error('Error verifying face:', error);
-                                statusDiv.textContent = 'Error verifying face';
-                                statusDiv.className = 'message error';
-                            }
-                        });
-                        
-                        // Handle cancel button click
-                        cancelBtn.addEventListener('click', () => {
-                            // Stop video
-                            stream.getTracks().forEach(track => track.stop());
-                            
-                            // Remove modal
-                            document.body.removeChild(modal);
-                        });
-                    })
-                    .catch((error) => {
-                        console.error('Error accessing camera:', error);
-                        statusDiv.textContent = 'Camera access denied';
-                        statusDiv.className = 'message error';
+                // Try directly showing the face modal to test if the issue is with the button or with the modal
+                try {
+                    // This direct call bypasses event listeners and other potential issues
+                    showFaceVerificationModal(itemType, 'test_direct_call', senderUsername, (data) => {
+                        console.log("[DEBUG] Direct modal call succeeded");
+                        alert("Face verification modal called directly");
                     });
+                } catch (err) {
+                    console.error("[DEBUG] Error in direct modal call:", err);
+                    alert("Error showing face verification modal: " + err.message);
+                }
             };
+            
+            // Log the itemData for debugging
+            console.log("[DEBUG] Item data for unlock:", itemData);
+            
+            // Add click handler for unlock button
+            console.log("[DEBUG] Setting up unlock button click handler");
+            unlockButton.addEventListener('click', function(e) {
+                // Prevent default to ensure the event is captured
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("[DEBUG] Unlock button clicked via addEventListener");
+                
+                // Get the item ID, with better logging for debugging
+                let itemId;
+                if (itemData.id) {
+                    itemId = itemData.id;
+                    console.log("[DEBUG] Using itemData.id:", itemId);
+                } else if (itemData.message_id) {
+                    itemId = itemData.message_id;
+                    console.log("[DEBUG] Using itemData.message_id:", itemId);
+                } else if (itemData.file_id) {
+                    itemId = itemData.file_id;
+                    console.log("[DEBUG] Using itemData.file_id:", itemId);
+                } else {
+                    // Fallbacks for different structures
+                    itemId = itemData._id || itemData.messageId || itemData.fileId || 'unknown';
+                    console.log("[DEBUG] Using fallback itemId:", itemId);
+                }
+                
+                console.log(`[DEBUG] Unlocking ${itemType} with ID: ${itemId}`);
+                
+                // Define success callback ahead of time
+                const handleVerificationSuccess = function(data) {
+                    console.log(`[DEBUG] Face verification successful callback executed: ${itemType} unlocked`, data);
+                    
+                    // On successful verification, update the UI with the unlocked content
+                    if (itemType === 'message') {
+                        messageDiv.innerHTML = '';
+                        addMessageToUI(data.content, senderUsername, false, false);
+                    } else if (itemType === 'file') {
+                        messageDiv.innerHTML = '';
+                        addFileToUI(data.fileUrl, data.fileName, senderUsername, false, false);
+                    }
+                    
+                    // Show notification
+                    showCustomAlert(`Face verification successful! ${itemType} unlocked.`);
+                };
+                
+                // Use our dedicated face modal handler from face_modal.js
+                try {
+                    showFaceVerificationModal(itemType, itemId, senderUsername, handleVerificationSuccess);
+                } catch (err) {
+                    console.error("[DEBUG] Error showing face verification modal:", err);
+                    showCustomAlert("Error initializing face verification. Please try again.");
+                }
+            });
 
+            // Assemble the message
             contentDiv.appendChild(lockIcon);
             contentDiv.appendChild(lockText);
             contentDiv.appendChild(unlockButton);

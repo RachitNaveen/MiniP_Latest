@@ -357,12 +357,8 @@ button:disabled {
 .video-container {
     position: relative;
     width: 100%;
-    max-width: 640px;
-    margin: 20px auto;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    background-color: #000; /* Typically video players have black background */
+    margin: 15px 0;
+    overflow: hidden; /* Ensure overlay doesn't spill out */
 }
 
 /* Face Verification Modal - Original */
@@ -552,51 +548,188 @@ button:disabled {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 9999; /* Ensure highest z-index */
 }
 
 .face-unlock-modal-content {
     background-color: white;
-    padding: 20px;
+    padding: 25px;
     border-radius: 10px;
     max-width: 500px;
-    width: 100%;
+    width: 90%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 .face-unlock-modal h3 {
     margin-top: 0;
+    color: #333;
+    font-size: 22px;
+    margin-bottom: 12px;
 }
 
+/* Video container styling */
+.video-container {
+    position: relative;
+    width: 100%;
+    margin: 15px 0;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: #f0f0f0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Face overlay canvas */
+.face-overlay-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* Allow clicks to pass through */
+    z-index: 2;
+}
+
+/* Buttons container */
+.buttons-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    position: relative;
+    z-index: 10;
+}
+
+/* Button styling */
 .face-unlock-modal button {
-    margin-top: 10px;
-    margin-right: 10px;
-    padding: 8px 15px;
+    margin: 0 10px;
+    padding: 12px 24px;
     border: none;
-    border-radius: 4px;
+    border-radius: 30px; /* Rounded buttons */
     cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    position: relative;
+    z-index: 100;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.face-unlock-modal #verify-unlock-btn {
+.face-unlock-modal button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.face-unlock-modal button:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.face-unlock-modal button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.face-unlock-modal .verify-btn {
     background-color: #4CAF50;
     color: white;
 }
 
-.face-unlock-modal #cancel-unlock-btn {
+.face-unlock-modal .cancel-btn {
     background-color: #f44336;
     color: white;
+}
+
+/* Spinner for loading state */
+.spinner {
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #4CAF50;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* Animation for face detection - Original */
 @keyframes pulse {
     0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); } /* Using theme blue */
-    70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+    70% { box-shadow: 0 0 0 15px rgba(0, 123, 255, 0); }
     100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
 }
 
-.face-detection-active .video-container {
-    animation: pulse 2s infinite;
+/* Face overlay canvas - Fix for face verification modal */
+.face-overlay-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* Allow clicks to pass through the canvas to elements below */
+    z-index: 1; /* Ensure it's above the video but below buttons */
 }
 
-.g-recaptcha {
+/* Video container for face verification */
+.video-container {
+    position: relative;
+    width: 100%;
     margin: 15px 0;
+    overflow: hidden; /* Ensure overlay doesn't spill out */
+}
+
+/* Make sure the video sits properly in its container */
+#face-unlock-video {
+    width: 100%;
+    display: block; /* Remove any default spacing */
+    border-radius: 8px;
+}
+
+/* Fix for face verification buttons */
+.face-unlock-modal .buttons-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+    z-index: 10; /* Ensure buttons are on top */
+}
+
+/* Specific styles for the unlock button to ensure no clickability issues */
+.unlock-button {
+    position: relative !important;
+    z-index: 1000 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    display: inline-block !important;
+    margin: 10px 0 !important;
+    background-color: #007bff !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 8px 16px !important;
+    font-weight: bold !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+    transition: background-color 0.3s ease !important;
+}
+
+.unlock-button:hover {
+    background-color: #0056b3 !important;
+    transform: translateY(-2px) !important;
+}
+
+.unlock-button:active {
+    background-color: #004494 !important;
+    transform: translateY(1px) !important;
+}
+
+/* Make sure the message content doesn't have any styles interfering with buttons */
+.message-content {
+    pointer-events: auto !important;
+}
+
+.locked-content {
+    position: relative;
+    padding: 10px;
+    background-color: rgba(0,0,0,0.02);
+    border-left: 3px solid #007bff;
 }
