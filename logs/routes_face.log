@@ -1095,3 +1095,4 @@
 2025-06-06 01:39:09,238 - INFO - 127.0.0.1 - - [06/Jun/2025 01:39:09] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
 2025-06-06 01:39:09,239 - INFO - 127.0.0.1 - - [06/Jun/2025 01:39:09] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
 2025-06-06 01:39:09,241 - INFO - 127.0.0.1 - - [06/Jun/2025 01:39:09] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-06-06 01:39:47,207 - INFO - 127.0.0.1 - - [06/Jun/2025 01:39:47] "GET /socket.io/?EIO=4&transport=websocket&sid=rqKQ_izeSuDyjLhUAAAG HTTP/1.1" 200 -
