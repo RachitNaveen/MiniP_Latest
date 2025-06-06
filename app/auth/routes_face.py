@@ -130,6 +130,12 @@ def unlock_item():
         match_percentage = (1 - face_distance) * 100
 
         if results[0]:
+            # Log successful face verification
+            from app.models.models import FaceVerificationLog
+            log_entry = FaceVerificationLog(user_id=current_user.id, success=True)
+            db.session.add(log_entry)
+            db.session.commit()
+
             # Retrieve the content based on item type
             if item_type == 'message':
                 message = Message.query.get(item_id)

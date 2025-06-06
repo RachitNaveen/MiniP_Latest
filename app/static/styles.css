@@ -659,3 +659,32 @@ button:disabled, .button-like-label.disabled {
     white-space: nowrap;
     border-width: 0;
 }
+
+/* Updated Face Unlock Camera Styles */
+.unlock-camera-container {
+    display: none;
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 25%;
+    height: 25%;
+    background-color: var(--light-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    z-index: 1000;
+}
+
+#unlockCamera {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--border-radius);
+}
+
+#stopCameraButton {
+    margin-top: 0.5rem;
+    position: absolute;
+    bottom: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+}
