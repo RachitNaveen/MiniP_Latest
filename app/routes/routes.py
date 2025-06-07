@@ -386,10 +386,10 @@ def send_message():
 
     return jsonify({'success': True, 'message_id': message.id})
 
-# Get messages API
-@bp.route('/get_messages')
+# Rename the first get_messages function to avoid conflict
+@bp.route('/api/messages')
 @login_required
-def get_messages():
+def get_all_messages():
     recipient_id = request.args.get('recipient_id', type=int)
     if not recipient_id:
         return jsonify({'success': False, 'message': 'Recipient ID is required'}), 400
@@ -489,3 +489,85 @@ def upload_file():
     socketio.emit('new_file', payload, room=f"user_{recipient_id}")
 
     return jsonify({'success': True, 'file_url': file_url, 'file_name': filename})
+
+@bp.route('/react')
+@login_required
+def react_chat():
+    """
+    Serve the React frontend for the chat application
+    """
+    return render_template('react-chat.html')
+
+@bp.route('/api/users')
+@login_required
+def get_users():
+    """API endpoint to get all users for the chat interface"""
+    users = User.query.filter(User.id != current_user.id).all()
+    return jsonify({
+        'users': [
+            {
+                'id': str(user.id),
+                'username': user.username,
+                'isOnline': True  # For demo purposes, all users are online
+            }
+            for user in users
+        ]
+    })
+
+@bp.route('/api/messages/<recipient_id>')
+@login_required
+def get_messages(recipient_id):
+    """API endpoint to get messages between the current user and a specific recipient"""
+    # Get messages where current_user is either the sender or recipient
+    messages = Message.query.filter(
+        ((Message.sender_id == current_user.id) & (Message.recipient_id == recipient_id)) |
+        ((Message.sender_id == recipient_id) & (Message.recipient_id == current_user.id))
+    ).order_by(Message.timestamp).all()
+    
+    return jsonify({
+        'messages': [
+            {
+                'id': msg.id,
+                'content': msg.content,
+                'sender': msg.sender.username,
+                'recipient': msg.recipient.username,
+                'timestamp': msg.timestamp.isoformat(),
+                'isLocked': msg.is_face_locked,
+                'filePath': msg.file_path
+            }
+            for msg in messages
+        ]
+    })
+
+@bp.route('/set_security_level_login', methods=['POST'])
+@login_required
+def set_security_level_login():
+    """Set the security level during login."""
+    data = request.get_json()
+    if not data or 'security_level' not in data:
+        return jsonify({'success': False, 'message': 'Invalid request data'}), 400
+
+    level = data['security_level']
+    session['security_level'] = level
+
+    # Update the response to include levelName and requiredFactors
+    level_name_map = {
+        'low': 'Low',
+        'medium': 'Medium',
+        'high': 'High'
+    }
+    required_factors_map = {
+        'low': 'Password',
+        'medium': 'Password, CAPTCHA',
+        'high': 'Password, CAPTCHA, Face Verification'
+    }
+
+    level_name = level_name_map.get(level, 'Unknown')
+    required_factors = required_factors_map.get(level, 'Unknown')
+
+    return jsonify({
+        'success': True,
+        'message': f'Security level set to {level}',
+        'levelName': level_name,
+        'requiredFactors': required_factors
+    }), 200

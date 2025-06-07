@@ -75,144 +75,86 @@ The AI-based Multi-Factor Authentication system works as follows:
 **For Docker Deployment:**
 - Docker Desktop installed and running
 
-## ⚙️ Installation & Setup
+## 🛠️ Installation & Setup
 
-### Method 1: Local Setup (using Python Virtual Environment)
+### Prerequisites
+- Python 3.8+
+- Node.js 16+
+- Docker (optional, for containerized deployment)
 
-1. **Clone the repository:**
+### Backend Setup
+1. Create a virtual environment and activate it:
    ```bash
-   git clone https://github.com/yourusername/securechat.git
-   cd securechat  # Or your project directory name (minip_latest)
-   ```
-
-2. **Create and activate a virtual environment:**
-   ```bash
-   # On macOS/Linux
    python3 -m venv venv
-   source venv/bin/activate
-   
-   # On Windows
-   python -m venv venv
-   venv\Scripts\activate
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. **Install dependencies:**
+2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-   
-   **Common Installation Issues:**
-   - For face_recognition/dlib installation errors:
-     - On macOS: `brew install cmake`
-     - On Ubuntu: `sudo apt-get install -y cmake`
-     - On Windows: Install CMake from https://cmake.org/download/
-   - For pkg_resources errors: `pip install --upgrade setuptools`
 
-4. **Download Face-API.js models:**
+3. Initialize the database:
    ```bash
-   mkdir -p app/static/face-api-models
-   ```
-   
-   Download the model weights from this GitHub repository: https://github.com/justadudewhohacks/face-api.js/tree/master/weights
-   
-   Required model files:
-   - face_landmark_68_model-shard1
-   - face_landmark_68_model-weights_manifest.json
-   - face_recognition_model-shard1
-   - face_recognition_model-shard2
-   - face_recognition_model-weights_manifest.json
-   - tiny_face_detector_model-shard1
-   - tiny_face_detector_model-weights_manifest.json
-   
-   Place all downloaded files in the `app/static/face-api-models/` directory.
-
-5. **Initialize the database and apply migrations:**
-   ```bash
-   python init_db.py
    flask db upgrade
+   python init_db.py
    ```
-   This will create the necessary database tables and apply all migrations.
 
-6. **Run the application:**
+4. Run the Flask app:
    ```bash
-   python run.py
+   flask run
    ```
-   The application will be available at `http://127.0.0.1:5000`.
 
-### Method 2: Docker Setup
-
-1. **Clone the repository:**
+### Frontend Setup
+1. Navigate to the React app directory:
    ```bash
-   git clone https://github.com/yourusername/securechat.git
-   cd securechat  # Or your project directory name (minip_latest)
+   cd app/static/react-app
    ```
 
-2. **Download Face-API.js models:**
-   Follow step 4 from the Local Setup instructions to download the required model files and place them in `app/static/face-api-models/`.
-
-3. **Build the Docker image:**
+2. Install dependencies:
    ```bash
-   docker build -t securechat-app .
+   npm install
    ```
 
-4. **Run the Docker container:**
+3. Start the development server:
    ```bash
-   docker run -p 5000:5000 -v "$(pwd)/instance":/app/instance --name securechat-container securechat-app
+   npm run dev
    ```
-   - `-p 5000:5000`: Maps port 5000 on your host to port 5000 in the container.
-   - `-v "$(pwd)/instance":/app/instance`: Mounts the local `instance` directory for database persistence.
-   - `--name securechat-container`: Assigns a name to the running container.
 
-   The application will be available at `http://localhost:5000`.
-
-## 🐳 Docker Deployment
-
-### Build and Run the Application with Docker
-
-1. **Build the Docker Image:**
+### Running with Docker
+1. Build the Docker image:
    ```bash
    docker build -t securechat .
    ```
 
-2. **Run the Docker Container:**
+2. Run the container:
    ```bash
-   docker run -p 5000:5000 -v $(pwd)/instance:/app/instance securechat
+   docker run -p 5000:5000 -p 5173:5173 securechat
    ```
-
-   - `-p 5000:5000`: Maps port 5000 on your host to port 5000 in the container.
-   - `-v $(pwd)/instance:/app/instance`: Mounts the `instance` directory for persistent data storage.
-
-3. **Access the Application:**
-   Open your browser and navigate to `http://localhost:5000`.
 
 ## 🚀 Running the Application
 
-1. **Start the server:**
+1. Start the Flask backend:
    ```bash
-   # If using local setup
-   python run.py
-   
-   # If using Docker, the application starts automatically after running the container
+   flask run
    ```
 
-2. **Access the application:**
-   Open your browser and navigate to:
-   ```
-   http://localhost:5000
+2. Start the React frontend:
+   ```bash
+   cd app/static/react-app
+   npm run dev
    ```
 
-3. **Register a new user:**
-   - Click "Register" and fill in the form
-   - Create a username and password (must include uppercase, lowercase, number, and special character)
-   - Complete the CAPTCHA verification
-   - Allow camera access for face verification setup (if prompted)
-
-4. **Log in with your credentials:**
-   - Enter your username and password
-   - Complete any additional security steps based on your assessed risk level
-   - The system will show you the security assessment and required factors
+3. Access the application:
+   - Flask API: `http://127.0.0.1:5000`
+   - React Frontend: `http://127.0.0.1:5173`
 
 ## 🧪 Testing the AI-MFA System
+
+Run the test suite to verify the functionality:
+```bash
+pytest
+```
 
 The project includes several tools for testing the AI-based MFA system:
 

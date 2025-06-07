@@ -1,0 +1,24 @@
+import React from 'react';
+import { ChatLayout } from './layouts/ChatLayout';
+import { ChatContainer } from './components/ChatContainer';
+import { RiskInformation } from './components/RiskInformation';
+import { useSecurity } from './context/SecurityContext';
+
+function App() {
+  const { riskLevel } = useSecurity();
+
+  return (
+    <ChatLayout>
+      <div className="flex flex-col h-screen">
+        <ChatContainer />
+        
+        {/* Additional Info Panel */}
+        <div className="fixed top-24 right-4 w-64">
+          <RiskInformation riskLevel={riskLevel} />
+        </div>
+      </div>
+    </ChatLayout>
+  );
+}
+
+export default App;

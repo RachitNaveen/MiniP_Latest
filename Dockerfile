@@ -51,6 +51,22 @@ COPY . .
 # For data persistence across container restarts, mount a volume to /app/instance.
 RUN mkdir -p /app/instance
 
+# Install Node.js for building the React frontend
+RUN apt-get update && apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+# Navigate to the React app directory and install dependencies
+WORKDIR /app/app/static/react-app
+RUN npm install
+
+# Build the React app
+RUN npm run build
+
+# Move back to the Flask app directory
+WORKDIR /app
+
 # Expose the port the app runs on (Flask default is 5000)
 EXPOSE 5000
 

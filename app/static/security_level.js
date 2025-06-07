@@ -170,70 +170,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({ security_level: selectedLevel })
             })
             .then(response => response.json())
-            .then(data => {                    if (data.success) {
-                        console.log(`[SECURITY] Security level set to ${data.levelName} successfully`);
-                        console.log(`[SECURITY] Response data:`, data);
-                        
-                        // Show an alert to the user
-                        alert(`Security level set to ${data.levelName}.\nRequired factors: ${data.requiredFactors}`);
-                        
-                        // Update the security info panel
-                        if (securityInfo) {
-                            // Create HTML for the security info
-                            let infoHTML = `
-                                <div style="display: flex; align-items: center; margin-bottom: 5px;">
-                                    <span style="font-weight: bold; margin-right: 8px;">Current Mode:</span>
-                                    <strong>${data.levelName}</strong>
-                            `;
-                        
-                        // Add AI indicator if in AI mode
-                        if (selectedLevel === 'ai') {
-                            infoHTML += `
-                                <span class="ai-indicator" style="display: inline-block; margin-left: 10px; font-size: 0.8em; padding: 2px 8px; background-color: #3F51B5; color: white; border-radius: 10px; animation: pulse 2s infinite;">AI ACTIVE</span>
-                            `;
-                        }
-                        
-                        infoHTML += `
+            .then(data => {
+                if (data.success) {
+                    console.log(`[SECURITY] Security level set to ${data.levelName} successfully`);
+                    console.log(`[SECURITY] Response data:`, data);
+
+                    // Show an alert to the user
+                    alert(`Security level set to ${data.levelName}.
+Required factors: ${data.requiredFactors}`);
+
+                    // Update the security info panel
+                    if (securityInfo) {
+                        // Create HTML for the security info
+                        let infoHTML = `
+                            <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                <span style="font-weight: bold; margin-right: 8px;">Current Mode:</span>
+                                <strong>${data.levelName}</strong>
                             </div>
                             <p style="margin: 5px 0 0 0;">Required factors: <strong>${data.requiredFactors}</strong></p>
                         `;
-                        
-                        // Add extra information about the security level change
-                        infoHTML += `
-                            <p style="margin: 10px 0; padding: 5px; background-color: #d4edda; color: #155724; border-radius: 4px;">
-                                <strong>✓ Security level updated!</strong> Log in using "testuser2" and "password123" to test this level.
-                            </p>
-                        `;
-                        
+
                         securityInfo.innerHTML = infoHTML;
-                        
-                        // Add visual feedback
-                        securityInfo.style.transition = 'all 0.3s ease';
-                        securityInfo.style.boxShadow = '0 0 10px rgba(0,128,0,0.5)';
-                        setTimeout(() => {
-                            securityInfo.style.boxShadow = 'none';
-                        }, 1500);
-                        
-                        // Also show an alert for better visibility
-                        alert(`Security level set to ${data.levelName}.\nRequired factors: ${data.requiredFactors}\n\nTo test this level, use:\nUsername: testuser2\nPassword: password123`);
-                        
-                        // Reload the page to update the form structure based on the new security level
-                        setTimeout(() => {
-                            location.reload();
-                        }, 500);
-                    }
-                    
-                    // If there are risk details in the response, display them
-                    if (data.riskDetails) {
-                        console.log('[SECURITY] Risk details received:', data.riskDetails);
-                        displaySecurityAssessment(data.riskDetails);
                     }
                 } else {
-                    console.error('[SECURITY] Error setting security level:', data.message);
+                    console.error(`[SECURITY] Failed to set security level: ${data.message}`);
+                    alert(`Failed to set security level: ${data.message}`);
                 }
             })
             .catch(error => {
-                console.error('Error setting security level:', error);
+                console.error(`[SECURITY] Error setting security level:`, error);
+                alert(`Error setting security level: ${error.message}`);
             });
         });
     } else {
