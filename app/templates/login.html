@@ -161,24 +161,34 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
       document.addEventListener('DOMContentLoaded', function() {
         var securityLevelSelect = document.getElementById('security-level');
-        var captchaSection = document.querySelector('.form-group:nth-child(3)');
-        var faceVerificationInfo = document.querySelector('.security-selection div:nth-child(4)');
+        var setLevelBtn = document.getElementById('set-level-btn');
 
-        function updateAuthenticationFactors() {
+        // Set up the click handler for the Apply Level button
+        setLevelBtn.addEventListener('click', function() {
           var selectedLevel = securityLevelSelect.value;
-          if (selectedLevel === 'low') {
-            captchaSection.style.display = 'none';
-            faceVerificationInfo.style.display = 'none';
-          } else if (selectedLevel === 'medium') {
-            captchaSection.style.display = 'block';
-            faceVerificationInfo.style.display = 'none';
-          } else if (selectedLevel === 'high') {
-            captchaSection.style.display = 'block';
-            faceVerificationInfo.style.display = 'block';
-          }
-        }
-
-        securityLevelSelect.addEventListener('change', updateAuthenticationFactors);
+          console.log('Setting security level to: ' + selectedLevel);
+          
+          // After setting the security level via fetch, reload the page to update the form
+          fetch('/set_security_level_login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ security_level: selectedLevel })
+          })
+          .then(function(response) {
+            return response.json();
+          })
+          .then(function(data) {
+            if (data.success) {
+              // Show a message and reload the page to update the form fields
+              alert('Security level set to ' + data.levelName + '.\nRequired factors: ' + data.requiredFactors);
+              // Forcefully reload the page to ensure the server re-renders with proper security level
+              window.location.href = window.location.pathname + '?timestamp=' + new Date().getTime();
+            }
+          });
+        });
         updateAuthenticationFactors();
       });
       </script>

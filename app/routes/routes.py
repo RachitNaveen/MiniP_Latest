@@ -539,31 +539,8 @@ def get_messages(recipient_id):
         ]
     })
 
-@bp.route('/set_security_level_login', methods=['POST'])
-@login_required
-def set_security_level_login():
-    """Set the security level during login."""
-    data = request.get_json()
-    if not data or 'security_level' not in data:
-        return jsonify({'success': False, 'message': 'Invalid request data'}), 400
-
-    level = data['security_level']
-    session['security_level'] = level
-
-    # Update the response to include levelName and requiredFactors
-    level_name_map = {
-        'low': 'Low',
-        'medium': 'Medium',
-        'high': 'High'
-    }
-    required_factors_map = {
-        'low': 'Password',
-        'medium': 'Password, CAPTCHA',
-        'high': 'Password, CAPTCHA, Face Verification'
-    }
-
-    level_name = level_name_map.get(level, 'Unknown')
-    required_factors = required_factors_map.get(level, 'Unknown')
+# The /set_security_level_login route is now handled in security/routes_security.py
+# This removes the duplicate route
 
     return jsonify({
         'success': True,

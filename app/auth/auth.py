@@ -198,8 +198,14 @@ def login():
     show_captcha = security_level in [SECURITY_LEVEL_MEDIUM, SECURITY_LEVEL_HIGH]
     
     # For low security level, make the CAPTCHA optional in the form validation
+    # But still require the password
     if security_level == SECURITY_LEVEL_LOW:
-        form.recaptcha.validators = []
+        form.recaptcha.validators = []  # Remove CAPTCHA validation for low security
+    
+    # If this is a GET request, just render the template with the appropriate fields
+    if request.method == 'GET':
+        print(f"[DEBUG] Rendering login page with security level: {security_level}, show_captcha: {show_captcha}")
+        return render_template('login.html', form=form, show_captcha=show_captcha)
         
     # Basic validation - check if username and password are provided
     basic_credentials_provided = form.username.data and form.password.data
@@ -210,9 +216,13 @@ def login():
     # Decide whether to proceed based on security level and validation
     should_proceed = False
     
-    if security_level == SECURITY_LEVEL_LOW:
-        # For low security, only basic credentials are required
-        should_proceed = basic_credentials_provided
+    # Always require username and password for all security levels
+    if not basic_credentials_provided:
+        flash('Username and password are required', 'danger')
+        should_proceed = False
+    elif security_level == SECURITY_LEVEL_LOW:
+        # For low security, only password validation is required (no CAPTCHA)
+        should_proceed = form.username.validate(form) and form.password.validate(form)
     elif security_level == SECURITY_LEVEL_MEDIUM or security_level == SECURITY_LEVEL_HIGH:
         # For medium and high security, full validation including CAPTCHA is required
         should_proceed = form_valid

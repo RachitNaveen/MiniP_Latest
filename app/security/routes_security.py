@@ -54,6 +54,9 @@ def set_security_level_login():
         session['captcha_enabled'] = level in ['medium', 'high']
         session['face_verification_enabled'] = level == 'high'
         
+        # Always ensure password is required for all security levels
+        session['password_required'] = True
+        
         # Force the session to update
         session.modified = True
         

@@ -175,10 +175,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log(`[SECURITY] Security level set to ${data.levelName} successfully`);
                     console.log(`[SECURITY] Response data:`, data);
 
-                    // Show an alert to the user
-                    alert(`Security level set to ${data.levelName}.
-Required factors: ${data.requiredFactors}`);
-
                     // Update the security info panel
                     if (securityInfo) {
                         // Create HTML for the security info
@@ -191,6 +187,8 @@ Required factors: ${data.requiredFactors}`);
                         `;
 
                         securityInfo.innerHTML = infoHTML;
+                        
+                        // Don't reload the page here, the login.html script will handle it
                     }
                 } else {
                     console.error(`[SECURITY] Failed to set security level: ${data.message}`);
