@@ -20,15 +20,18 @@ from flask import Blueprint, jsonify, request, session
 from flask_login import current_user, login_required
 from app.models.models import Message, User, FaceVerificationLog
 from app.auth.auth import verify_user_face
-from app import db
+from app import db, socketio
 import logging
 import base64
 import numpy as np
 import cv2
 import face_recognition
 import json
+import os
+import uuid
 from datetime import datetime
 from app.static.face_api_models import FaceAPI
+from flask import url_for, current_app
 
 # Set up logging to a file
 logging.basicConfig(
@@ -67,7 +70,7 @@ def face_status():
 @face_blueprint.route('/unlock_item', methods=['POST'])
 @login_required
 def unlock_item():
-    """Endpoint to unlock a face-locked message or file"""
+    """Endpoint to unlock a face-locked message or file, with a 3-attempt limit."""
     data = request.get_json()
 
     if not data:
@@ -89,6 +92,41 @@ def unlock_item():
 
     # Deny access if message is already replaced
     if message.is_replaced:
+        logger.warning(f"[INTRUDER] User {current_user.username} attempted to unlock a DELETED message (ID: {item_id}).")
+        
+        face_image = data.get('faceImage')
+        if face_image:
+            try:
+                sender = User.query.get(message.sender_id)
+                
+                # --- FIX 1: Removed the `.is_online` check ---
+                if sender:
+                    # (Image saving logic is correct, no changes there)
+                    if ',' in face_image:
+                        face_image = face_image.split(',')[1]
+                    img_data = base64.b64decode(face_image)
+                    filename = f"intruder_{uuid.uuid4().hex}.jpg"
+                    upload_folder = os.path.join(current_app.static_folder, 'intruder_snaps')
+                    os.makedirs(upload_folder, exist_ok=True)
+                    filepath = os.path.join(upload_folder, filename)
+                    with open(filepath, 'wb') as f:
+                        f.write(img_data)
+                    
+                    image_url = url_for('static', filename=f'intruder_snaps/{filename}', _external=True)
+
+                    # --- FIX 2: Made the room name match socket_events.py ---
+                    room_name = f"user_{sender.id}"
+                    socketio.emit('intruder_alert', {
+                        'message': f"Alert: Someone just tried to access your locked message sent to {message.recipient.username}.",
+                        'image_url': image_url,
+                        'timestamp': datetime.utcnow().isoformat()
+                    }, room=room_name)
+
+                    logger.info(f"[INTRUDER] Notified sender {sender.username} in room {room_name} of the attempt.")
+
+            except Exception as e:
+                logger.error(f"[INTRUDER] Failed to process intruder snapshot: {e}")
+        
         return jsonify({
             'success': False, 
             'message': 'This message was deleted due to too many failed unlock attempts.',
