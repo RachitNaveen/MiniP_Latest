@@ -13,6 +13,9 @@ import numpy as np
 import cv2
 import face_recognition
 import json
+import logging # Make sure to import logging
+
+logger = logging.getLogger(__name__)
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -114,6 +117,54 @@ def verify_user_face(user, submitted_face_image_data_url):
 
     except Exception as e:
         print(f"[ERROR] Exception during face verification for {user.username}: {str(e)}")
+        return False
+
+def verify_user_face(user, submitted_image_array):
+    """
+    Compares a submitted face image array with a user's stored face data.
+    
+    :param user: The User object from the database.
+    :param submitted_image_array: The already decoded image as a NumPy array (from cv2).
+    :return: Boolean (True if faces match, False otherwise).
+    """
+    print(f"[INFO] Starting face verification for user: {user.username}") # This should now work correctly
+
+    if user.face_data is None:
+        logger.warning(f"User {user.username} has no stored face data for verification.")
+        return False
+        
+    try:
+        # 1. Load the stored face encoding from the user's record
+        stored_data = json.loads(user.face_data)
+        stored_face_encoding = np.array(stored_data['encoding'])
+        logger.debug(f"Stored face descriptor for {user.username} loaded successfully.")
+
+        # 2. Find and encode the face in the submitted image array
+        # This image is already decoded, so we don't need to process it from base64.
+        face_locations = face_recognition.face_locations(submitted_image_array)
+        if not face_locations:
+            logger.warning("No face detected in the submitted image.")
+            return False
+
+        submitted_face_encodings = face_recognition.face_encodings(submitted_image_array, face_locations)
+        if not submitted_face_encodings:
+            logger.warning("Could not create an encoding for the face in the submitted image.")
+            return False
+            
+        # 3. Compare the faces
+        results = face_recognition.compare_faces([stored_face_encoding], submitted_face_encodings[0], tolerance=0.6)
+        
+        is_match = results[0]
+        
+        if is_match:
+            logger.info(f"Face verification SUCCESS for user {user.username}.")
+        else:
+            logger.warning(f"Face verification FAILED for user {user.username}.")
+            
+        return is_match
+
+    except Exception as e:
+        logger.error(f"An exception occurred during face verification for {user.username}: {e}")
         return False
 
 # --- Routes ---

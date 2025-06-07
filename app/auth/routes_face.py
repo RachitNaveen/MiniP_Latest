@@ -173,7 +173,7 @@ def unlock_item():
         return jsonify({'success': False, 'message': 'Error processing face image.'}), 400
 
     # Perform face verification
-    is_match = verify_user_face(img_rgb, current_user) # Assuming verify_user_face returns a boolean
+    is_match = verify_user_face(current_user, img_rgb)
 
     if is_match:
         # --- SUCCESSFUL Verification ---
