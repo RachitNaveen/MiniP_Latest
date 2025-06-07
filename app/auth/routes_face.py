@@ -14,9 +14,11 @@ Usage:
 - Users can send and receive face-locked messages that require face verification to view
 """
 
+# auth/Routes_face.py
+
 from flask import Blueprint, jsonify, request, session
 from flask_login import current_user, login_required
-from app.models.models import Message, User
+from app.models.models import Message, User, FaceVerificationLog
 from app.auth.auth import verify_user_face
 from app import db
 import logging
@@ -72,90 +74,113 @@ def unlock_item():
         logger.warning("[WARNING] Request data is empty or invalid.")
         return jsonify({'success': False, 'message': 'Invalid request data.'}), 400
 
-    item_type = data.get('itemType')
     item_id = data.get('itemId')
+    item_type = data.get('itemType', 'message') # Default to message for safety
     face_image = data.get('faceImage')
+    is_cancelled = data.get('cancelled', False)
 
-    # Log missing fields
-    missing_fields = []
-    if not item_type:
-        missing_fields.append('itemType')
     if not item_id:
-        missing_fields.append('itemId')
+        return jsonify({'success': False, 'message': 'Missing required field: itemId'}), 400
+
+    # Retrieve the message first
+    message = Message.query.get(item_id)
+    if not message:
+        return jsonify({'success': False, 'message': 'Message not found.'}), 404
+
+    # Deny access if message is already replaced
+    if message.is_replaced:
+        return jsonify({
+            'success': False, 
+            'message': 'This message was deleted due to too many failed unlock attempts.',
+            'deleted': True
+        }), 403
+
+    # --- Handle Cancellation ---
+    if is_cancelled:
+        # We still count cancellation as a failed attempt
+        message.unlock_attempts += 1
+        logger.warning(f"[CANCEL] User cancelled unlock for message {item_id}. Attempt count is now {message.unlock_attempts}.")
+        if message.unlock_attempts >= 3:
+            message.content = "MESSAGE DELETED"
+            message.is_replaced = True
+            db.session.commit()
+            return jsonify({
+                'success': False,
+                'message': 'Message deleted after too many failed attempts.',
+                'deleted': True
+            }), 403
+        
+        db.session.commit()
+        return jsonify({
+            'success': True, 
+            'message': 'Unlock cancelled.', 
+            'attempts_left': 3 - message.unlock_attempts
+        }), 200
+
+    # --- Handle Face Verification ---
     if not face_image:
-        missing_fields.append('faceImage')
+        return jsonify({'success': False, 'message': 'Missing required field: faceImage'}), 400
 
-    if missing_fields:
-        logger.warning(f"[WARNING] Missing required fields: {', '.join(missing_fields)}")
-        return jsonify({'success': False, 'message': f"Missing required fields: {', '.join(missing_fields)}"}), 400
-
-    # Debugging: Log the received faceImage
-    logger.debug(f"[DEBUG] Received request payload: {data}")
-    logger.debug(f"[DEBUG] faceImage content: {face_image[:30] if face_image else 'None'}")
-    logger.debug(f"[DEBUG] Stored face data: {current_user.face_data[:30] if current_user.face_data else 'None'}")
-
-    # Ensure faceImage is base64-decoded
-    if ',' in face_image:
-        face_image = face_image.split(',')[1]
-
+    # Decode the image for verification
     try:
+        if ',' in face_image:
+            face_image = face_image.split(',')[1]
         img_data = base64.b64decode(face_image)
         nparr = np.frombuffer(img_data, np.uint8)
         img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
         if img_rgb is None:
-            logger.error("[ERROR] Failed to decode face image")
-            return jsonify({'success': False, 'message': 'Invalid face image format.'}), 400
-        logger.debug("[DEBUG] Face image successfully decoded")
-
+            raise ValueError("Failed to decode image")
     except Exception as e:
         logger.error(f"[ERROR] Error decoding face image: {str(e)}")
         return jsonify({'success': False, 'message': 'Error processing face image.'}), 400
 
-    # Verify face using FaceAPI
-    try:
-        face_locations = face_recognition.face_locations(img_rgb)
-        if not face_locations:
-            return jsonify({'success': False, 'message': 'No face detected in the input image'}), 400
+    # Perform face verification
+    is_match = verify_user_face(img_rgb, current_user) # Assuming verify_user_face returns a boolean
 
-        face_encoding = face_recognition.face_encodings(img_rgb, face_locations)
-        if not face_encoding:
-            return jsonify({'success': False, 'message': 'Could not encode face from the input image'}), 400
+    if is_match:
+        # --- SUCCESSFUL Verification ---
+        logger.info(f"[SUCCESS] User {current_user.username} unlocked message {item_id}.")
+        # Optional: Reset attempts on success
+        message.unlock_attempts = 0
+        db.session.commit()
 
-        stored_data = json.loads(current_user.face_data)
-        stored_face_encoding = np.array(stored_data['encoding'])
+        # Log successful verification
+        log_entry = FaceVerificationLog(user_id=current_user.id, success=True)
+        db.session.add(log_entry)
+        db.session.commit()
 
-        results = face_recognition.compare_faces([stored_face_encoding], face_encoding[0], tolerance=0.6)
-        face_distance = face_recognition.face_distance([stored_face_encoding], face_encoding[0])[0]
-        match_percentage = (1 - face_distance) * 100
-
-        if results[0]:
-            # Log successful face verification
-            from app.models.models import FaceVerificationLog
-            log_entry = FaceVerificationLog(user_id=current_user.id, success=True)
-            db.session.add(log_entry)
-            db.session.commit()
-
-            # Retrieve the content based on item type
-            if item_type == 'message':
-                message = Message.query.get(item_id)
-                if not message:
-                    return jsonify({'success': False, 'message': 'Message not found.'}), 404
-                return jsonify({'success': True, 'content': message.content}), 200
-            elif item_type == 'file':
-                message = Message.query.get(item_id)
-                if not message or not message.file_path:
-                    return jsonify({'success': False, 'message': 'File not found.'}), 404
-                return jsonify({'success': True, 'fileUrl': message.file_path, 'fileName': message.content}), 200
-            else:
-                return jsonify({'success': False, 'message': 'Invalid item type.'}), 400
+        if item_type == 'message':
+            return jsonify({'success': True, 'content': message.content}), 200
+        elif item_type == 'file':
+            return jsonify({'success': True, 'fileUrl': message.file_path, 'fileName': message.content}), 200
         else:
-            logger.warning(f"[WARNING] Face verification failed ({match_percentage:.1f}% match, 80% required)")
-            return jsonify({'success': False, 'message': 'Face verification failed'}), 403
+            return jsonify({'success': False, 'message': 'Invalid item type.'}), 400
 
-    except Exception as e:
-        logger.error(f"[ERROR] Error unlocking item: {e}")
-        return jsonify({'success': False, 'message': 'An error occurred during face verification'}), 500
+    else:
+        # --- FAILED Verification ---
+        message.unlock_attempts += 1
+        attempts_left = 3 - message.unlock_attempts
+        logger.warning(f"[FAILURE] Face verification failed for user {current_user.username}, message {item_id}. Attempts: {message.unlock_attempts}")
+
+        if attempts_left <= 0:
+            # --- FINAL ATTEMPT FAILED ---
+            logger.error(f"[DELETE] Message {item_id} deleted after 3 failed unlock attempts.")
+            message.content = "MESSAGE DELETED"
+            message.is_replaced = True
+            db.session.commit()
+            return jsonify({
+                'success': False, 
+                'message': 'Final attempt failed. The message has been permanently deleted.',
+                'deleted': True
+            }), 403
+        else:
+            # --- FAILED, BUT ATTEMPTS REMAIN ---
+            db.session.commit()
+            return jsonify({
+                'success': False, 
+                'message': f'Face verification failed. You have {attempts_left} attempt(s) left.',
+                'attempts_left': attempts_left
+            }), 403
 
 @face_blueprint.route('/update_face_data', methods=['POST'])
 @login_required

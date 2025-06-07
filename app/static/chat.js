@@ -1,3 +1,4 @@
+//chat.js 
 // Declare variables only once at the top of the script
 let securityRisk, faceAccuracy, securityDetailsBtn, securityDetailsModal, closeSecurityDetails;
 
@@ -117,6 +118,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (String(data.userId) !== String(localCurrentUserId) || data.type === 'user_logged_out') {
                     if (data.type === 'face_unlocked' && String(data.userId) === String(localCurrentUserId)) return;
                     addNotificationToUI(data.message);
+                }
+            }
+        });
+
+        socket.on('unlock_attempt_update', function (data) {
+            console.log("[DEBUG] Received unlock_attempt_update event with data:", data);
+            const messageElement = document.querySelector(`[data-message-id='${data.message_id}']`);
+            if (messageElement) {
+                if (data.is_replaced) {
+                    messageElement.textContent = "MESSAGE DELETED...";
+                } else {
+                    messageElement.textContent = `Unlock attempts: ${data.attempts}`;
                 }
             }
         });
@@ -394,21 +407,53 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 // Define success callback ahead of time
                 const handleVerificationSuccess = function(data) {
-                    console.log(`[DEBUG] Face verification successful callback executed: ${itemType} unlocked`, data);
-                    
-                    // On successful verification, update the UI with the unlocked content
-                    if (itemType === 'message') {
-                        messageDiv.innerHTML = '';
-                        addMessageToUI(data.content, senderUsername, false, false);
-                    } else if (itemType === 'file') {
-                        messageDiv.innerHTML = '';
-                        addFileToUI(data.fileUrl, data.fileName, senderUsername, false, false);
+                    console.log(`[DEBUG] Face verification callback executed:`, data);
+
+                    // --- NEW: Check if the message was deleted ---
+                    if (data.deleted) {
+                        const deletedNotice = document.createElement('div');
+                        deletedNotice.className = 'message-content';
+                        deletedNotice.textContent = data.message || "This message has been deleted.";
+                        
+                        // Replace the entire message placeholder with the notice
+                        messageDiv.innerHTML = ''; // Clear the old content
+                        messageDiv.appendChild(userDiv); // Re-add the sender info
+                        messageDiv.appendChild(deletedNotice);
+                        messageDiv.classList.remove('locked-item-placeholder');
+                        return; // Stop further processing
                     }
                     
-                    // Show notification
-                    showCustomAlert(`Face verification successful! ${itemType} unlocked.`);
+                    // On successful verification, update the UI with the unlocked content
+                    if (data.success) {
+                         // Replace the placeholder with the actual unlocked content
+                        messageDiv.innerHTML = ''; // Clear the placeholder content
+
+                        const tempUserDiv = document.createElement('div');
+                        tempUserDiv.className = 'message-user';
+                        tempUserDiv.textContent = senderUsername;
+
+                        messageDiv.appendChild(tempUserDiv);
+
+                        if (itemType === 'message') {
+                            const contentDiv = document.createElement('div');
+                            contentDiv.className = 'message-content';
+                            contentDiv.textContent = data.content;
+                            messageDiv.appendChild(contentDiv);
+                        } else if (itemType === 'file') {
+                            const contentDiv = document.createElement('div');
+                            contentDiv.className = 'message-content';
+                            const link = document.createElement('a');
+                            link.href = data.fileUrl;
+                            link.textContent = data.fileName;
+                            link.target = '_blank';
+                            link.download = data.fileName;
+                            contentDiv.appendChild(link);
+                            messageDiv.appendChild(contentDiv);
+                        }
+                        messageDiv.classList.remove('locked-item-placeholder');
+                    }
                 };
-                
+
                 // Use our dedicated face modal handler from face_modal.js
                 try {
                     showFaceVerificationModal(itemType, itemId, senderUsername, handleVerificationSuccess);

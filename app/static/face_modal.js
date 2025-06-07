@@ -3,7 +3,7 @@
  * This file contains functions to create and manage the face verification modal
  * for unlocking face-locked messages and files.
  */
-
+//face_modal.js
 // Keep track of global resources that need cleaning up
 let currentFaceModal = null;
 let currentDetectionInterval = null;
@@ -187,8 +187,10 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                                 ctx.stroke();
 
                                 // Update status
-                                statusDiv.textContent = 'Face detected! Click "Verify Face" to continue.';
-                                statusDiv.className = 'message success';
+                                statusDiv.textContent = 'Align your face within the frame and hold still.';
+                                statusDiv.style.color = '#007bff'; // Blue text for instructions
+                                statusDiv.style.fontWeight = 'bold';
+                                statusDiv.style.marginBottom = '10px';
 
                                 // Enable verify button
                                 verifyBtn.disabled = false;
@@ -222,129 +224,117 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
         // Handle verify button click
         verifyBtn.addEventListener('click', async () => {
             try {
-                // Disable the button
                 verifyBtn.disabled = true;
-                
-                // Stop detection
                 if (currentDetectionInterval) {
                     clearInterval(currentDetectionInterval);
                     currentDetectionInterval = null;
                 }
-                
-                // Update status
+
                 statusDiv.textContent = 'Verifying...';
                 statusDiv.className = 'message info';
-                
-                // Add spinner
                 const spinner = document.createElement('div');
                 spinner.className = 'spinner';
                 statusDiv.appendChild(spinner);
-                
-                // Capture frame
+
                 const canvas = document.createElement('canvas');
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
                 canvas.getContext('2d').drawImage(video, 0, 0);
-                
-                // Convert to image data
                 const faceImage = canvas.toDataURL('image/jpeg', 0.95);
-                
-                // Get CSRF token
-                const csrfToken = getCSRFToken();
-                
-                // Log request details for debugging
-                console.log('[FACE-MODAL] Sending verification request for:', { 
-                    itemType, 
-                    itemId,
-                    imageSize: faceImage ? faceImage.length : 'none',
-                    paramName: 'face_image' // Log the parameter name we're using
+
+                const response = await fetch('/unlock_item', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        itemType: itemType,
+                        itemId: itemId,
+                        faceImage: faceImage
+                    })
                 });
-                
-                try {
-                    // Send request to server
-                    const response = await fetch('/unlock_item', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken
-                        },
-                        body: JSON.stringify({
-                            itemType: itemType,
-                            itemId: itemId,
-                            faceImage: faceImage // Updated field name to match backend expectation
-                        })
-                    });
-                
-                    // Parse response
-                    const data = await response.json();
-                    console.log('[FACE-MODAL] Verification response:', data);
-                    
-                    // Log more detailed info for debugging
-                    if (!data.success) {
-                        console.warn('[FACE-MODAL] Verification failed. Response:', data);
-                        console.warn('[FACE-MODAL] Request parameters used: itemType=' + itemType + ', itemId=' + itemId + ', with face_image (param name)');
-                    }
-                    
-                    // Remove spinner
-                    if (spinner.parentElement) {
-                        spinner.parentElement.removeChild(spinner);
-                    }
-                    
-                    if (data.success) {
-                        // Update status
-                        statusDiv.textContent = 'Face verification successful!';
-                        statusDiv.className = 'message success';
+
+                const data = await response.json();
+                console.log('[FACE-MODAL] Verification response:', data);
+
+                if (spinner.parentElement) {
+                    spinner.parentElement.removeChild(spinner);
+                }
+
+                if (data.success) {
+                    statusDiv.textContent = 'Face verification successful!';
+                    statusDiv.className = 'message success';
+                    setTimeout(() => {
+                        cleanupFaceVerificationResources();
+                        if (typeof onSuccess === 'function') {
+                            onSuccess(data); // This triggers the UI update in chat.js
+                        }
+                    }, 1000);
+                } else {
+                    // --- FAILURE HANDLING ---
+                    statusDiv.textContent = data.message || 'Verification failed.';
+                    statusDiv.className = 'message error';
+
+                    if (data.deleted) {
+                        // If the backend confirms deletion, disable the button permanently and show the message.
+                        verifyBtn.style.display = 'none'; // Hide verify button
+                        cancelBtn.textContent = 'Close'; // Change cancel to close
                         
-                        // Add delay before cleanup
-                        setTimeout(() => {
-                            // Cleanup resources
-                            cleanupFaceVerificationResources();
-                            
-                            // Call success callback
-                            if (typeof onSuccess === 'function') {
-                                onSuccess(data);
-                            }
-                        }, 1000);
+                        // We need to inform chat.js to update the original message element
+                        if (typeof onSuccess === 'function') {
+                            // We can re-use the onSuccess callback to pass the deletion status
+                            onSuccess({ deleted: true, message: data.message });
+                        }
+
                     } else {
-                        // Update status
-                        statusDiv.textContent = data.message || 'Face verification failed. Please try again.';
-                        statusDiv.className = 'message error';
-                        
-                        // Re-enable button after delay
+                        // Not deleted yet, so re-enable the button for another try.
                         setTimeout(() => {
                             verifyBtn.disabled = false;
-                            
-                            // Restart detection
                             if (!currentDetectionInterval) {
-                                currentDetectionInterval = setInterval(detectFaces, 200);
+                                currentDetectionInterval = setInterval(window.detectFaces, 200);
                             }
                         }, 2000);
                     }
-                } catch (error) {
-                    console.error('[FACE-MODAL] Network error during verification:', error);
-                    statusDiv.textContent = 'Network error during verification. Please try again.';
-                    statusDiv.className = 'message error';
-                    
-                    // Remove spinner if it exists
-                    if (spinner && spinner.parentElement) {
-                        spinner.parentElement.removeChild(spinner);
-                    }
-                    
-                    // Re-enable button
-                    verifyBtn.disabled = false;
                 }
             } catch (error) {
-                console.error('[FACE-MODAL] Error during verification:', error);
-                statusDiv.textContent = 'Error during verification. Please try again.';
+                console.error('[FACE-MODAL] Network or other error during verification:', error);
+                statusDiv.textContent = 'Network error. Please check your connection and try again.';
                 statusDiv.className = 'message error';
-                
-                // Re-enable button
                 verifyBtn.disabled = false;
             }
         });
         
         // Handle cancel button click
-        cancelBtn.addEventListener('click', () => {
+        cancelBtn.addEventListener('click', async () => {
+            // Send cancellation to backend
+            try {
+                const response = await fetch('/unlock_item', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        itemType: itemType,
+                        itemId: itemId,
+                        cancelled: true
+                    })
+                });
+
+                const data = await response.json();
+                console.log('[FACE-MODAL] Cancellation response:', data);
+
+                if (data.is_replaced) {
+                    statusDiv.textContent = "MESSAGE DELETED...";
+                    statusDiv.className = 'message error';
+                    cleanupFaceVerificationResources();
+                }
+            } catch (error) {
+                console.error('[FACE-MODAL] Error sending cancellation:', error);
+            }
+
+            // Close modal
             cleanupFaceVerificationResources();
         });
         
