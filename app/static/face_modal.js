@@ -13,15 +13,13 @@ let modelsLoaded = false;
 // Ensure face-api models are loaded
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        console.log('[FACE-MODAL] Loading face detection models on page load...');
         if (!faceapi.nets.tinyFaceDetector.params) {
             await faceapi.nets.tinyFaceDetector.loadFromUri('/static/face-api-models');
             await faceapi.nets.faceLandmark68Net.loadFromUri('/static/face-api-models');
             modelsLoaded = true;
-            console.log('[FACE-MODAL] Face detection models pre-loaded successfully');
         }
     } catch (err) {
-        console.error('[FACE-MODAL] Error pre-loading face detection models:', err);
+        console.error('Error loading face detection models:', err);
     }
 });
 
@@ -43,55 +41,115 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
     // Create modal container
     const modal = document.createElement('div');
     modal.className = 'face-unlock-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    `;
     
     // Create modal content
     const modalContent = document.createElement('div');
     modalContent.className = 'face-unlock-modal-content';
+    modalContent.style.cssText = `
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+    `;
     
     // Create modal header
     const heading = document.createElement('h3');
     heading.textContent = 'Face Verification Required';
+    heading.style.marginBottom = '10px';
     
     // Create instruction paragraph
     const instruction = document.createElement('p');
     instruction.textContent = `Please verify your face to unlock this ${itemType}`;
+    instruction.style.marginBottom = '15px';
     
     // Create status div
     const statusDiv = document.createElement('div');
     statusDiv.id = 'face-unlock-status';
     statusDiv.className = 'message';
     statusDiv.textContent = 'Initializing camera...';
+    statusDiv.style.cssText = `
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        background-color: #e3f2fd;
+    `;
     
     // Create video container
     const videoContainer = document.createElement('div');
     videoContainer.className = 'video-container';
+    videoContainer.style.cssText = `
+        position: relative;
+        margin: 15px 0;
+    `;
     
     // Create video element
     const video = document.createElement('video');
     video.id = 'face-unlock-video';
     video.autoplay = true;
     video.playsInline = true; // Important for iOS
-    video.style.width = '100%';
-    video.style.borderRadius = '8px';
+    video.style.cssText = `
+        width: 100%;
+        max-width: 400px;
+        border-radius: 8px;
+        border: 2px solid #ddd;
+    `;
     
     videoContainer.appendChild(video);
     
     // Create buttons container
     const buttonsContainer = document.createElement('div');
     buttonsContainer.className = 'buttons-container';
+    buttonsContainer.style.cssText = `
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 15px;
+    `;
     
     // Create verify button
     const verifyBtn = document.createElement('button');
     verifyBtn.textContent = 'Verify Face';
     verifyBtn.className = 'btn verify-btn';
-    verifyBtn.style.zIndex = '1000';
+    verifyBtn.style.cssText = `
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        z-index: 1000;
+    `;
     verifyBtn.disabled = true; // Start disabled until face is detected
     
     // Create cancel button
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = 'Cancel';
     cancelBtn.className = 'btn cancel-btn';
-    cancelBtn.style.zIndex = '1000';
+    cancelBtn.style.cssText = `
+        background-color: #f44336;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        z-index: 1000;
+    `;
     
     // Add buttons to container
     buttonsContainer.appendChild(verifyBtn);
@@ -149,6 +207,12 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                     overlayCanvas.className = 'face-overlay-canvas';
                     overlayCanvas.width = video.videoWidth;
                     overlayCanvas.height = video.videoHeight;
+                    overlayCanvas.style.cssText = `
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        pointer-events: none;
+                    `;
                     videoContainer.appendChild(overlayCanvas);
                     
                     // Define face detection function
@@ -161,50 +225,35 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                                 new faceapi.TinyFaceDetectorOptions()
                             ).withFaceLandmarks();
 
-                            // Log detected landmarks for debugging
-                            if (detections && detections.landmarks) {
-                                console.log('[FACE-MODAL] Detected landmarks:', detections.landmarks.positions);
-                            } else {
-                                console.warn('[FACE-MODAL] No landmarks detected.');
-                            }
-
                             // Get canvas context and clear it
                             const ctx = overlayCanvas.getContext('2d');
                             ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
                             if (detections) {
                                 // Draw face landmarks
-                                faceapi.draw.drawFaceLandmarks(ctx, detections.landmarks);
-
-                                // Draw face positioning guide
-                                const displaySize = { width: video.videoWidth, height: video.videoHeight };
-                                const center = { x: displaySize.width / 2, y: displaySize.height / 2 };
-
-                                ctx.strokeStyle = "#00ff00";
-                                ctx.lineWidth = 2;
-                                ctx.beginPath();
-                                ctx.arc(center.x, center.y, 100, 0, 2 * Math.PI);
-                                ctx.stroke();
+                                faceapi.draw.drawFaceLandmarks(overlayCanvas, detections.landmarks);
 
                                 // Update status
                                 statusDiv.textContent = 'Face detected! Click "Verify Face" to continue.';
-                                statusDiv.className = 'message success';
+                                statusDiv.style.backgroundColor = '#e8f5e8';
 
                                 // Enable verify button
                                 verifyBtn.disabled = false;
+                                verifyBtn.style.opacity = '1';
                             } else {
                                 // Update status
                                 statusDiv.textContent = 'No face detected. Please position your face in the camera.';
-                                statusDiv.className = 'message warning';
+                                statusDiv.style.backgroundColor = '#fff3cd';
 
                                 // Disable verify button
                                 verifyBtn.disabled = true;
+                                verifyBtn.style.opacity = '0.5';
                             }
                         } catch (error) {
                             console.error('[FACE-MODAL] Face detection error:', error);
                         }
                     };
-                    window.detectFaces = detectFaces;
+                    
                     // Start face detection interval
                     if (currentDetectionInterval) {
                         clearInterval(currentDetectionInterval);
@@ -214,7 +263,7 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                 } catch (error) {
                     console.error('[FACE-MODAL] Error initializing face detection:', error);
                     statusDiv.textContent = 'Error initializing face detection. Please try again.';
-                    statusDiv.className = 'message error';
+                    statusDiv.style.backgroundColor = '#f8d7da';
                 }
             }, 500);
         };
@@ -222,8 +271,11 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
         // Handle verify button click
         verifyBtn.addEventListener('click', async () => {
             try {
+                console.log('[FACE-MODAL] Verify button clicked');
+                
                 // Disable the button
                 verifyBtn.disabled = true;
+                verifyBtn.style.opacity = '0.5';
                 
                 // Stop detection
                 if (currentDetectionInterval) {
@@ -233,32 +285,18 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                 
                 // Update status
                 statusDiv.textContent = 'Verifying...';
-                statusDiv.className = 'message info';
-                
-                // Add spinner
-                const spinner = document.createElement('div');
-                spinner.className = 'spinner';
-                statusDiv.appendChild(spinner);
-                
-                // Capture frame
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                canvas.getContext('2d').drawImage(video, 0, 0);
-                
-                // Convert to image data
-                const faceImage = canvas.toDataURL('image/jpeg', 0.95);
+                statusDiv.style.backgroundColor = '#e3f2fd';
                 
                 // Get CSRF token
                 const csrfToken = getCSRFToken();
                 
-                // Log request details for debugging
-                console.log('[FACE-MODAL] Sending verification request for:', { 
-                    itemType, 
-                    itemId,
-                    imageSize: faceImage ? faceImage.length : 'none',
-                    paramName: 'face_image' // Log the parameter name we're using
-                });
+                // FIXED: Use correct parameter names that match the backend
+                const requestData = {
+                    item_type: itemType,  // FIXED: Changed from itemType to item_type
+                    item_id: parseInt(itemId)  // FIXED: Changed from itemId to item_id and ensure it's a number
+                };
+                
+                console.log('[FACE-MODAL] Sending unlock request with data:', requestData);
                 
                 try {
                     // Send request to server
@@ -268,32 +306,17 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                             'Content-Type': 'application/json',
                             'X-CSRFToken': csrfToken
                         },
-                        body: JSON.stringify({
-                            itemType: itemType,
-                            itemId: itemId,
-                            faceImage: faceImage // Updated field name to match backend expectation
-                        })
+                        body: JSON.stringify(requestData)
                     });
                 
                     // Parse response
                     const data = await response.json();
-                    console.log('[FACE-MODAL] Verification response:', data);
-                    
-                    // Log more detailed info for debugging
-                    if (!data.success) {
-                        console.warn('[FACE-MODAL] Verification failed. Response:', data);
-                        console.warn('[FACE-MODAL] Request parameters used: itemType=' + itemType + ', itemId=' + itemId + ', with face_image (param name)');
-                    }
-                    
-                    // Remove spinner
-                    if (spinner.parentElement) {
-                        spinner.parentElement.removeChild(spinner);
-                    }
+                    console.log('[FACE-MODAL] Unlock response:', data);
                     
                     if (data.success) {
                         // Update status
                         statusDiv.textContent = 'Face verification successful!';
-                        statusDiv.className = 'message success';
+                        statusDiv.style.backgroundColor = '#e8f5e8';
                         
                         // Add delay before cleanup
                         setTimeout(() => {
@@ -302,17 +325,19 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                             
                             // Call success callback
                             if (typeof onSuccess === 'function') {
+                                console.log('[FACE-MODAL] Calling success callback with data:', data);
                                 onSuccess(data);
                             }
                         }, 1000);
                     } else {
                         // Update status
                         statusDiv.textContent = data.message || 'Face verification failed. Please try again.';
-                        statusDiv.className = 'message error';
+                        statusDiv.style.backgroundColor = '#f8d7da';
                         
                         // Re-enable button after delay
                         setTimeout(() => {
                             verifyBtn.disabled = false;
+                            verifyBtn.style.opacity = '1';
                             
                             // Restart detection
                             if (!currentDetectionInterval) {
@@ -323,28 +348,26 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                 } catch (error) {
                     console.error('[FACE-MODAL] Network error during verification:', error);
                     statusDiv.textContent = 'Network error during verification. Please try again.';
-                    statusDiv.className = 'message error';
-                    
-                    // Remove spinner if it exists
-                    if (spinner && spinner.parentElement) {
-                        spinner.parentElement.removeChild(spinner);
-                    }
+                    statusDiv.style.backgroundColor = '#f8d7da';
                     
                     // Re-enable button
                     verifyBtn.disabled = false;
+                    verifyBtn.style.opacity = '1';
                 }
             } catch (error) {
                 console.error('[FACE-MODAL] Error during verification:', error);
                 statusDiv.textContent = 'Error during verification. Please try again.';
-                statusDiv.className = 'message error';
+                statusDiv.style.backgroundColor = '#f8d7da';
                 
                 // Re-enable button
                 verifyBtn.disabled = false;
+                verifyBtn.style.opacity = '1';
             }
         });
         
         // Handle cancel button click
         cancelBtn.addEventListener('click', () => {
+            console.log('[FACE-MODAL] Cancel button clicked');
             cleanupFaceVerificationResources();
         });
         
@@ -352,7 +375,7 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
     .catch(error => {
         console.error('[FACE-MODAL] Camera access error:', error);
         statusDiv.textContent = 'Camera access denied. Please allow camera access and try again.';
-        statusDiv.className = 'message error';
+        statusDiv.style.backgroundColor = '#f8d7da';
         
         // Enable close button even if camera fails
         cancelBtn.addEventListener('click', () => {

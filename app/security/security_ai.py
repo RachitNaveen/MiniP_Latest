@@ -9,9 +9,9 @@ from flask import request, session
 from app.models.models import FaceVerificationLog, User
 
 # Security levels
-SECURITY_LEVEL_LOW = 1      # Password only
-SECURITY_LEVEL_MEDIUM = 2   # Password + CAPTCHA
-SECURITY_LEVEL_HIGH = 3     # Password + CAPTCHA + Face Verification
+SECURITY_LEVEL_LOW = 0      # Password only
+SECURITY_LEVEL_MEDIUM = 1   # Password + CAPTCHA
+SECURITY_LEVEL_HIGH = 2     # Password + CAPTCHA + Face Verification
 
 # Risk factors weights
 WEIGHTS = {

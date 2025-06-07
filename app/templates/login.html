@@ -7,28 +7,324 @@
   <title>Login - SecureChatApp</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <style>
-    .container {
-      max-width: 400px; margin: 50px auto; padding: 20px; background-color: #f9f9f9; 
-      border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-    .form-group input {
-      width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
-    #risk-panel {
-      background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; 
-      padding: 15px; margin-top: 20px; margin-bottom: 20px; display: none;
+
+    .login-wrapper {
+      display: flex;
+      gap: 30px;
+      width: 100%;
+      max-width: 1200px;
+      align-items: flex-start;
     }
-    .risk-score { font-size: 18px; margin-bottom: 15px; }
+
+    .login-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      width: 100%;
+      max-width: 450px;
+      min-width: 400px;
+    }
+
+    .security-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      width: 100%;
+      max-width: 500px;
+      min-width: 450px;
+    }
+
+    .form-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .form-header h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .form-content {
+      padding: 40px;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e1e5e9;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
     .btn {
-      width: 100%; padding: 10px; background-color: #4CAF50; color: white; 
-      border: none; border-radius: 4px; cursor: pointer; font-size: 16px;
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
     }
-    .btn:hover { background-color: #45a049; }
-    .security-selection { margin-top: 20px; }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     .error {
-      color: #dc3545; margin: 10px 0; padding: 10px; border-radius: 4px; background-color: #f8d7da;
+      background: #f8d7da;
+      color: #721c24;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      border: 1px solid #f5c6cb;
+      border-left: 4px solid #dc3545;
+    }
+
+    .success {
+      background: #d4edda;
+      color: #155724;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      border: 1px solid #c3e6cb;
+      border-left: 4px solid #28a745;
+    }
+
+    .auth-toggle {
+      text-align: center;
+      padding-top: 25px;
+      border-top: 1px solid #e1e5e9;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .auth-toggle a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .auth-toggle a:hover {
+      text-decoration: underline;
+    }
+
+    .security-header {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 25px;
+      font-weight: 600;
+    }
+
+    .security-info-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      border-left: 4px solid #667eea;
+    }
+
+    .security-info-card h4 {
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    .security-info-card p {
+      color: #666;
+      margin: 5px 0;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .face-verification-card {
+      background: #e8f4fd;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      border-left: 4px solid #3498db;
+    }
+
+    .face-verification-card h4 {
+      color: #2c5282;
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+
+    .face-verification-card p {
+      color: #2c5282;
+      margin: 8px 0;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .face-verification-card a {
+      color: #3182ce;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .face-verification-card a:hover {
+      text-decoration: underline;
+    }
+
+    .test-user-info {
+      background: #fff3cd;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+      border: 1px solid #ffeaa7;
+    }
+
+    .test-user-info strong {
+      color: #856404;
+    }
+
+    .risk-panel {
+      background: #fff8e1;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      border-left: 4px solid #ff9800;
+      display: none;
+    }
+
+    .risk-panel h3 {
+      color: #f57c00;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .risk-score {
+      font-size: 18px;
+      font-weight: 600;
+      color: #e65100;
+      margin-bottom: 15px;
+    }
+
+    .security-level-select {
+      background: white;
+      border: 2px solid #e1e5e9;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 15px;
+    }
+
+    .security-level-select option {
+      padding: 8px;
+    }
+
+    .captcha-section {
+      margin: 20px 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e1e5e9;
+    }
+
+    @media (max-width: 1024px) {
+      .login-wrapper {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .login-container, .security-container {
+        max-width: 500px;
+        min-width: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 10px;
+      }
+      
+      .form-content {
+        padding: 30px 20px;
+      }
+      
+      .security-container {
+        padding: 20px;
+      }
+    }
+
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      margin-top: 10px;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+      box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+    }
+
+    .current-mode {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
     }
   </style>
   <script defer src="{{ url_for('static', filename='face-api.js') }}"></script>
@@ -36,88 +332,108 @@
   <script defer src="{{ url_for('static', filename='security_level.js') }}"></script>
 </head>
 <body>
-  <div class="container auth-container">
-    <h1>Login to SecureChat</h1>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="{{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-    <form id="loginForm" method="POST" action="{{ url_for('auth.login') }}">
-      {{ form.hidden_tag() }}
+  <div class="login-wrapper">
+    <!-- Main Login Form -->
+    <div class="login-container">
+      <div class="form-header">
+        <h1>Welcome Back</h1>
+        <p>Sign in to your SecureChatApp account</p>
+      </div>
+
+      <div class="form-content">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="{{ 'error' if category == 'error' else 'success' }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form id="loginForm" method="POST" action="{{ url_for('main.login') }}">
+          {{ form.csrf_token }}
+          {{ form.hidden_tag() }}
+          
+          <div class="form-group">
+            <label for="username">Username</label>
+            {{ form.username(class="form-control", id="username", placeholder="Enter your username") }}
+            {% if form.username.errors %}
+              <div class="error">{{ form.username.errors[0] }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Password</label>
+            {{ form.password(class="form-control", id="password", placeholder="Enter your password") }}
+            {% if form.password.errors %}
+              <div class="error">{{ form.password.errors[0] }}</div>
+            {% endif %}
+          </div>
+          
+          {% if show_captcha %}
+          <div class="form-group captcha-section">
+            {{ form.recaptcha.label(class="form-label") }}
+            {{ form.recaptcha }}
+            {% if form.recaptcha.errors %}
+              <div class="error">{{ form.recaptcha.errors[0] }}</div>
+            {% endif %}
+          </div>
+          {% endif %}
+          
+          <button type="submit" class="btn" id="loginBtn">Sign In</button>
+        </form>
+
+        <div class="auth-toggle">
+          <p>Don't have an account? <a href="{{ url_for('main.register') }}">Create one here</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Control Panel -->
+    <div class="security-container">
+      <h2 class="security-header">Security Level Control</h2>
       
       <div class="form-group">
-        <label for="username">Username</label>
-        {{ form.username(class="form-control", id="username") }}
-        {% if form.username.errors %}
-          <div class="error">{{ form.username.errors[0] }}</div>
-        {% endif %}
+        <label for="security-level">Select Security Level:</label>
+        <select id="security-level" class="security-level-select">
+          <option value="ai" selected>✨ AI-Based Risk Assessment</option>
+          <option value="low">🔓 Low (Password only)</option>
+          <option value="medium">🔐 Medium (Password + CAPTCHA)</option>
+          <option value="high">🛡️ High (Password + CAPTCHA + Face Verification)</option>
+        </select>
       </div>
       
-      <div class="form-group">
-        <label for="password">Password</label>
-        {{ form.password(class="form-control", id="password") }}
-        {% if form.password.errors %}
-          <div class="error">{{ form.password.errors[0] }}</div>
-        {% endif %}
-      </div>
+      <button id="set-level-btn" class="btn">Apply Security Level</button>
       
-      {% if show_captcha %}
-      <div class="form-group">
-        {{ form.recaptcha.label }}
-        {{ form.recaptcha }}
-        {% if form.recaptcha.errors %}
-          <div class="error">{{ form.recaptcha.errors[0] }}</div>
-        {% endif %}
+      <div class="security-info-card" id="security-info">
+        <h4>Current Mode: <span class="current-mode">AI-Based</span></h4>
+        <p>Authentication factors are dynamically determined based on AI risk assessment of your login attempt.</p>
       </div>
-      {% endif %}
-      
-      <button type="submit" class="btn">Login</button>
-    </form>
-    <p class="auth-toggle">
-      Don't have an account? <a href="{{ url_for('main.register') }}">Register</a>
-    </p>
-  </div>
 
-  <div class="container security-selection">
-    <h2>Security Level Control</h2>
-    <div class="form-group">
-      <label for="security-level">Select Security Level:</label>
-      <select id="security-level" class="form-control">
-        <option value="ai" selected>AI-Based Risk Assessment</option>
-        <option value="low">Low (Password only)</option>
-        <option value="medium">Medium (Password + CAPTCHA)</option>
-        <option value="high">High (Password + CAPTCHA + Face Verification)</option>
-      </select>
-    </div>
-    <button id="set-level-btn" class="btn">Apply Level</button>
-    <div id="security-info" style="margin-top: 15px; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
-      <p style="margin: 0;">Current Mode: <strong>AI-Based</strong></p>
-      <p style="margin: 5px 0 0 0;">Required factors based on AI risk assessment</p>
-    </div>
-    <div style="margin-top: 15px; padding: 10px; background-color: #e8f4fd; border-left: 4px solid #3498db; border-radius: 4px;">
-      <h4 style="margin-top: 0;">Face Verification</h4>
-      <p>For high-security sessions, face verification provides additional protection.</p>
-      <p>Set up face verification during <a href="{{ url_for('auth.register') }}">registration</a> for face-locked messages.</p>
-      <p>Test user: <strong>testface</strong> (password: Face123!)</p>
+      <!-- Risk Assessment Panel -->
+      <div id="risk-panel" class="risk-panel">
+        <h3>🔍 Risk Assessment Results</h3>
+        <div id="risk-score" class="risk-score"></div>
+        <div id="risk-factors"></div>
+        <div id="required-factors" style="margin-top: 15px;"></div>
+      </div>        <div class="face-verification-card">
+        <h4>👤 Face Verification</h4>
+        <p>For high-security sessions, face verification provides an additional layer of protection against unauthorized access.</p>
+        <p>Set up face verification during <a href="{{ url_for('main.register') }}">registration</a> to enable face-locked messages and enhanced security features.</p>
+        <div class="test-user-info">
+          <p><strong>Test Account:</strong> testface (password: Face123!)</p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div id="risk-panel" class="container">
-    <h2>Risk Assessment</h2>
-    <div id="risk-score" class="risk-score"></div>
-    <div id="risk-factors"></div>
-    <div id="required-factors" style="margin-top: 15px;"></div>
-  </div>
-
+  <!-- Hidden data container -->
   <div id="risk-data"
        data-has-risk-details="{% if session.get('risk_details') %}true{% else %}false{% endif %}"
        style="display: none;">
   </div>
 
-  <!-- Safely convert risk_details to a string, then parse into an object -->
+  <!-- Risk Details Script -->
   <script>
   var riskDetailsStr = "{{ session.get('risk_details')|tojson|safe if session.get('risk_details') else '{}' }}";
   window.RISK_DETAILS = JSON.parse(riskDetailsStr);
@@ -128,15 +444,43 @@
 document.addEventListener('DOMContentLoaded', function() {
   var riskPanel = document.getElementById('risk-panel');
   var riskDetails = window.RISK_DETAILS;
+  var loginBtn = document.getElementById('loginBtn');
+  var setLevelBtn = document.getElementById('set-level-btn');
   
+  // Show risk assessment if available
   if (riskDetails && Object.keys(riskDetails).length > 0) {
     riskPanel.style.display = 'block';
-    document.getElementById('risk-score').innerText = 'Risk Score: ' + riskDetails.risk_score;
+    document.getElementById('risk-score').innerText = 'Risk Score: ' + riskDetails.risk_score + '/100';
+    
+    // Display risk factors if available
+    if (riskDetails.risk_factors) {
+      var factorsHtml = '<div style="margin-top: 10px;"><strong>Risk Factors:</strong><ul style="margin: 8px 0; padding-left: 20px;">';
+      riskDetails.risk_factors.forEach(function(factor) {
+        factorsHtml += '<li style="margin: 4px 0; color: #e65100;">' + factor + '</li>';
+      });
+      factorsHtml += '</ul></div>';
+      document.getElementById('risk-factors').innerHTML = factorsHtml;
+    }
+    
+    // Display required factors if available
+    if (riskDetails.required_factors) {
+      var requiredHtml = '<div style="background: #ffebee; padding: 12px; border-radius: 6px; border-left: 3px solid #f44336;"><strong>Required Authentication:</strong><ul style="margin: 8px 0; padding-left: 20px;">';
+      riskDetails.required_factors.forEach(function(factor) {
+        requiredHtml += '<li style="margin: 4px 0; color: #c62828;">' + factor + '</li>';
+      });
+      requiredHtml += '</ul></div>';
+      document.getElementById('required-factors').innerHTML = requiredHtml;
+    }
   }
 
-  var setLevelBtn = document.getElementById('set-level-btn');
+  // Security level change handler
   setLevelBtn.addEventListener('click', function() {
     var selectedLevel = document.getElementById('security-level').value;
+    var originalText = setLevelBtn.textContent;
+    
+    setLevelBtn.textContent = 'Applying...';
+    setLevelBtn.disabled = true;
+    
     fetch('/set_security_level_login', {
       method: 'POST',
       headers: {
@@ -150,10 +494,67 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .then(function(data) {
       if (data.success) {
+        var levelNames = {
+          'ai': 'AI-Based',
+          'low': 'Low Security',
+          'medium': 'Medium Security',
+          'high': 'High Security'
+        };
+        
+        var descriptions = {
+          'ai': 'Authentication factors are dynamically determined based on AI risk assessment of your login attempt.',
+          'low': 'Only username and password required for authentication.',
+          'medium': 'Username, password, and CAPTCHA verification required.',
+          'high': 'Username, password, CAPTCHA, and face verification required for maximum security.'
+        };
+        
         document.getElementById('security-info').innerHTML =
-          '<p>Current Mode: <strong>' + data.security_level + '</strong></p>';
+          '<h4>Current Mode: <span class="current-mode">' + levelNames[data.security_level] + '</span></h4>' +
+          '<p>' + descriptions[data.security_level] + '</p>';
+        
+        // Show success message briefly
+        setLevelBtn.textContent = 'Applied Successfully!';
+        setLevelBtn.style.background = '#28a745';
+        
+        setTimeout(function() {
+          setLevelBtn.textContent = originalText;
+          setLevelBtn.style.background = '';
+          setLevelBtn.disabled = false;
+        }, 2000);
+      } else {
+        setLevelBtn.textContent = 'Error - Try Again';
+        setLevelBtn.style.background = '#dc3545';
+        setTimeout(function() {
+          setLevelBtn.textContent = originalText;
+          setLevelBtn.style.background = '';
+          setLevelBtn.disabled = false;
+        }, 2000);
       }
+    })
+    .catch(function(error) {
+      console.error('Error:', error);
+      setLevelBtn.textContent = 'Network Error';
+      setLevelBtn.style.background = '#dc3545';
+      setTimeout(function() {
+        setLevelBtn.textContent = originalText;
+        setLevelBtn.style.background = '';
+        setLevelBtn.disabled = false;
+      }, 2000);
     });
+  });
+
+  // Form submission handler
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
+    loginBtn.textContent = 'Signing In...';
+    loginBtn.disabled = true;
+    
+    // Re-enable button after 5 seconds in case of no response
+    setTimeout(function() {
+      if (loginBtn.disabled) {
+        loginBtn.textContent = 'Sign In';
+        loginBtn.disabled = false;
+      }
+    }, 5000);
   });
 });
 </script>

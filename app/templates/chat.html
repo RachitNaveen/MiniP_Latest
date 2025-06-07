@@ -15,6 +15,66 @@
     <script defer src="{{ url_for('static', filename='chat.js') }}"></script>
 </head>
 <body data-user-id="{{ current_user.id }}">
+    <!-- DEBUG INFO - Remove this after fixing --
+<div style="background: #f0f0f0; padding: 10px; margin: 10px; border: 1px solid #ccc;">
+    <h4>Debug Information:</h4>
+    <p>Total users in database: {{ debug_info.total_users_in_db }}</p>
+    <p>Available users (excluding you): {{ debug_info.available_users }}</p>
+    <p>Your user ID: {{ debug_info.current_user_id }}</p>
+    <p>Users list length: {{ users|length }}</p>
+    
+    <h5>Available Users:</h5>
+    {% if users %}
+        <ul>
+        {% for user in users %}
+            <li>ID: {{ user.id }}, Username: {{ user.username }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p><strong>No other users found!</strong></p>
+    {% endif %}
+</div>
+-- END DEBUG INFO -->
+
+ <!-- TEMPORARY: Add this after the debug section to see messages from database --
+<div style="background: #eeffee; padding: 10px; margin: 10px; border: 1px solid green;">
+    <h4>Messages from Database:</h4>
+    {% if messages %}
+        {% for message in messages %}
+            <div style="margin: 5px 0; padding: 5px; border: 1px solid #ccc;">
+                <strong>From:</strong> {{ message.sender.username }} 
+                <strong>To:</strong> {{ message.recipient.username }}<br>
+                <strong>Message:</strong> {{ message.content }}<br>
+                <small>{{ message.timestamp }}</small>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No messages found in database</p>
+    {% endif %}
+</div>
+
+-- Socket.IO Test Button - MOVED OUTSIDE FORM --
+<div style="margin: 10px; padding: 10px; background: #fff3cd;">
+    <button onclick="testSocketIO()" style="background: red; color: white; padding: 10px;">
+        Test Socket.IO
+    </button>
+    <script>
+    function testSocketIO() {
+        console.log("Testing Socket.IO connection...");
+        fetch('/test_socketio')
+            .then(response => response.json())
+            .then(data => {
+                console.log("Test response:", data);
+                alert("Socket.IO test result: " + data.message);
+            })
+            .catch(error => {
+                console.error("Test failed:", error);
+                alert("Socket.IO test failed: " + error.message);
+            });
+    }
+    </script>
+</div>-->
+
     <div class="chat-container">
         <div class="chat-header">
             <h2>SecureChat</h2>
@@ -22,50 +82,56 @@
         </div>
 
         <div class="chat-messages" id="messageContainer">
+        </div>
+
+        <!-- FIXED: Added onsubmit="return false;" to prevent default submission -->
+        <form class="message-form" id="messageForm" onsubmit="return false;">
+            <div class="form-row recipient-row">
+                <label for="recipient_id">Recipient</label>
+                <select name="recipient_id" id="recipient_id" required class="message-select">
+                    <option value="" disabled selected>Select recipient</option>
+                    <!-- FIXED: Added the missing loop to populate users -->
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
             </div>
-<form class="message-form" id="messageForm">
-    <div class="form-row recipient-row">
-        <label for="recipient_id">Recipient</label>
-        <select name="recipient_id" id="recipient_id" required class="message-select">
-            <option value="" disabled selected>Select recipient</option>
-            </select>
-    </div>
 
-    <div class="form-row message-input-container">
-        <label for="content">Message</label>
-        <div class="input-with-button">
-            <input
-                type="text"
-                id="content"
-                class="message-input"
-                name="content"
-                placeholder="Type a message..."
-                autocomplete="off">
-            <button type="submit" class="send-button primary-action">
-                <span class="button-text">Send</span>
-            </button>
-        </div>
-    </div>
+            <div class="form-row message-input-container">
+                <label for="content">Message</label>
+                <div class="input-with-button">
+                    <input
+                        type="text"
+                        id="content"
+                        class="message-input"
+                        name="content"
+                        placeholder="Type a message..."
+                        autocomplete="off">
+                    <button type="submit" class="send-button primary-action" id="sendButton">
+                        <span class="button-text">Send</span>
+                    </button>
+                </div>
+            </div>
 
-    <div class="form-row options-and-actions-bar">
-        <label class="face-checkbox">
-            <input type="checkbox" name="face_locked" id="faceLocked">
-            <span class="checkbox-label">Face ID</span>
-        </label>
+            <div class="form-row options-and-actions-bar">
+                <label class="face-checkbox">
+                    <input type="checkbox" name="face_locked" id="faceLocked">
+                    <span class="checkbox-label">Face ID</span>
+                </label>
 
-        <div class="file-input-wrapper">
-            <label for="fileInput" class="file-input-label secondary-action outline">
-                <span class="button-text">Attach File</span>
-            </label>
-            <input type="file" id="fileInput" name="file" class="file-input visually-hidden">
-            <span id="fileNameDisplay" class="file-name-display"></span>
-        </div>
-        
-        <button type="button" id="sendFileButton" class="send-file-button secondary-action">
-            <span class="button-text">Send File</span>
-        </button>
-    </div>
-</form>
+                <div class="file-input-wrapper">
+                    <label for="fileInput" class="file-input-label secondary-action outline">
+                        <span class="button-text">Attach File</span>
+                    </label>
+                    <input type="file" id="fileInput" name="file" class="file-input visually-hidden">
+                    <span id="fileNameDisplay" class="file-name-display"></span>
+                </div>
+                
+                <button type="button" id="sendFileButton" class="send-file-button secondary-action">
+                    <span class="button-text">Send File</span>
+                </button>
+            </div>
+        </form>
     </div>
 </body>
 </html>

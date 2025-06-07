@@ -29,92 +29,122 @@ def save_face_data_for_user(user, face_image_data_url):
 
 def verify_user_face(user, submitted_face_image_data_url):
     """
-    Retrieve stored face descriptor for the user.
-    Extract descriptor from submitted_face_image_data_url.
-    Compare descriptors and return True if they match, False otherwise.
+    Verify user's face against stored face data.
+    Returns a dictionary with verification results and analytics.
     """
     print(f"[INFO] Starting face verification for user: {user.username}")
-
+    
     try:
         # Step 1: Check if user has face data
         if not user.face_data:
             print(f"[WARN] No face data registered for user: {user.username}")
-            return False
+            return {
+                'success': False,
+                'message': 'No face data registered for this user.',
+                'error': 'no_face_data'
+            }
 
         # Step 2: Load stored face descriptor from the database
         stored_face_data = json.loads(user.face_data)
         stored_encoding = np.array(stored_face_data['encoding'])
-        print(f"[DEBUG] Stored face descriptor for {user.username}: {stored_encoding[:5]}... (truncated)")
 
-        # Step 3: Process the submitted webcam image
+        # Step 3: Process the submitted face image
         try:
-            print(f"[DEBUG] Received face image data length: {len(submitted_face_image_data_url)}")
-            
-            # Handle base64 image from webcam capture
+            # Handle data URL format
             if ',' in submitted_face_image_data_url:
-                print(f"[DEBUG] Data URL format detected, extracting base64 content")
                 submitted_face_image_data_url = submitted_face_image_data_url.split(',')[1]
             
             # Decode base64 to image
-            try:
-                img_data = base64.b64decode(submitted_face_image_data_url)
-                print(f"[DEBUG] Base64 decoded. Image data size: {len(img_data)} bytes")
-                
-                nparr = np.frombuffer(img_data, np.uint8)
-                img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-                
-                if img_rgb is None or img_rgb.size == 0:
-                    print(f"[ERROR] Invalid image data for {user.username}")
-                    flash('Invalid image data. Please try again.', 'warning')
-                    return False
-
-                # Improve face detection
-                face_locations = face_recognition.face_locations(img_rgb, model='cnn')
-                print(f"[DEBUG] Face locations found using CNN model: {len(face_locations)}")
-
-                if not face_locations:
-                    print(f"[WARN] No face detected in submitted image for {user.username}")
-                    flash('No face detected. Please ensure your face is clearly visible.', 'warning')
-                    return False
-
-                # Get face encodings
-                face_encodings = face_recognition.face_encodings(img_rgb, face_locations)
-                if not face_encodings:
-                    print(f"[WARN] Could not encode face from submitted image for {user.username}")
-                    flash('Error encoding face data. Please try again.', 'warning')
-                    return False
-
-                submitted_encoding = face_encodings[0]
-                print(f"[DEBUG] Face encoding generated successfully: {submitted_encoding[:5]}... (truncated)")
-                
-            except Exception as img_err:
-                print(f"[ERROR] Image decoding failed: {str(img_err)}")
-                raise img_err
+            img_data = base64.b64decode(submitted_face_image_data_url)
+            nparr = np.frombuffer(img_data, np.uint8)
+            img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
             
-        except Exception as process_error:
-            print(f"[ERROR] Error processing face image: {str(process_error)}")
-            # Try alternate decoding if the image is actually a JSON-encoded face descriptor
-            try:
-                submitted_encoding = np.array(json.loads(base64.b64decode(submitted_face_image_data_url).decode('utf-8')))
-            except:
-                print("[ERROR] Both image processing and JSON decoding failed")
-                return False
-                
-        print(f"[DEBUG] Submitted face descriptor: {submitted_encoding[:5]}... (truncated)")
+            if img_rgb is None or img_rgb.size == 0:
+                return {
+                    'success': False,
+                    'message': 'Invalid image data. Please try again.',
+                    'error': 'invalid_image'
+                }
 
-        # Step 4: Compare the stored and submitted descriptors
-        distance = np.linalg.norm(stored_encoding - submitted_encoding)
-        print(f"[DEBUG] Distance between stored and submitted descriptors: {distance:.4f}")
+            # Try CNN model first, fall back to HOG if it fails
+            face_locations = face_recognition.face_locations(img_rgb, model='cnn')
+            model_used = 'cnn'
+            
+            if not face_locations:
+                face_locations = face_recognition.face_locations(img_rgb, model='hog')
+                model_used = 'hog'
+            
+            if not face_locations:
+                return {
+                    'success': False,
+                    'message': 'No face detected. Please ensure your face is clearly visible.',
+                    'error': 'no_face_detected',
+                    'model_used': model_used
+                }
 
-        # Use a permissive threshold for testing (0.6)
-        match = distance <= 0.6
+            face_encodings = face_recognition.face_encodings(img_rgb, face_locations)
+            if not face_encodings:
+                return {
+                    'success': False,
+                    'message': 'Could not process face features. Please try again.',
+                    'error': 'encoding_failed',
+                    'model_used': model_used
+                }
 
-        print(f"[INFO] Face verification result for {user.username}: {'SUCCESS' if match else 'FAILED'} (distance: {distance:.4f}, threshold: 0.6)")
-        return match
+            submitted_encoding = face_encodings[0]
+            
+            # Step 4: Compare face encodings
+            distance = face_recognition.face_distance([stored_encoding], submitted_encoding)[0]
+            match_percentage = (1 - distance) * 100
+            threshold = 0.6  # Standard face_recognition threshold
+            is_match = distance <= threshold
+
+            # Create verification log
+            from app import db
+            from app.models.models import FaceVerificationLog
+            
+            log_entry = FaceVerificationLog(
+                user_id=user.id,
+                success=is_match,
+                timestamp=datetime.utcnow(),
+                details=json.dumps({
+                    'match_percentage': float(match_percentage),
+                    'distance': float(distance),
+                    'model_used': model_used,
+                    'threshold': threshold
+                })
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+
+            print(f"[INFO] Face verification result for {user.username}: "
+                  f"{'SUCCESS' if is_match else 'FAILED'} "
+                  f"(match: {match_percentage:.1f}%, model: {model_used})")
+
+            return {
+                'success': is_match,
+                'message': 'Face verified successfully.' if is_match else 'Face verification failed.',
+                'match_percentage': match_percentage,
+                'model_used': model_used,
+                'distance': distance,
+                'threshold': threshold
+            }
+
+        except Exception as img_err:
+            print(f"[ERROR] Image processing error: {str(img_err)}")
+            return {
+                'success': False,
+                'message': f'Error processing image: {str(img_err)}',
+                'error': 'image_processing_error'
+            }
 
     except Exception as e:
-        print(f"[ERROR] Exception during face verification for {user.username}: {str(e)}")
-        return False
+        print(f"[ERROR] Face verification error for {user.username}: {str(e)}")
+        return {
+            'success': False,
+            'message': f'Face verification error: {str(e)}',
+            'error': 'verification_error'
+        }
 
 # --- Routes ---
 @auth_blueprint.route('/register', methods=['GET', 'POST'])
@@ -342,7 +372,7 @@ def verify_face_endpoint():
     
     if not username or not face_image_b64:
         print(f"[DEBUG] Missing data. Username: {bool(username)}, Face image: {bool(face_image_b64)}")
-        return jsonify({'success': False, 'message': 'Username in session and face image are required.'}), 400
+        return jsonify({'success': False, 'message': 'Username and face image are required.'}), 400
 
     user = User.query.filter_by(username=username).first()
     if not user:
@@ -350,17 +380,11 @@ def verify_face_endpoint():
         return jsonify({'success': False, 'message': 'User not found.'}), 404
         
     print(f"[DEBUG] Attempting to verify face for user: {username}")
-    is_face_match_successful = verify_user_face(user, face_image_b64)
-    print(f"[DEBUG] Face verification result: {is_face_match_successful}")
+    verification_result = verify_user_face(user, face_image_b64)
+    print(f"[DEBUG] Face verification result: {verification_result}")
 
-    if is_face_match_successful:
+    if verification_result['success']:
         login_user(user, remember=True)
-        
-        log_entry = FaceVerificationLog(user_id=user.id, success=True, timestamp=datetime.utcnow())
-        db.session.add(log_entry)
-        db.session.commit()
-
-        print(f"[INFO] User {user.username} logged in via face verification.")
 
         try:
             if current_user.is_authenticated and current_user.id == user.id:
@@ -368,23 +392,34 @@ def verify_face_endpoint():
                     'type': 'face_unlocked',
                     'userId': current_user.id,
                     'username': current_user.username,
-                    'message': f"{current_user.username} just logged in with Face Unlock!",
+                    'message': f"{current_user.username} logged in with Face Unlock",
                     'timestamp': datetime.utcnow().isoformat() + 'Z'
                 }
                 socketio.emit('user_status_update', notification_payload, broadcast=True, include_self=False)
-                print(f"[INFO] Emitted 'user_status_update' for {current_user.username} (face unlocked).")
+                print(f"[INFO] Emitted face unlock notification for {current_user.username}")
             else:
-                 print(f"[WARN] current_user not consistent after face login for {username}. Notification not sent.")
+                print(f"[WARN] User state inconsistent after face login for {username}")
         except Exception as e:
-            print(f"[ERROR] Failed to emit face unlocked notification for {username}: {e}")
+            print(f"[ERROR] Failed to emit face unlocked notification: {str(e)}")
 
-        return jsonify({'success': True, 'message': 'Face verified successfully. Redirecting...'})
+        return jsonify({
+            'success': True, 
+            'message': verification_result['message'],
+            'analytics': {
+                'match_percentage': verification_result['match_percentage'],
+                'model_used': verification_result['model_used']
+            }
+        })
     else:
-        log_entry = FaceVerificationLog(user_id=user.id, success=False, timestamp=datetime.utcnow())
-        db.session.add(log_entry)
-        db.session.commit()
-        print(f"[INFO] Face verification failed for user {user.username}.")
-        return jsonify({'success': False, 'message': 'Face verification failed.'})
+        return jsonify({
+            'success': False,
+            'message': verification_result['message'],
+            'error': verification_result.get('error', 'verification_failed'),
+            'analytics': {
+                'match_percentage': verification_result.get('match_percentage'),
+                'model_used': verification_result.get('model_used')
+            }
+        }), 400
 
 @auth_blueprint.route('/logout')
 @login_required

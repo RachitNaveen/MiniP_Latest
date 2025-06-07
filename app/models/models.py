@@ -1,37 +1,8 @@
 from app import db
 from datetime import datetime
 from flask_login import UserMixin
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, HiddenField
-from wtforms.validators import DataRequired, InputRequired, Length, Regexp, EqualTo
 from werkzeug.security import generate_password_hash, check_password_hash
-
-class MessageForm(FlaskForm):
-    message = StringField('Message', validators=[DataRequired()])
-    submit = SubmitField('Send')
-
-class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField(
-        'Password',
-        validators=[
-            DataRequired(),
-            Length(min=8, message="Password must be at least 8 characters long"),
-            Regexp(
-                r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_]).+$',
-                message="Password must include uppercase, lowercase, number, and special character"
-            )
-        ]
-    )
-    confirm_password = PasswordField(
-        'Confirm Password',
-        validators=[
-            DataRequired(),
-            EqualTo('password', message="Passwords must match.")
-        ]
-    )
-    face_data = HiddenField('Face Data') 
-    submit = SubmitField('Register')
+import json
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -53,9 +24,11 @@ class User(db.Model, UserMixin):
         return f'<User {self.username}>'
 
     def set_password(self, password):
+        """Hash and set the user's password"""
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
+        """Check if the provided password matches the hash"""
         return check_password_hash(self.password_hash, password)
 
 class Message(db.Model):
@@ -73,8 +46,18 @@ class Message(db.Model):
 class FaceVerificationLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    success = db.Column(db.Boolean, default=False)
+    success = db.Column(db.Boolean, nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    details = db.Column(db.Text, nullable=True)  # JSON string for storing verification details
 
     def __repr__(self):
-        return f'<FaceLog User {self.user_id} at {self.timestamp}>'
+        return f'<FaceVerificationLog {self.id} User:{self.user_id} Success:{self.success}>'
+
+    def get_details(self):
+        """Get verification details as a dictionary"""
+        if self.details:
+            try:
+                return json.loads(self.details)
+            except:
+                return {}
+        return {}

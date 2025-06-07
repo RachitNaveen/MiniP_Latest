@@ -14,8 +14,8 @@ Usage:
 - Users can send and receive face-locked messages that require face verification to view
 """
 
-from flask import Blueprint, jsonify, request, session
-from flask_login import current_user, login_required
+from flask import Blueprint, jsonify, request, session, render_template, redirect, url_for, flash
+from flask_login import current_user, login_required, login_user
 from app.models.models import Message, User
 from app.auth.auth import verify_user_face
 from app import db
@@ -33,7 +33,7 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("/Users/tshreek/MiniP_Latest/logs/routes_face.log"),
+        logging.FileHandler("/Users/rajattripathi/Documents/GitHub/MiniP_Latest/logs/routes_face.log"),
         logging.StreamHandler()
     ]
 )
@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize FaceAPI with model paths
 face_api = FaceAPI(
-    model_path="/Users/tshreek/minip_latest/app/static/face-api-models"
+    model_path="/Users/rajattripathi/Documents/GitHub/MiniP_Latest/app/static/face-api-models"
 )
 
 face_blueprint = Blueprint('face', __name__)
@@ -213,5 +213,64 @@ def disable_face_verification():
         db.session.rollback()
         return jsonify({'success': False, 'message': f'Error: {str(e)}'})
 
-    logger.debug(f"[DEBUG] Face verification enabled for user {current_user.username}: {current_user.face_verification_enabled}")
-    logger.debug(f"[DEBUG] Face data stored for user {current_user.username}: {'Yes' if current_user.face_data else 'No'}")
+# --- Routes ---
+
+@face_blueprint.route('/face_verification', methods=['GET', 'POST'])
+def face_verification():
+    """Handle face verification during high security login"""
+    print("[DEBUG] Face verification page requested")
+    
+    # Check if already logged in
+    if current_user.is_authenticated:
+        return redirect(url_for('main.chat'))
+    
+    # Get session data
+    username = session.get('username') 
+    risk_details = session.get('risk_details')
+    next_page = session.get('next_page')
+    
+    print(f"[DEBUG] Face verification page - username: {username}")
+    
+    if not username or not risk_details:
+        flash('Session expired. Please log in again.', 'danger')
+        return redirect(url_for('auth.login'))
+        
+    # Get user
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        flash('User not found. Please log in again.', 'danger')
+        return redirect(url_for('auth.login'))
+    
+    if request.method == 'POST':
+        data = request.get_json()
+        face_image = data.get('faceImage')
+        
+        if not face_image:
+            return jsonify({'success': False, 'message': 'Face image required'}), 400
+        
+        # Verify the face
+        if verify_user_face(user, face_image):
+            # Log in and clear session data
+            login_user(user)
+            session.pop('username', None) 
+            session.pop('risk_details', None)
+            session.pop('next_page', None)
+            
+            return jsonify({
+                'success': True,
+                'message': 'Face verification successful',
+                'redirect_url': next_page or url_for('main.chat')
+            })
+        else:
+            # Calculate match percentage (for demo/testing)
+            match_percentage = 65.0  # Example value
+            
+            return jsonify({
+                'success': False,
+                'message': 'Face verification failed',
+                'match_percentage': match_percentage, 
+                'risk_details': risk_details
+            }), 401
+    
+    print(f"[DEBUG] Rendering face verification page for {username}")
+    return render_template('face_verification.html', risk_details=risk_details, username=username)

@@ -33,28 +33,32 @@ document.addEventListener('DOMContentLoaded', function() {
             description: 'Basic security with minimal verification steps.',
             factors: 'Password only',
             color: '#E8F5E9',
-            borderColor: '#4CAF50'
+            borderColor: '#4CAF50',
+            value: 0  // SECURITY_LEVEL_LOW
         },
         'medium': {
             title: 'MEDIUM Security Level',
             description: 'Standard security with additional verification.',
             factors: 'Password + CAPTCHA',
             color: '#FFF8E1',
-            borderColor: '#FFC107'
+            borderColor: '#FFC107',
+            value: 1  // SECURITY_LEVEL_MEDIUM
         },
         'high': {
             title: 'HIGH Security Level',
             description: 'Maximum security with multiple verification steps.',
             factors: 'Password + CAPTCHA + Face Verification',
             color: '#FFEBEE',
-            borderColor: '#F44336'
+            borderColor: '#F44336',
+            value: 2  // SECURITY_LEVEL_HIGH
         },
         'ai': {
             title: 'AI-Based Risk Assessment',
             description: 'Dynamic security level based on AI risk analysis.',
             factors: 'Determined by risk assessment',
             color: '#E8EAF6',
-            borderColor: '#3F51B5'
+            borderColor: '#3F51B5',
+            value: 3  // AI mode
         }
     };
     
@@ -147,10 +151,37 @@ document.addEventListener('DOMContentLoaded', function() {
     if (securityLevelSelect && setLevelBtn) {
         console.log('[SECURITY] Login page security level selector found');
         
-        // Set up event listener for the Apply Level button
+        // FIXED: Set up event listener for the Apply Level button
         setLevelBtn.addEventListener('click', function() {
             const selectedLevel = securityLevelSelect.value;
             console.log(`[SECURITY] Setting security level to: ${selectedLevel.toUpperCase()}`);
+            
+            // FIXED: Convert dropdown values to correct numeric values
+            let securityLevelValue;
+            switch(selectedLevel.toLowerCase()) {
+                case 'low':
+                    securityLevelValue = 0;  // SECURITY_LEVEL_LOW
+                    break;
+                case 'medium':
+                    securityLevelValue = 1;  // SECURITY_LEVEL_MEDIUM
+                    break;
+                case 'high':
+                    securityLevelValue = 2;  // SECURITY_LEVEL_HIGH
+                    break;
+                case 'ai':
+                    securityLevelValue = 3;  // AI mode
+                    break;
+                default:
+                    securityLevelValue = 1;  // Default to medium
+                    console.warn('[SECURITY] Unknown level, defaulting to medium');
+            }
+            
+            console.log(`[SECURITY] Sending numeric value: ${securityLevelValue} for level: ${selectedLevel}`);
+            
+            // Disable button during request
+            setLevelBtn.disabled = true;
+            const originalText = setLevelBtn.textContent;
+            setLevelBtn.textContent = 'Applying...';
             
             // Send the security level to the server
             fetch('/set_security_level_login', {
@@ -160,44 +191,57 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
                 body: JSON.stringify({
-                    level: selectedLevel
+                    security_level: securityLevelValue  // ONLY send numeric value
                 })
             })
-            .then(response => response.json())
-            .then(data => {                    if (data.success) {
-                        console.log(`[SECURITY] Security level set to ${data.levelName} successfully`);
-                        console.log(`[SECURITY] Response data:`, data);
-                        
-                        // Show an alert to the user
-                        alert(`Security level set to ${data.levelName}.\nRequired factors: ${data.requiredFactors}`);
-                        
-                        // Update the security info panel
-                        if (securityInfo) {
-                            // Create HTML for the security info
-                            let infoHTML = `
-                                <div style="display: flex; align-items: center; margin-bottom: 5px;">
-                                    <span style="font-weight: bold; margin-right: 8px;">Current Mode:</span>
-                                    <strong>${data.levelName}</strong>
-                            `;
-                        
-                        // Add AI indicator if in AI mode
+            .then(response => {
+                console.log('[SECURITY] Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('[SECURITY] Response data:', data);
+                
+                if (data.success) {
+                    console.log(`[SECURITY] Security level set to ${data.level_name} successfully`);
+                    
+                    // Show success message
+                    showSecurityMessage(`✅ Security level set to ${data.level_name}!`, 'success');
+                    
+                    // Update the security info panel
+                    if (securityInfo) {
+                        let infoHTML = `
+                            <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                <span style="font-weight: bold; margin-right: 8px;">Current Mode:</span>
+                                <strong>${data.level_name}</strong>
+                        `;
+                    
+                        // Add special indicators for different levels
                         if (selectedLevel === 'ai') {
                             infoHTML += `
-                                <span class="ai-indicator" style="display: inline-block; margin-left: 10px; font-size: 0.8em; padding: 2px 8px; background-color: #3F51B5; color: white; border-radius: 10px; animation: pulse 2s infinite;">AI ACTIVE</span>
+                                <span class="ai-indicator" style="display: inline-block; margin-left: 10px; font-size: 0.8em; padding: 2px 8px; background-color: #3F51B5; color: white; border-radius: 10px;">AI ACTIVE</span>
                             `;
                         }
                         
-                        infoHTML += `
-                            </div>
-                            <p style="margin: 5px 0 0 0;">Required factors: <strong>${data.requiredFactors}</strong></p>
-                        `;
+                        infoHTML += '</div>';
                         
-                        // Add extra information about the security level change
-                        infoHTML += `
-                            <p style="margin: 10px 0; padding: 5px; background-color: #d4edda; color: #155724; border-radius: 4px;">
-                                <strong>✓ Security level updated!</strong> Log in using "testuser2" and "password123" to test this level.
-                            </p>
-                        `;
+                        // Add description based on level
+                        switch(data.level_name) {
+                            case 'Low':
+                                infoHTML += '<p style="margin: 5px 0 0 0;">Authentication: Password only</p>';
+                                break;
+                            case 'Medium':
+                                infoHTML += '<p style="margin: 5px 0 0 0;">Authentication: Password + CAPTCHA</p>';
+                                break;
+                            case 'High':
+                                infoHTML += '<p style="margin: 5px 0 0 0;">Authentication: Password + CAPTCHA + Face Verification</p>';
+                                break;
+                            case 'AI-Based':
+                                infoHTML += '<p style="margin: 5px 0 0 0;">Authentication factors are dynamically determined based on AI risk assessment</p>';
+                                break;
+                        }
                         
                         securityInfo.innerHTML = infoHTML;
                         
@@ -207,14 +251,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         setTimeout(() => {
                             securityInfo.style.boxShadow = 'none';
                         }, 1500);
-                        
-                        // Also show an alert for better visibility
-                        alert(`Security level set to ${data.levelName}.\nRequired factors: ${data.requiredFactors}\n\nTo test this level, use:\nUsername: testuser2\nPassword: password123`);
-                        
-                        // Reload the page to update the form structure based on the new security level
-                        setTimeout(() => {
-                            location.reload();
-                        }, 500);
                     }
                     
                     // If there are risk details in the response, display them
@@ -224,14 +260,85 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 } else {
                     console.error('[SECURITY] Error setting security level:', data.message);
+                    showSecurityMessage('❌ Error: ' + data.message, 'error');
                 }
             })
             .catch(error => {
-                console.error('Error setting security level:', error);
+                console.error('[SECURITY] Error setting security level:', error);
+                showSecurityMessage('❌ Network Error: ' + error.message, 'error');
+            })
+            .finally(() => {
+                // Re-enable button
+                setLevelBtn.disabled = false;
+                setLevelBtn.textContent = originalText;
             });
         });
     } else {
         console.log('[SECURITY] Login page security level selector not found');
+    }
+    
+    // Function to show status messages
+    function showSecurityMessage(message, type) {
+        // Find existing message area or create one
+        let messageArea = document.querySelector('.security-message') ||
+                         document.querySelector('.alert') ||
+                         document.querySelector('.status-message');
+        
+        if (!messageArea) {
+            // Create message area if it doesn't exist
+            messageArea = document.createElement('div');
+            messageArea.className = 'security-message';
+            messageArea.style.cssText = `
+                padding: 10px;
+                margin: 10px 0;
+                border-radius: 5px;
+                font-weight: bold;
+                transition: opacity 0.3s ease;
+            `;
+            
+            // Insert after the security level control
+            const securityControl = document.querySelector('.security-level-control') ||
+                                   document.querySelector('.security-control') ||
+                                   (setLevelBtn ? setLevelBtn.parentElement : null);
+            
+            if (securityControl) {
+                securityControl.appendChild(messageArea);
+            } else {
+                // Fallback: add to body
+                document.body.appendChild(messageArea);
+            }
+        }
+        
+        // Style based on type
+        if (type === 'success') {
+            messageArea.style.backgroundColor = '#d4edda';
+            messageArea.style.color = '#155724';
+            messageArea.style.border = '1px solid #c3e6cb';
+        } else if (type === 'error') {
+            messageArea.style.backgroundColor = '#f8d7da';
+            messageArea.style.color = '#721c24';
+            messageArea.style.border = '1px solid #f5c6cb';
+        }
+        
+        messageArea.textContent = message;
+        messageArea.style.opacity = '1';
+        
+        // Hide message after 5 seconds
+        setTimeout(() => {
+            if (messageArea && messageArea.parentElement) {
+                messageArea.style.opacity = '0';
+                setTimeout(() => {
+                    if (messageArea && messageArea.parentElement) {
+                        try {
+                            messageArea.parentElement.removeChild(messageArea);
+                        } catch (e) {
+                            // Element might already be removed
+                            console.log('Message element already removed');
+                        }
+                    }
+                }, 300);
+            }
+        }, 5000);
     }
     
     // When the DOM loads, check for risk details in the data attribute and display them

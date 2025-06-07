@@ -11,6 +11,10 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f'sqlite:///{os.path.abspath(os.path.join(BASE_DIR, "instance", "db.db"))}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
+    # reCAPTCHA configuration
+    RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY') or '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'  # Test key
+    RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY') or '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'  # Test key
+    
     # Session
     PERMANENT_SESSION_LIFETIME = timedelta(days=1)
     
@@ -19,6 +23,12 @@ class Config:
     FACE_MATCH_THRESHOLD = 0.6  # Lower value = stricter matching (0.6 recommended)
     FACE_VERIFICATION_LOCK_THRESHOLD = 5  # Number of failed attempts before temporary lock
     FACE_VERIFICATION_LOCK_MINUTES = 15  # Lock duration in minutes
+    
+    # reCAPTCHA settings (for testing, replace with your keys in production)
+    RECAPTCHA_USE_SSL = False
+    RECAPTCHA_PUBLIC_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'  # Test key
+    RECAPTCHA_PRIVATE_KEY = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'  # Test key
+    RECAPTCHA_OPTIONS = {'theme': 'light'}
     
     # File upload settings for face images
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max upload size
@@ -34,5 +44,5 @@ class Config:
     # SSL_KEY = '/path/to/key.pem'    # Uncomment and set in production
 
     # reCAPTCHA
-    RECAPTCHA_PUBLIC_KEY = '6Lf7B1QrAAAAAFTql56niE4sxjNxNkOnxG9SSgue'
-    RECAPTCHA_PRIVATE_KEY = '6Lf7B1QrAAAAAFKobCrR5zmgZDlvAd0qlze0fdC0'
+    RECAPTCHA_PUBLIC_KEY = '6LdTp1grAAAAAKO1mpBiAcNv-d-BumvriA7HkWko'
+    RECAPTCHA_PRIVATE_KEY = '6LdTp1grAAAAAIGPI1Yi0gobtFTeaE_nTDPxMBFj'
