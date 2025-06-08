@@ -33,7 +33,7 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("/Users/rajattripathi/Documents/GitHub/MiniP_Latest/logs/routes_face.log"),
+        logging.FileHandler("logs/routes_face.log"),
         logging.StreamHandler()
     ]
 )
@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize FaceAPI with model paths
 face_api = FaceAPI(
-    model_path="/Users/rajattripathi/Documents/GitHub/MiniP_Latest/app/static/face-api-models"
+    model_path="app/static/face-api-models"
 )
 
 face_blueprint = Blueprint('face', __name__)
