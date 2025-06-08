@@ -376,6 +376,9 @@ def login():
                 # If form validation failed, it's likely due to CAPTCHA
                 flash('CAPTCHA validation failed. Please try again.', 'danger')
                 return render_template('login.html', form=form, show_captcha=show_captcha)
+    
+    # If we get here, either the form was not submitted or validation failed
+    return render_template('login.html', form=form, show_captcha=show_captcha)
 
 @auth_blueprint.route('/verify_face', methods=['POST'])
 def verify_face_endpoint():
