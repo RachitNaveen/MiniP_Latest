@@ -439,8 +439,7 @@ def allowed_file(filename):
 @bp.route('/upload_file', methods=['POST'])
 @login_required
 def upload_file():
-    print("[DEBUG] request.files:", request.files)
-    print("[DEBUG] request.form:", request.form)
+    print("[DEBUG] File upload endpoint hit")
 
     if 'file' not in request.files:
         print("[ERROR] No file part in request")
@@ -449,9 +448,19 @@ def upload_file():
     file = request.files['file']
     recipient_id = request.form.get('recipient_id')
 
-    if not recipient_id or not file:
-        print("[ERROR] Missing recipient ID or file")
-        return jsonify({'success': False, 'message': 'Recipient ID and file are required'}), 400
+    print("[DEBUG] Uploaded file:", file.filename)
+    print("[DEBUG] Recipient ID:", recipient_id)
+
+    # Validate recipient ID
+    if not recipient_id:
+        print("[ERROR] Recipient ID is missing")
+        return jsonify({'success': False, 'message': 'Recipient ID is required'}), 400
+
+    # Check if recipient exists
+    recipient = User.query.get(recipient_id)
+    if not recipient:
+        print("[ERROR] Recipient not found:", recipient_id)
+        return jsonify({'success': False, 'message': 'Recipient not found'}), 404
 
     if not allowed_file(file.filename):
         print("[ERROR] File type not allowed:", file.filename)
@@ -460,10 +469,12 @@ def upload_file():
     filename = secure_filename(file.filename)
     uploads_dir = os.path.join(current_app.static_folder, 'uploads')
     if not os.path.exists(uploads_dir):
+        print("[DEBUG] Creating uploads directory")
         os.makedirs(uploads_dir)
 
     file_path = os.path.join(uploads_dir, filename)
     file.save(file_path)
+    print("[DEBUG] File saved to:", file_path)
 
     file_url = url_for('static', filename=f'uploads/{filename}', _external=True)
 

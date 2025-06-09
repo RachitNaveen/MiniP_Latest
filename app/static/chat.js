@@ -1,4 +1,26 @@
+//chat.js 
+// Declare variables only once at the top of the script
+let securityRisk, faceAccuracy, securityDetailsBtn, securityDetailsModal, closeSecurityDetails;
+
 document.addEventListener('DOMContentLoaded', function () {
+    console.log("DOM fully loaded - initializing chat.js");
+    
+    // Initialize variables
+    securityRisk = document.getElementById('securityRisk');
+    faceAccuracy = document.getElementById('faceAccuracy');
+    securityDetailsBtn = document.getElementById('securityDetailsBtn');
+    securityDetailsModal = document.getElementById('securityDetailsModal');
+    closeSecurityDetails = document.getElementById('closeSecurityDetails');
+
+    // Log the presence of security elements
+    console.log("Security elements found:", {
+        securityRisk: !!securityRisk,
+        faceAccuracy: !!faceAccuracy,
+        securityDetailsBtn: !!securityDetailsBtn, 
+        securityDetailsModal: !!securityDetailsModal
+    });
+
+    // Chat elements
     const messageContainer = document.getElementById('messageContainer');
     const messageForm = document.getElementById('messageForm');
     const recipientInput = document.querySelector('.message-select');
@@ -8,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const fileNameDisplay = document.getElementById('fileNameDisplay');
     const faceLockedCheckbox = document.getElementById('faceLocked'); // Get the checkbox
     const currentUserId = document.body.dataset.userId;
-
+    
     let socket;
 
     try {
@@ -98,6 +120,24 @@ document.addEventListener('DOMContentLoaded', function () {
                     addNotificationToUI(data.message);
                 }
             }
+        });
+
+        socket.on('unlock_attempt_update', function (data) {
+            console.log("[DEBUG] Received unlock_attempt_update event with data:", data);
+            const messageElement = document.querySelector(`[data-message-id='${data.message_id}']`);
+            if (messageElement) {
+                if (data.is_replaced) {
+                    messageElement.textContent = "MESSAGE DELETED...";
+                } else {
+                    messageElement.textContent = `Unlock attempts: ${data.attempts}`;
+                }
+            }
+        });
+
+        // --- NEW: Add this listener for intruder alerts ---
+        socket.on('intruder_alert', function (data) {
+            console.log("[INTRUDER-ALERT] Received intruder alert:", data);
+            addIntruderAlertToUI(data);
         });
 
         if (messageForm) {
@@ -285,127 +325,95 @@ document.addEventListener('DOMContentLoaded', function () {
         // --- Function to display a locked item placeholder ---
         function addLockedItemToUI(itemType, senderUsername, itemData) {
             if (!messageContainer) return;
-            
-            // Create message container
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message received locked-item-placeholder'; 
 
-            // Create user info
+            // --- Create the main parent elements ---
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message received locked-item-placeholder';
+
             const userDiv = document.createElement('div');
             userDiv.className = 'message-user';
             userDiv.textContent = senderUsername;
 
-            // Create content container
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content locked-content';
             
-            // Add lock icon
+            // --- Create the content of the locked message ---
             const lockIcon = document.createElement('span');
             lockIcon.className = 'lock-icon';
             lockIcon.innerHTML = '&#x1F512; '; // Lock emoji 🔒
 
-            // Add lock text
             const lockText = document.createElement('span');
             lockText.textContent = `This ${itemType} is Face Locked. `;
-            
-            // Create unlock button with proper styling
+
             const unlockButton = document.createElement('button');
             unlockButton.className = 'unlock-button';
-            unlockButton.style.backgroundColor = '#007bff';  // Use blue color
-            unlockButton.style.color = 'white';
-            unlockButton.style.border = 'none';
-            unlockButton.style.borderRadius = '4px';
-            unlockButton.style.padding = '8px 16px';
-            unlockButton.style.margin = '5px 0';
-            unlockButton.style.cursor = 'pointer';
-            unlockButton.style.fontWeight = 'bold';
-            unlockButton.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-            unlockButton.style.position = 'relative';
-            unlockButton.style.zIndex = '1000'; // Ensure it's above other elements
             unlockButton.textContent = 'Unlock';
-            
-            // Add a direct onclick handler as a backup method
-            unlockButton.onclick = function(e) {
-                console.log("[DEBUG] Unlock button clicked via onclick property");
-                
-                // Try directly showing the face modal to test if the issue is with the button or with the modal
-                try {
-                    // This direct call bypasses event listeners and other potential issues
-                    showFaceVerificationModal(itemType, 'test_direct_call', senderUsername, (data) => {
-                        console.log("[DEBUG] Direct modal call succeeded");
-                        alert("Face verification modal called directly");
-                    });
-                } catch (err) {
-                    console.error("[DEBUG] Error in direct modal call:", err);
-                    alert("Error showing face verification modal: " + err.message);
-                }
-            };
-            
-            // Log the itemData for debugging
-            console.log("[DEBUG] Item data for unlock:", itemData);
-            
-            // Add click handler for unlock button
-            console.log("[DEBUG] Setting up unlock button click handler");
+
+            // Assemble the content div
+            contentDiv.appendChild(lockIcon);
+            contentDiv.appendChild(lockText);
+            contentDiv.appendChild(unlockButton);
+
+            // Assemble the final message div
+            messageDiv.appendChild(userDiv);
+            messageDiv.appendChild(contentDiv);
+
+            // Add to the chat container
+            messageContainer.appendChild(messageDiv);
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+
+            // --- Event Listener ---
             unlockButton.addEventListener('click', function(e) {
-                // Prevent default to ensure the event is captured
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("[DEBUG] Unlock button clicked via addEventListener");
-                
-                // Get the item ID, with better logging for debugging
-                let itemId;
-                if (itemData.id) {
-                    itemId = itemData.id;
-                    console.log("[DEBUG] Using itemData.id:", itemId);
-                } else if (itemData.message_id) {
-                    itemId = itemData.message_id;
-                    console.log("[DEBUG] Using itemData.message_id:", itemId);
-                } else if (itemData.file_id) {
-                    itemId = itemData.file_id;
-                    console.log("[DEBUG] Using itemData.file_id:", itemId);
-                } else {
-                    // Fallbacks for different structures
-                    itemId = itemData._id || itemData.messageId || itemData.fileId || 'unknown';
-                    console.log("[DEBUG] Using fallback itemId:", itemId);
-                }
-                
+
+                const itemId = itemData.id || itemData.message_id || 'unknown';
                 console.log(`[DEBUG] Unlocking ${itemType} with ID: ${itemId}`);
                 
-                // Define success callback ahead of time
-                const handleVerificationSuccess = function(data) {
-                    console.log(`[DEBUG] Face verification successful callback executed: ${itemType} unlocked`, data);
-                    
-                    // On successful verification, update the UI with the unlocked content
-                    if (itemType === 'message') {
-                        messageDiv.innerHTML = '';
-                        addMessageToUI(data.content, senderUsername, false, false);
-                    } else if (itemType === 'file') {
-                        messageDiv.innerHTML = '';
-                        addFileToUI(data.fileUrl, data.fileName, senderUsername, false, false);
+                // --- THIS IS THE CALLBACK FUNCTION WE ARE FIXING ---
+                const handleVerificationResult = function(data) {
+                    console.log(`[DEBUG] Face verification callback executed:`, data);
+
+                    if (data.deleted) {
+                        // If deleted, create a new "deleted" content element
+                        const deletedNotice = document.createElement('div');
+                        deletedNotice.className = 'message-content';
+                        deletedNotice.textContent = data.message || "This message has been deleted.";
+                        
+                        // Replace the entire content div (the one with the button) with the new notice
+                        contentDiv.replaceWith(deletedNotice);
+                        messageDiv.classList.remove('locked-item-placeholder');
+
+                    } else if (data.success) {
+                        // If successful, create a new "unlocked" content element
+                        const unlockedContent = document.createElement('div');
+                        unlockedContent.className = 'message-content';
+
+                        if (itemType === 'message') {
+                            unlockedContent.textContent = data.content;
+                        } else if (itemType === 'file') {
+                            const link = document.createElement('a');
+                            link.href = data.fileUrl;
+                            link.textContent = data.fileName;
+                            link.target = '_blank';
+                            link.download = data.fileName;
+                            unlockedContent.appendChild(link);
+                        }
+                        
+                        // Replace the content div with the new unlocked content
+                        contentDiv.replaceWith(unlockedContent);
+                        messageDiv.classList.remove('locked-item-placeholder');
                     }
-                    
-                    // Show notification
-                    showCustomAlert(`Face verification successful! ${itemType} unlocked.`);
                 };
-                
-                // Use our dedicated face modal handler from face_modal.js
+
+                // Call the modal and pass our new, more reliable callback
                 try {
-                    showFaceVerificationModal(itemType, itemId, senderUsername, handleVerificationSuccess);
+                    showFaceVerificationModal(itemType, itemId, senderUsername, handleVerificationResult);
                 } catch (err) {
                     console.error("[DEBUG] Error showing face verification modal:", err);
                     showCustomAlert("Error initializing face verification. Please try again.");
                 }
             });
-
-            // Assemble the message
-            contentDiv.appendChild(lockIcon);
-            contentDiv.appendChild(lockText);
-            contentDiv.appendChild(unlockButton);
-
-            messageDiv.appendChild(userDiv);
-            messageDiv.appendChild(contentDiv);
-            messageContainer.appendChild(messageDiv);
-            messageContainer.scrollTop = messageContainer.scrollHeight;
         }
 
         function addNotificationToUI(messageText) {
@@ -467,4 +475,271 @@ document.addEventListener('DOMContentLoaded', function () {
             messageContainer.innerHTML = '<p style="text-align:center; color:red;">Chat service is currently unavailable. Please try refreshing the page later.</p>';
         }
     }
+
+    // Security metrics functionality
+    const overallRiskLevel = document.getElementById('overallRiskLevel');
+    const riskScore = document.getElementById('riskScore');
+    const riskFactors = document.getElementById('riskFactors');
+    const faceAccuracyValue = document.getElementById('faceAccuracyValue');
+    const totalFaceAttempts = document.getElementById('totalFaceAttempts');
+    const faceSuccessRate = document.getElementById('faceSuccessRate');
+    const faceConfidence = document.getElementById('faceConfidence');
+    
+    // Open security details modal
+    if (securityDetailsBtn) {
+        securityDetailsBtn.addEventListener('click', function() {
+            if (securityDetailsModal) {
+                securityDetailsModal.style.display = 'flex';
+            }
+        });
+    }
+    
+    // Close security details modal
+    if (closeSecurityDetails) {
+        closeSecurityDetails.addEventListener('click', function() {
+            if (securityDetailsModal) {
+                securityDetailsModal.style.display = 'none';
+            }
+        });
+    }
+    
+    // Close modal when clicking outside
+    if (securityDetailsModal) {
+        securityDetailsModal.addEventListener('click', function(e) {
+            if (e.target === securityDetailsModal) {
+                securityDetailsModal.style.display = 'none';
+            }
+        });
+    }
+    
+    // Fetch security metrics
+    function fetchSecurityMetrics() {
+        // Get CSRF token
+        const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : null;
+        
+        if (!csrfToken) {
+            console.error("CSRF token not found.");
+            return;
+        }
+        
+        console.log("Fetching security metrics from: /security/get_security_metrics");
+        fetch('/security/get_security_metrics', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin' // Add credentials to ensure cookies are sent
+        })
+        .then(response => {
+            console.log("Security metrics response status:", response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Security metrics data received:", JSON.stringify(data, null, 2));
+            if (data.success) {
+                updateSecurityDisplay(data);
+            } else {
+                console.error("Failed to get security metrics:", data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching security metrics:", error);
+        });
+    }
+    
+    // Update security display
+    function updateSecurityDisplay(data) {
+        const risk = data.risk;
+        const faceVerification = data.face_verification;
+        
+        // Update risk badge
+        if (securityRisk) {
+            let riskLevel = '';
+            let riskClass = '';
+            
+            if (risk.score < 30) {
+                riskLevel = 'Low';
+                riskClass = 'risk-low';
+            } else if (risk.score < 70) {
+                riskLevel = 'Medium';
+                riskClass = 'risk-medium';
+            } else {
+                riskLevel = 'High';
+                riskClass = 'risk-high';
+            }
+            
+            securityRisk.textContent = `Risk: ${riskLevel} (${risk.score}%)`;
+            securityRisk.className = 'security-badge ' + riskClass;
+        }
+        
+        // Update face accuracy badge
+        if (faceAccuracy) {
+            let accuracyClass = '';
+            
+            if (faceVerification.accuracy >= 90) {
+                accuracyClass = 'accuracy-high';
+            } else if (faceVerification.accuracy >= 70) {
+                accuracyClass = 'accuracy-medium';
+            } else {
+                accuracyClass = 'accuracy-low';
+            }
+            
+            if (faceVerification.total_attempts > 0) {
+                faceAccuracy.textContent = `Face AI: ${faceVerification.accuracy}% accurate`;
+            } else {
+                faceAccuracy.textContent = 'Face AI: No data';
+            }
+            
+            faceAccuracy.className = 'security-badge ' + accuracyClass;
+        }
+        
+        // Update risk level indicator at bottom right
+        updateRiskLevelIndicator(risk);
+        
+        // Update detailed information
+        if (overallRiskLevel) overallRiskLevel.textContent = risk.level;
+        if (riskScore) riskScore.textContent = `${risk.score}%`;
+        
+        // Update risk factors
+        if (riskFactors) {
+            riskFactors.innerHTML = '';
+            
+            for (const [key, factor] of Object.entries(risk.factors)) {
+                if (key === 'error') continue;
+                
+                const factorElement = document.createElement('div');
+                factorElement.className = 'security-factor';
+                
+                let scoreClass = '';
+                if (factor.score < 0.3) {
+                    scoreClass = 'score-low';
+                } else if (factor.score < 0.7) {
+                    scoreClass = 'score-medium';
+                } else {
+                    scoreClass = 'score-high';
+                }
+                
+                factorElement.innerHTML = `
+                    <div class="security-factor-header">
+                        <strong>${formatFactorName(key)}</strong>
+                        <span class="security-factor-score ${scoreClass}">
+                            ${Math.round(factor.score * 100)}%
+                        </span>
+                    </div>
+                    <div class="security-factor-description">
+                        ${factor.description}
+                    </div>
+                `;
+                
+                riskFactors.appendChild(factorElement);
+            }
+        }
+        
+        // Update face verification details
+        if (faceAccuracyValue) faceAccuracyValue.textContent = `${faceVerification.accuracy}%`;
+        if (totalFaceAttempts) totalFaceAttempts.textContent = faceVerification.total_attempts;
+        if (faceSuccessRate) {
+            faceSuccessRate.textContent = `${faceVerification.successful_attempts} / ${faceVerification.total_attempts}`;
+        }
+        if (faceConfidence) faceConfidence.textContent = faceVerification.confidence;
+    }
+    
+    // Format factor name for display
+    function formatFactorName(key) {
+        return key
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }
+    
+    // Initial fetch
+    if (securityRisk || faceAccuracy) {
+        fetchSecurityMetrics();
+        
+        // Refresh metrics every 60 seconds
+        setInterval(fetchSecurityMetrics, 60000);
+    }
+    
+    // Risk level indicator update
+    function updateRiskLevelIndicator(riskData) {
+        const riskIndicatorDot = document.getElementById('riskIndicatorDot');
+        const riskIndicatorText = document.getElementById('riskIndicatorText');
+        
+        if (!riskIndicatorDot || !riskIndicatorText) return;
+        
+        // Determine risk level
+        let riskLevel = '';
+        let riskClass = '';
+        
+        if (riskData.score < 30) {
+            riskLevel = 'Low';
+            riskClass = 'low';
+        } else if (riskData.score < 70) {
+            riskLevel = 'Medium';
+            riskClass = 'medium';
+        } else {
+            riskLevel = 'High';
+            riskClass = 'high';
+        }
+        
+        // Update text and color
+        riskIndicatorText.textContent = `Risk Level by AI: ${riskLevel}`;
+        riskIndicatorDot.className = 'risk-indicator-dot ' + riskClass;
+    }
+
+    // --- NEW: Add this new function at the end of the file, near your other UI functions ---
+// --- It will create the UI for the alert ---
+
+/**
+ * Adds a special intruder alert notification to the chat UI.
+ * @param {object} data - The alert data from the server.
+ * { message: string, image_url: string, timestamp: string }
+ */
+function addIntruderAlertToUI(data) {
+    if (!messageContainer) {
+        console.error("messageContainer element not found for intruder alert!");
+        return;
+    }
+
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'message system-notification intruder-alert'; // Special class for styling
+
+    // Create the main alert message
+    const textElement = document.createElement('p');
+    textElement.innerHTML = `&#x26A0;&#xFE0F; <strong>Security Alert</strong><br>${data.message}`; // Warning emoji ⚠️
+
+    // Create a container for the snapshot
+    const snapshotContainer = document.createElement('div');
+    snapshotContainer.className = 'intruder-snapshot-container';
+
+    const snapshotHeader = document.createElement('p');
+    snapshotHeader.textContent = "Captured image of the person who attempted access:";
+    snapshotContainer.appendChild(snapshotHeader);
+
+    // Create the image element for the snapshot
+    const snapshotImage = document.createElement('img');
+    snapshotImage.src = data.image_url;
+    snapshotImage.className = 'intruder-snapshot-image';
+    snapshotImage.alt = 'Intruder Snapshot';
+    snapshotContainer.appendChild(snapshotImage);
+    
+    // Create a timestamp
+    const timeElement = document.createElement('p');
+    timeElement.className = 'intruder-alert-time';
+    timeElement.textContent = `Time of attempt: ${new Date(data.timestamp).toLocaleString()}`;
+
+    // Assemble the alert
+    alertDiv.appendChild(textElement);
+    alertDiv.appendChild(snapshotContainer);
+    alertDiv.appendChild(timeElement);
+
+    // Add to the message container and scroll
+    messageContainer.appendChild(alertDiv);
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+}
 });

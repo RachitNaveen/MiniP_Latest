@@ -13,6 +13,9 @@ import numpy as np
 import cv2
 import face_recognition
 import json
+import logging # Make sure to import logging
+
+logger = logging.getLogger(__name__)
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -114,6 +117,58 @@ def verify_user_face(user, submitted_face_image_data_url):
 
     except Exception as e:
         print(f"[ERROR] Exception during face verification for {user.username}: {str(e)}")
+        return False
+
+def verify_user_face(user, submitted_image_array):
+    """
+    Compares a submitted face image array with a user's stored face data,
+    with enhanced logging for debugging.
+    """
+    print(f"[INFO] Starting face verification for user: {user.username}")
+
+    if user.face_data is None:
+        logger.warning(f"User {user.username} has no stored face data for verification.")
+        return False
+        
+    try:
+        # 1. Load stored face encoding
+        stored_data = json.loads(user.face_data)
+        stored_face_encoding = np.array(stored_data['encoding'])
+
+        # 2. Find and encode the face in the submitted image
+        face_locations = face_recognition.face_locations(submitted_image_array)
+        if not face_locations:
+            logger.warning("No face detected in the submitted image.")
+            return False
+
+        submitted_face_encodings = face_recognition.face_encodings(submitted_image_array, face_locations)
+        if not submitted_face_encodings:
+            logger.warning("Could not create an encoding for the face in the submitted image.")
+            return False
+            
+        # 3. Compare the faces and get the distance
+        known_encoding = [stored_face_encoding]
+        unknown_encoding = submitted_face_encodings[0]
+        
+        matches = face_recognition.compare_faces(known_encoding, unknown_encoding, tolerance=0.6)
+        # --- THIS IS THE KEY PART ---
+        # Calculate the actual numerical distance between the faces
+        distance = face_recognition.face_distance(known_encoding, unknown_encoding)[0]
+        
+        # --- NEW: Detailed logging of the distance ---
+        logger.info(f"Face comparison for {user.username}: Match={matches[0]}, Distance={distance:.4f} (Tolerance is 0.6)")
+        
+        is_match = matches[0]
+        
+        if is_match:
+            logger.info(f"Face verification SUCCESS for user {user.username}.")
+        else:
+            logger.warning(f"Face verification FAILED for user {user.username}.")
+            
+        return is_match
+
+    except Exception as e:
+        logger.error(f"An exception occurred during face verification for {user.username}: {e}")
         return False
 
 # --- Routes ---
@@ -313,13 +368,20 @@ def login():
                 return render_template('login.html', form=form, show_captcha=show_captcha)
 
         elif security_level == SECURITY_LEVEL_HIGH:
-            # Redirect to face verification
-            print(f"[DEBUG] Redirecting to face verification for high security level. User ID: {user.id}")
-            session['temp_user_id'] = user.id
-            session['username'] = username  # Make sure username is in session for face verification
-            flash('Additional verification required.', 'info')
-            return redirect(url_for('auth.face_verification'))
-
+            # Require CAPTCHA validation and redirect to face verification
+            if form_valid:
+                print(f"[DEBUG] Redirecting to face verification for high security level. User ID: {user.id}")
+                session['temp_user_id'] = user.id
+                session['username'] = username  # Ensure username is in session for face verification
+                session['captcha_validated'] = True  # Mark CAPTCHA as validated
+                flash('Additional verification required.', 'info')
+                return redirect(url_for('auth.face_verification'))
+            else:
+                # If form validation failed, it's likely due to CAPTCHA
+                flash('CAPTCHA validation failed. Please try again.', 'danger')
+                return render_template('login.html', form=form, show_captcha=show_captcha)
+    
+    # If we get here, either the form was not submitted or validation failed
     return render_template('login.html', form=form, show_captcha=show_captcha)
 
 @auth_blueprint.route('/verify_face', methods=['POST'])
@@ -334,7 +396,6 @@ def verify_face_endpoint():
         print("[DEBUG] Invalid request data, no JSON found")
         return jsonify({'success': False, 'message': 'Invalid request data.'}), 400
 
-    # Get username from session or request
     username = session.get('username')
     face_image_b64 = data.get('faceImage')
 
@@ -348,43 +409,18 @@ def verify_face_endpoint():
     if not user:
         print(f"[DEBUG] User not found: {username}")
         return jsonify({'success': False, 'message': 'User not found.'}), 404
-        
-    print(f"[DEBUG] Attempting to verify face for user: {username}")
-    is_face_match_successful = verify_user_face(user, face_image_b64)
-    print(f"[DEBUG] Face verification result: {is_face_match_successful}")
 
-    if is_face_match_successful:
-        login_user(user, remember=True)
-        
-        log_entry = FaceVerificationLog(user_id=user.id, success=True, timestamp=datetime.utcnow())
-        db.session.add(log_entry)
-        db.session.commit()
-
-        print(f"[INFO] User {user.username} logged in via face verification.")
-
-        try:
-            if current_user.is_authenticated and current_user.id == user.id:
-                notification_payload = {
-                    'type': 'face_unlocked',
-                    'userId': current_user.id,
-                    'username': current_user.username,
-                    'message': f"{current_user.username} just logged in with Face Unlock!",
-                    'timestamp': datetime.utcnow().isoformat() + 'Z'
-                }
-                socketio.emit('user_status_update', notification_payload, broadcast=True, include_self=False)
-                print(f"[INFO] Emitted 'user_status_update' for {current_user.username} (face unlocked).")
-            else:
-                 print(f"[WARN] current_user not consistent after face login for {username}. Notification not sent.")
-        except Exception as e:
-            print(f"[ERROR] Failed to emit face unlocked notification for {username}: {e}")
-
-        return jsonify({'success': True, 'message': 'Face verified successfully. Redirecting...'})
+    # Perform face verification
+    face_verified = verify_user_face(user, face_image_b64)
+    if face_verified:
+        login_user(user, remember=session.get('remember_me', False))
+        session.pop('temp_user_id', None)
+        session.pop('captcha_validated', None)
+        flash('Login successful with High Security.', 'success')
+        return jsonify({'success': True, 'message': 'Face verification successful.'}), 200
     else:
-        log_entry = FaceVerificationLog(user_id=user.id, success=False, timestamp=datetime.utcnow())
-        db.session.add(log_entry)
-        db.session.commit()
-        print(f"[INFO] Face verification failed for user {user.username}.")
-        return jsonify({'success': False, 'message': 'Face verification failed.'})
+        flash('Face verification failed. Please try again.', 'danger')
+        return jsonify({'success': False, 'message': 'Face verification failed.'}), 401
 
 @auth_blueprint.route('/logout')
 @login_required

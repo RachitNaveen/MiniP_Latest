@@ -147,11 +147,19 @@ document.addEventListener('DOMContentLoaded', function() {
     if (securityLevelSelect && setLevelBtn) {
         console.log('[SECURITY] Login page security level selector found');
         
+        // Persist selected security level using local storage
+        const savedSecurityLevel = localStorage.getItem('selectedSecurityLevel');
+        if (savedSecurityLevel) {
+            securityLevelSelect.value = savedSecurityLevel;
+        }
+
         // Set up event listener for the Apply Level button
         setLevelBtn.addEventListener('click', function() {
             const selectedLevel = securityLevelSelect.value;
             console.log(`[SECURITY] Setting security level to: ${selectedLevel.toUpperCase()}`);
             
+            localStorage.setItem('selectedSecurityLevel', selectedLevel); // Save to local storage
+
             // Send the security level to the server
             fetch('/set_security_level_login', {
                 method: 'POST',
@@ -159,9 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
-                body: JSON.stringify({
-                    level: selectedLevel
-                })
+                body: JSON.stringify({ security_level: selectedLevel })
             })
             .then(response => response.json())
             .then(data => {                    if (data.success) {

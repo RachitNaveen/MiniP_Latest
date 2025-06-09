@@ -3,3 +3,4 @@ __pycache__/
 instance/chat.db
 venv/
 .env
+logs/

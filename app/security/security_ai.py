@@ -317,3 +317,64 @@ def get_device_description():
         return "Login from uncommon browser"
         
     return "Login from desktop with common browser"
+
+def get_face_verification_accuracy(user_id):
+    """
+    Calculate the face verification accuracy based on historical verification attempts
+    
+    Args:
+        user_id: The ID of the user to calculate accuracy for
+        
+    Returns:
+        dict: Dictionary containing accuracy metrics
+    """
+    try:
+        from app.models.models import FaceVerificationLog
+        
+        # Get total verifications in the last 30 days
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        total_verifications = FaceVerificationLog.query.filter_by(user_id=user_id)\
+            .filter(FaceVerificationLog.timestamp >= thirty_days_ago).count()
+        
+        if total_verifications == 0:
+            return {
+                'accuracy': 0,
+                'total_attempts': 0,
+                'successful_attempts': 0,
+                'failed_attempts': 0,
+                'confidence': 'No data'
+            }
+        
+        # Get successful verifications
+        successful_verifications = FaceVerificationLog.query.filter_by(
+            user_id=user_id,
+            success=True
+        ).filter(FaceVerificationLog.timestamp >= thirty_days_ago).count()
+        
+        # Calculate accuracy
+        accuracy = (successful_verifications / total_verifications) * 100
+        
+        # Calculate confidence level based on sample size
+        if total_verifications < 5:
+            confidence = 'Low'
+        elif total_verifications < 20:
+            confidence = 'Medium'
+        else:
+            confidence = 'High'
+        
+        return {
+            'accuracy': round(accuracy, 2),
+            'total_attempts': total_verifications,
+            'successful_attempts': successful_verifications,
+            'failed_attempts': total_verifications - successful_verifications,
+            'confidence': confidence
+        }
+    except Exception as e:
+        print(f"Error calculating face verification accuracy: {str(e)}")
+        return {
+            'accuracy': 0,
+            'total_attempts': 0,
+            'successful_attempts': 0,
+            'failed_attempts': 0,
+            'confidence': 'Error'
+        }

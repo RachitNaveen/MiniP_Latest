@@ -5,7 +5,7 @@ try {
   let testImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 
   // Test request that mimics what face_modal.js now does
-  fetch("/unlock_item", {
+  fetch("/face/unlock_item", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

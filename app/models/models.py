@@ -1,3 +1,5 @@
+# /models/models.py
+
 from app import db
 from datetime import datetime
 from flask_login import UserMixin
@@ -66,6 +68,8 @@ class Message(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     is_face_locked = db.Column(db.Boolean, default=False)
     file_path = db.Column(db.String(256), nullable=True)
+    unlock_attempts = db.Column(db.Integer, default=0)
+    is_replaced = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return f'<Message {self.id} from {self.sender_id} to {self.recipient_id}>'

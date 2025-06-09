@@ -165,6 +165,26 @@ The AI-based Multi-Factor Authentication system works as follows:
 
    The application will be available at `http://localhost:5000`.
 
+## 🐳 Docker Deployment
+
+### Build and Run the Application with Docker
+
+1. **Build the Docker Image:**
+   ```bash
+   docker build -t securechat .
+   ```
+
+2. **Run the Docker Container:**
+   ```bash
+   docker run -p 5000:5000 -v $(pwd)/instance:/app/instance securechat
+   ```
+
+   - `-p 5000:5000`: Maps port 5000 on your host to port 5000 in the container.
+   - `-v $(pwd)/instance:/app/instance`: Mounts the `instance` directory for persistent data storage.
+
+3. **Access the Application:**
+   Open your browser and navigate to `http://localhost:5000`.
+
 ## 🚀 Running the Application
 
 1. **Start the server:**
@@ -241,6 +261,7 @@ For detailed testing instructions, refer to the `TESTING_MFA.md` file.
 - Login from an unusual location
 - Login at unusual hours (late night/early morning)
 - Long period of account inactivity (30+ days)
+- Login from an uncommon browser or device
 
 ## 👤 Face Verification Features
 

@@ -157,5 +157,30 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+
+<script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var securityLevelSelect = document.getElementById('security-level');
+        var captchaSection = document.querySelector('.form-group:nth-child(3)');
+        var faceVerificationInfo = document.querySelector('.security-selection div:nth-child(4)');
+
+        function updateAuthenticationFactors() {
+          var selectedLevel = securityLevelSelect.value;
+          if (selectedLevel === 'low') {
+            captchaSection.style.display = 'none';
+            faceVerificationInfo.style.display = 'none';
+          } else if (selectedLevel === 'medium') {
+            captchaSection.style.display = 'block';
+            faceVerificationInfo.style.display = 'none';
+          } else if (selectedLevel === 'high') {
+            captchaSection.style.display = 'block';
+            faceVerificationInfo.style.display = 'block';
+          }
+        }
+
+        securityLevelSelect.addEventListener('change', updateAuthenticationFactors);
+        updateAuthenticationFactors();
+      });
+      </script>
 </body>
 </html>

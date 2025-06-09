@@ -57,3 +57,12 @@ EXPOSE 5000
 # The command to run your application
 # Your run.py script handles db.create_all() and starts the Flask-SocketIO server
 CMD ["python", "run.py"]
+
+# Ensure the application is ready to run with Docker
+# Add instructions for building and running the container
+
+# Build the Docker image
+# docker build -t securechat .
+
+# Run the Docker container
+# docker run -p 5000:5000 -v $(pwd)/instance:/app/instance securechat

@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=        // Override the fetch call to /face/unlock_item for testing
+        window.originalFetch = window.fetch;
+        window.fetch = function(url, options) {
+            if (url === '/face/unlock_item') {
+                console.log('Mock fetch for /face/unlock_item');e-width, initial-scale=1.0">
     <title>Face Modal Test</title>
     <link rel="stylesheet" href="/static/styles.css">
     <script defer src="/static/face-api.js"></script>
