@@ -121,26 +121,21 @@ def verify_user_face(user, submitted_face_image_data_url):
 
 def verify_user_face(user, submitted_image_array):
     """
-    Compares a submitted face image array with a user's stored face data.
-    
-    :param user: The User object from the database.
-    :param submitted_image_array: The already decoded image as a NumPy array (from cv2).
-    :return: Boolean (True if faces match, False otherwise).
+    Compares a submitted face image array with a user's stored face data,
+    with enhanced logging for debugging.
     """
-    print(f"[INFO] Starting face verification for user: {user.username}") # This should now work correctly
+    print(f"[INFO] Starting face verification for user: {user.username}")
 
     if user.face_data is None:
         logger.warning(f"User {user.username} has no stored face data for verification.")
         return False
         
     try:
-        # 1. Load the stored face encoding from the user's record
+        # 1. Load stored face encoding
         stored_data = json.loads(user.face_data)
         stored_face_encoding = np.array(stored_data['encoding'])
-        logger.debug(f"Stored face descriptor for {user.username} loaded successfully.")
 
-        # 2. Find and encode the face in the submitted image array
-        # This image is already decoded, so we don't need to process it from base64.
+        # 2. Find and encode the face in the submitted image
         face_locations = face_recognition.face_locations(submitted_image_array)
         if not face_locations:
             logger.warning("No face detected in the submitted image.")
@@ -151,10 +146,19 @@ def verify_user_face(user, submitted_image_array):
             logger.warning("Could not create an encoding for the face in the submitted image.")
             return False
             
-        # 3. Compare the faces
-        results = face_recognition.compare_faces([stored_face_encoding], submitted_face_encodings[0], tolerance=0.6)
+        # 3. Compare the faces and get the distance
+        known_encoding = [stored_face_encoding]
+        unknown_encoding = submitted_face_encodings[0]
         
-        is_match = results[0]
+        matches = face_recognition.compare_faces(known_encoding, unknown_encoding, tolerance=0.6)
+        # --- THIS IS THE KEY PART ---
+        # Calculate the actual numerical distance between the faces
+        distance = face_recognition.face_distance(known_encoding, unknown_encoding)[0]
+        
+        # --- NEW: Detailed logging of the distance ---
+        logger.info(f"Face comparison for {user.username}: Match={matches[0]}, Distance={distance:.4f} (Tolerance is 0.6)")
+        
+        is_match = matches[0]
         
         if is_match:
             logger.info(f"Face verification SUCCESS for user {user.username}.")

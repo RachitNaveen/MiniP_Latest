@@ -225,6 +225,8 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                                 new faceapi.TinyFaceDetectorOptions()
                             ).withFaceLandmarks();
 
+                            console.log('[FACE-MODAL] Face detection output:', detections);
+
                             // Get canvas context and clear it
                             const ctx = overlayCanvas.getContext('2d');
                             ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
@@ -293,8 +295,8 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                 itemId: itemId 
             };
 
+            // Update error handling to differentiate between network errors and other errors
             try {
-                // Send the image to our backend endpoint
                 const response = await fetch('/face/unlock_item', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken()},
@@ -302,12 +304,16 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                         itemType: itemType, 
                         itemId: itemId, 
                         faceImage: faceImage 
-                    }) // Send full image data
+                    })
                 });
+
+                if (!response.ok) {
+                    throw new Error(`[FACE-MODAL] Server responded with status ${response.status}: ${response.statusText}`);
+                }
+
                 const data = await response.json();
                 console.log('[FACE-MODAL] Verification response:', data);
 
-                // Handle the server's response
                 if (data.success) {
                     statusDiv.textContent = 'Face verification successful!';
                     statusDiv.style.backgroundColor = '#e8f5e8'; // Green for success
@@ -316,23 +322,18 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                         if (typeof onSuccess === 'function') onSuccess(data);
                     }, 1000);
                 } else {
-                    // This handles BOTH "failed" and "deleted" states
                     statusDiv.textContent = data.message || 'Verification failed.';
                     statusDiv.style.backgroundColor = '#f8d7da'; // Red for error
-                    
+
                     if (data.deleted) {
-                        // If the item is now deleted, permanently change the UI
                         verifyBtn.style.display = 'none';
                         cancelBtn.textContent = 'Close';
                         cancelBtn.disabled = false;
-                        // Important: Pass the deleted status back to chat.js
                         if (typeof onSuccess === 'function') onSuccess({ deleted: true, message: data.message });
                     } else {
-                        // If there are still attempts left, re-enable the buttons for another try
                         setTimeout(() => {
                             verifyBtn.disabled = false;
                             cancelBtn.disabled = false;
-                            // Restart the face detection loop
                             if (!currentDetectionInterval) {
                                 currentDetectionInterval = setInterval(detectFaces, 200);
                             }
@@ -340,8 +341,13 @@ function showFaceVerificationModal(itemType, itemId, senderUsername, onSuccess) 
                     }
                 }
             } catch (error) {
-                console.error('[FACE-MODAL] Network or other error during verification:', error);
-                statusDiv.textContent = 'Network error during verification. Please try again.';
+                if (error.name === 'TypeError') {
+                    console.error('[FACE-MODAL] Network error during verification:', error);
+                    statusDiv.textContent = 'Network error during verification. Please try again.';
+                } else {
+                    console.error('[FACE-MODAL] Verification error:', error);
+                    statusDiv.textContent = 'An error occurred during verification. Please try again.';
+                }
                 statusDiv.style.backgroundColor = '#f8d7da';
                 verifyBtn.disabled = false;
                 cancelBtn.disabled = false;

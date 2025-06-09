@@ -67,86 +67,113 @@ def face_status():
 @face_blueprint.route('/unlock_item', methods=['POST'])
 @login_required
 def unlock_item():
-    """
-    This is the final, correct version that handles all features
-    and works with your coworker's code.
-    """
-    data = request.get_json()
-    if not data:
-        return jsonify({'success': False, 'message': 'Invalid request data.'}), 400
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': 'Invalid request data.'}), 400
 
-    # === THIS IS THE CRITICAL FIX ===
-    # We get the data using the camelCase keys that JavaScript sends.
-    item_id = data.get('itemId')
-    item_type = data.get('itemType')
-    face_image_b64 = data.get('faceImage')
-    is_cancelled = data.get('cancelled', False)
-    
-    # Check that we received the ID and Type
-    if not is_cancelled and (not item_id or not item_type):
-        return jsonify({'success': False, 'message': 'Missing itemType or itemId from request.'}), 400
+        item_id = data.get('itemId')
+        item_type = data.get('itemType')
+        face_image_b64 = data.get('faceImage')
+        is_cancelled = data.get('cancelled', False)
 
-    message = Message.query.get(item_id)
-    if not message:
-        return jsonify({'success': False, 'message': 'Message not found.'}), 404
+        if not is_cancelled and (not item_id or not item_type):
+            return jsonify({'success': False, 'message': 'Missing itemType or itemId from request.'}), 400
 
-    if message.is_replaced:
-        return jsonify({'success': False, 'message': 'This message has been permanently deleted.', 'deleted': True}), 403
+        message = Message.query.get(item_id)
+        if not message:
+            return jsonify({'success': False, 'message': 'Message not found.'}), 404
 
-    if is_cancelled:
-        message.unlock_attempts += 1
-        if message.unlock_attempts >= 3:
-            message.content = "MESSAGE DELETED"
-            message.is_replaced = True
-        db.session.commit()
-        return jsonify({'success': True, 'message': 'Unlock cancelled.'})
+        if message.is_replaced:
+            return jsonify({
+                'success': False, 
+                'message': 'This message was deleted due to too many failed unlock attempts.',
+                'deleted': True
+            }), 403
 
-    if not face_image_b64:
-        return jsonify({'success': False, 'message': 'Missing faceImage from request.'}), 400
-    
-    # We call the function from auth.py, passing the base64 string it expects
-    verification_result = verify_user_face(current_user, face_image_b64)
+        if is_cancelled:
+            message.unlock_attempts += 1
+            if message.unlock_attempts >= 3:
+                message.content = "MESSAGE DELETED"
+                message.is_replaced = True
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Unlock cancelled.'})
 
-    if verification_result.get('success'):
-        message.unlock_attempts = 0
-        db.session.commit()
-        return jsonify({'success': True, 'content': message.content})
-    else:
-        # --- FAILURE PATH: ADD YOUR FEATURES ---
-        message.unlock_attempts += 1
-        attempts_left = 3 - message.unlock_attempts
-        
-        # Feature: Intruder Alert
+        face_image = data.get('faceImage')
+        if not face_image:
+            return jsonify({'success': False, 'message': 'Missing required field: faceImage'}), 400
+
         try:
-            sender = User.query.get(message.sender_id)
-            if sender:
-                img_str = face_image_b64.split(',')[1] if ',' in face_image_b64 else face_image_b64
-                img_data = base64.b64decode(img_str)
-                filename = f"failed_attempt_{uuid.uuid4().hex}.jpg"
-                upload_folder = os.path.join(current_app.static_folder, 'intruder_snaps')
-                os.makedirs(upload_folder, exist_ok=True)
-                filepath = os.path.join(upload_folder, filename)
-                with open(filepath, 'wb') as f: f.write(img_data)
-                
-                image_url = url_for('static', filename=f'intruder_snaps/{filename}', _external=True)
-                room_name = f"user_{sender.id}"
-                socketio.emit('intruder_alert', {
-                    'message': f"Alert: A failed attempt was made to unlock your message sent to {message.recipient.username}.",
-                    'image_url': image_url,
-                    'timestamp': datetime.utcnow().isoformat()
-                }, room=room_name)
+            if ',' in face_image:
+                img_str = face_image.split(',')[1]
+            else:
+                img_str = face_image
+            img_data = base64.b64decode(img_str)
+            nparr = np.frombuffer(img_data, np.uint8)
+            img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            if img_rgb is None:
+                raise ValueError("Failed to decode image")
         except Exception as e:
-            logger.error(f"[INTRUDER] Failed to send snapshot: {e}")
+            logger.error(f"[ERROR] Error decoding face image: {str(e)}")
+            return jsonify({'success': False, 'message': 'Error processing face image.'}), 400
 
-        # Feature: 3-Strike Deletion
-        if attempts_left <= 0:
-            message.content = "MESSAGE DELETED"
-            message.is_replaced = True
+        is_match = verify_user_face(current_user, img_rgb)
+
+        if is_match:
+            message.unlock_attempts = 0
             db.session.commit()
-            return jsonify({'success': False, 'message': 'Final attempt failed. The message has been permanently deleted.', 'deleted': True}), 403
+            return jsonify({'success': True, 'content': message.content}), 200
+
         else:
-            db.session.commit()
-            return jsonify({'success': False, 'message': f"Face verification failed. You have {attempts_left} attempt(s) left.", 'attempts_left': attempts_left}), 403
+            message.unlock_attempts += 1
+            attempts_left = 3 - message.unlock_attempts
+            logger.warning(f"[FAILURE] Face verification failed for user {current_user.username}, message {item_id}. Attempts: {message.unlock_attempts}")
+
+            try:
+                sender = User.query.get(message.sender_id)
+                if sender:
+                    filename = f"failed_attempt_{uuid.uuid4().hex}.jpg"
+                    upload_folder = os.path.join(current_app.static_folder, 'intruder_snaps')
+                    os.makedirs(upload_folder, exist_ok=True)
+                    filepath = os.path.join(upload_folder, filename)
+
+                    with open(filepath, 'wb') as f:
+                        f.write(img_data)
+
+                    image_url = url_for('static', filename=f'intruder_snaps/{filename}', _external=True)
+
+                    room_name = f"user_{sender.id}"
+                    socketio.emit('intruder_alert', {
+                        'message': f"Alert: A failed attempt was made to unlock your message sent to {message.recipient.username}.",
+                        'image_url': image_url,
+                        'timestamp': datetime.utcnow().isoformat()
+                    }, room=room_name)
+                    logger.info(f"[INTRUDER] Notified sender {sender.username} of the failed attempt.")
+
+            except Exception as e:
+                logger.error(f"[INTRUDER] Failed to process and send intruder snapshot on failure: {e}")
+
+            if attempts_left <= 0:
+                logger.error(f"[DELETE] Message {item_id} deleted after 3 failed unlock attempts.")
+                message.content = "MESSAGE DELETED"
+                message.is_replaced = True
+                db.session.commit()
+                return jsonify({
+                    'success': False, 
+                    'message': 'Final attempt failed. The message has been permanently deleted.',
+                    'deleted': True
+                }), 403
+            else:
+                db.session.commit()
+                return jsonify({
+                    'success': False, 
+                    'message': f'Face verification failed. You have {attempts_left} attempt(s) left.',
+                    'attempts_left': attempts_left
+                }), 403
+
+    except Exception as e:
+        logger.error(f"[UNLOCK_ITEM] Unexpected error: {str(e)}")
+        return jsonify({'success': False, 'message': 'An unexpected error occurred. Please try again later.'}), 500
 
 @face_blueprint.route('/update_face_data', methods=['POST'])
 @login_required
