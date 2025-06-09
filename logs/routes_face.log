@@ -207,25 +207,3 @@
 2025-06-09 18:58:10,956 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
 2025-06-09 18:58:10,958 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
 2025-06-09 18:58:10,961 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:58:28,208 - INFO - Face comparison for tshreek: Match=True, Distance=0.4385 (Tolerance is 0.6)
-2025-06-09 18:58:28,209 - INFO - Face verification SUCCESS for user tshreek.
-2025-06-09 18:58:28,210 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:28] "POST /face/unlock_item HTTP/1.1" 200 -
-2025-06-09 18:58:35,885 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:35] "POST /face/unlock_item HTTP/1.1" 200 -
-2025-06-09 18:58:37,954 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:37] "POST /face/unlock_item HTTP/1.1" 200 -
-2025-06-09 18:58:39,839 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:39] "POST /face/unlock_item HTTP/1.1" 200 -
-2025-06-09 18:58:45,041 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:45] "[31m[1mPOST /face/unlock_item HTTP/1.1[0m" 403 -
-2025-06-09 18:58:50,133 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:50] "[31m[1mPOST /face/unlock_item HTTP/1.1[0m" 403 -
-2025-06-09 18:58:52,583 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:52] "[31m[1mPOST /face/unlock_item HTTP/1.1[0m" 403 -
-2025-06-09 18:58:53,506 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:53] "[31m[1mPOST /face/unlock_item HTTP/1.1[0m" 403 -
-2025-06-09 18:59:01,217 - INFO - 127.0.0.1 - - [09/Jun/2025 18:59:01] "[31m[1mPOST /face/unlock_item HTTP/1.1[0m" 403 -
-2025-06-09 18:59:02,303 - INFO - 127.0.0.1 - - [09/Jun/2025 18:59:02] "[31m[1mPOST /face/unlock_item HTTP/1.1[0m" 403 -
-2025-06-09 18:59:03,382 - INFO - 127.0.0.1 - - [09/Jun/2025 18:59:03] "[31m[1mPOST /face/unlock_item HTTP/1.1[0m" 403 -
-2025-06-09 18:59:04,091 - INFO - 127.0.0.1 - - [09/Jun/2025 18:59:04] "[31m[1mPOST /face/unlock_item HTTP/1.1[0m" 403 -
-2025-06-09 18:59:07,855 - INFO - 127.0.0.1 - - [09/Jun/2025 18:59:07] "GET /security/get_security_metrics HTTP/1.1" 200 -
-2025-06-09 18:59:07,863 - INFO - 127.0.0.1 - - [09/Jun/2025 18:59:07] "GET /security/get_security_metrics HTTP/1.1" 200 -
-2025-06-09 18:59:11,843 - INFO - 127.0.0.1 - - [09/Jun/2025 18:59:11] "GET /security/get_security_metrics HTTP/1.1" 200 -
-2025-06-09 18:59:11,850 - INFO - 127.0.0.1 - - [09/Jun/2025 18:59:11] "GET /security/get_security_metrics HTTP/1.1" 200 -
-2025-06-09 19:00:07,864 - INFO - 127.0.0.1 - - [09/Jun/2025 19:00:07] "GET /security/get_security_metrics HTTP/1.1" 200 -
-2025-06-09 19:00:07,871 - INFO - 127.0.0.1 - - [09/Jun/2025 19:00:07] "GET /security/get_security_metrics HTTP/1.1" 200 -
-2025-06-09 19:00:11,839 - INFO - 127.0.0.1 - - [09/Jun/2025 19:00:11] "GET /security/get_security_metrics HTTP/1.1" 200 -
-2025-06-09 19:00:11,847 - INFO - 127.0.0.1 - - [09/Jun/2025 19:00:11] "GET /security/get_security_metrics HTTP/1.1" 200 -
