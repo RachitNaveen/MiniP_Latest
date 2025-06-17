@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.abspath('.'))
 
 from app import create_app, db
-from app.models import User
+from app.models.models import User
 from werkzeug.security import generate_password_hash
 
 def create_test_user(username='testuser', password='Password123!'):

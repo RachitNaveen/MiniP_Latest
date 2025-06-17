@@ -3,10 +3,30 @@ Security AI Module for SecureChat
 This module provides AI-based security level determination for multi-factor authentication.
 """
 import time
+import os
 from datetime import datetime, timedelta
 import ipaddress
 from flask import request, session
 from app.models.models import FaceVerificationLog, User
+
+# Import ML security module (if available)
+try:
+    # Try the full ML implementation first
+    try:
+        from ml_mfa.ml_security import MLSecurityClassifier, get_ml_security_level, get_ml_risk_details
+        ML_SECURITY_AVAILABLE = True
+        SIMPLIFIED_ML = False
+        print("ML-based security module loaded successfully")
+    except ImportError:
+        # Fall back to simplified ML implementation
+        from ml_mfa.simplified_ml import SimplifiedMLClassifier, get_simplified_security_level
+        ML_SECURITY_AVAILABLE = True
+        SIMPLIFIED_ML = True
+        print("Simplified ML-based security module loaded")
+except ImportError:
+    ML_SECURITY_AVAILABLE = False
+    SIMPLIFIED_ML = False
+    print("ML-based security module not available, using rule-based system")
 
 # Security levels
 SECURITY_LEVEL_LOW = 1      # Password only
@@ -25,6 +45,7 @@ WEIGHTS = {
 def calculate_security_level(username):
     """
     Calculate the security level required for a user based on various risk factors.
+    Uses ML-based prediction if available, otherwise falls back to rule-based system.
     
     Args:
         username (str): The username attempting to log in
@@ -32,6 +53,46 @@ def calculate_security_level(username):
     Returns:
         int: The security level required (1=Low, 2=Medium, 3=High)
     """
+    # Check security mode from config file
+    instance_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'instance')
+    security_mode_file = os.path.join(instance_dir, 'security_mode.txt')
+    
+    # Default to ML if file doesn't exist or ML is specified
+    use_ml = True
+    if os.path.exists(security_mode_file):
+        with open(security_mode_file, 'r') as f:
+            mode = f.read().strip()
+            use_ml = (mode == 'ml')
+    
+    # Check if we should use ML-based security level
+    if ML_SECURITY_AVAILABLE and use_ml and not request.environ.get('USE_RULE_BASED_SECURITY'):
+        try:
+            if SIMPLIFIED_ML:
+                # Get user for feature extraction
+                user = User.query.filter_by(username=username).first()
+                
+                # If user doesn't exist, require medium security by default
+                if not user:
+                    return SECURITY_LEVEL_MEDIUM
+                
+                # Extract features
+                features = {
+                    'failed_attempts': get_failed_attempts_risk(user),
+                    'location_risk': get_location_risk(),
+                    'time_risk': get_time_risk(),
+                    'breach_risk': get_previous_breaches_risk(user),
+                    'device_risk': get_device_risk()
+                }
+                
+                return get_simplified_security_level(features)
+            else:
+                return get_ml_security_level(username)
+        except Exception as e:
+            print(f"Error using ML security level: {str(e)}")
+            print("Falling back to rule-based security level")
+            # Fall back to rule-based if ML fails
+    
+    # Use rule-based approach
     user = User.query.filter_by(username=username).first()
     
     # If user doesn't exist, require medium security by default
@@ -165,7 +226,8 @@ def get_device_risk():
 
 def get_risk_details(username):
     """
-    Get detailed risk assessment information for a user
+    Get detailed risk assessment information for a user.
+    Uses ML-based prediction if available, otherwise falls back to rule-based system.
     
     Args:
         username (str): The username to assess
@@ -173,6 +235,32 @@ def get_risk_details(username):
     Returns:
         dict: Dictionary containing risk assessment details
     """
+    # Check security mode from config file
+    instance_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'instance')
+    security_mode_file = os.path.join(instance_dir, 'security_mode.txt')
+    
+    # Default to ML if file doesn't exist or ML is specified
+    use_ml = True
+    if os.path.exists(security_mode_file):
+        with open(security_mode_file, 'r') as f:
+            mode = f.read().strip()
+            use_ml = (mode == 'ml')
+    
+    # Check if we should use ML-based risk details
+    if ML_SECURITY_AVAILABLE and use_ml and not request.environ.get('USE_RULE_BASED_SECURITY'):
+        try:
+            if SIMPLIFIED_ML:
+                # Use the simplified ML risk details
+                from ml_mfa.simplified_ml_details import get_simplified_risk_details
+                return get_simplified_risk_details(username)
+            else:
+                # Use the full ML risk details
+                return get_ml_risk_details(username)
+        except Exception as e:
+            print(f"Error using ML risk details: {str(e)}")
+            print("Falling back to rule-based risk details")
+            # Fall back to rule-based if ML fails
+    
     try:
         user = User.query.filter_by(username=username).first()
         
@@ -189,7 +277,8 @@ def get_risk_details(username):
                     'previous_breaches': {'score': 0.5, 'description': 'Unknown user history'},
                     'device_risk': {'score': float(get_device_risk()), 'description': 'Device type risk'}
                 },
-                'required_factors': ['Password', 'CAPTCHA']
+                'required_factors': ['Password', 'CAPTCHA'],
+                'using_ml': False
             }
 
         # Calculate risk factors and scores - ensure all are JSON serializable (float values)
@@ -246,7 +335,8 @@ def get_risk_details(username):
             'security_level_num': security_level_num,
             'risk_score': risk_score,
             'risk_factors': risk_factors,
-            'required_factors': required_factors
+            'required_factors': required_factors,
+            'using_ml': False
         }
 
     except Exception as e:
@@ -259,7 +349,8 @@ def get_risk_details(username):
             'risk_factors': {
                 'error': {'score': 0.5, 'description': 'Error assessing risk factors'}
             },
-            'required_factors': ['Password', 'CAPTCHA']
+            'required_factors': ['Password', 'CAPTCHA'],
+            'using_ml': False
         }
 
 def get_failed_attempts_description(score):

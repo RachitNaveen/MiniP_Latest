@@ -240,7 +240,64 @@ The project includes several tools for testing the AI-based MFA system:
    python test_security_levels.py
    ```
 
+5. **ML vs. Rule-Based Comparison:**
+   Compare the ML-based security level determination with the rule-based approach:
+   ```bash
+   python test_ml_security.py --samples 20
+   ```
+
 For detailed testing instructions, refer to the `TESTING_MFA.md` file.
+
+## 🤖 Machine Learning Security System
+
+The application includes a machine learning-based security system that enhances the rule-based approach:
+
+### Features of ML-Based Security
+
+- **Advanced Pattern Recognition**: The ML model can detect subtle patterns in risk factors that rule-based systems might miss
+- **Probabilistic Risk Assessment**: Provides confidence scores for security level decisions
+- **Adaptive Security**: Model can be retrained with new data to adapt to changing security threats
+
+### ML Components
+
+1. **Data Collection Module** (`ml_mfa/data_collection.py`):
+   - Collects real login data from application logs
+   - Generates synthetic training data based on rule patterns
+   - Processes and combines data for training
+
+2. **ML Security Classifier** (`ml_mfa/ml_security.py`):
+   - Implements machine learning models for security level prediction
+   - Supports Random Forest, Gradient Boosting, and Neural Networks
+   - Provides drop-in replacement functions for the rule-based system
+
+3. **Model Training** (`ml_mfa/train_model.py`):
+   - Trains and evaluates different ML models
+   - Compares model performance metrics
+   - Generates visualizations of model behavior
+
+### Using the ML-Based System
+
+The ML system is automatically enabled when available. To explicitly use:
+
+1. **Generate Synthetic Training Data:**
+   ```bash
+   python ml_mfa/data_collection.py --synthetic --samples 5000
+   ```
+
+2. **Train and Compare Models:**
+   ```bash
+   python ml_mfa/train_model.py --compare --learning-curves --data-file synthetic_login_data.csv
+   ```
+
+3. **Test the ML Model:**
+   ```bash
+   python ml_mfa/ml_security.py --test
+   ```
+
+4. **Compare with Rule-Based System:**
+   ```bash
+   python test_ml_security.py --username testuser
+   ```
 
 ## 🔒 Security Level Examples
 
