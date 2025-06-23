@@ -48,13 +48,3 @@ Face verification adds an additional layer of security to SecureChat by:
 ## Technical Implementation
 
 - Face detection and recognition using face-api.js (browser) and face_recognition (server)
-- Face encodings stored securely in the database
-- Multiple security checks to prevent spoofing attempts
-
-### Test User
-
-For testing purposes, use:
-- Username: testface
-- Password: Face123!
-
-This user has face verification enabled and can send/receive face-locked messages.
