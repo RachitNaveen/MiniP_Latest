@@ -156,18 +156,23 @@ document.addEventListener('DOMContentLoaded', function() {
         // Set up event listener for the Apply Level button
         setLevelBtn.addEventListener('click', function() {
             const selectedLevel = securityLevelSelect.value;
-            console.log(`[SECURITY] Setting security level to: ${selectedLevel.toUpperCase()}`);
+            console.log(`[DEBUG-HIGH-SECURITY] Setting security level to: ${selectedLevel.toUpperCase()}`);
             
             localStorage.setItem('selectedSecurityLevel', selectedLevel); // Save to local storage
 
+            // For high security level testing, add extra debugging
+            if (selectedLevel === 'high') {
+                console.log('[DEBUG-HIGH-SECURITY] Setting to HIGH security level');
+            }
+
             // Send the security level to the server
-            fetch('/set_security_level_login', {
+            fetch('/security/set_security_level_login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
-                body: JSON.stringify({ security_level: selectedLevel })
+                body: JSON.stringify({ level: selectedLevel })
             })
             .then(response => response.json())
             .then(data => {                    if (data.success) {
@@ -236,6 +241,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error setting security level:', error);
             });
         });
+        
+        securityLevelSelect.addEventListener('change', function() {
+            const selectedLevel = securityLevelSelect.value;
+            console.log(`[TEST] Security level changed to: ${selectedLevel}`);
+            updateAuthenticationFactors();
+        });
     } else {
         console.log('[SECURITY] Login page security level selector not found');
     }
@@ -291,4 +302,24 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
         console.error('[SECURITY] Error handling risk details:', error);
     }
+    
+    function updateAuthenticationFactors() {
+        const selectedLevel = securityLevelSelect.value;
+        const captchaSection = document.querySelector('.form-group:nth-child(3)');
+        const faceVerificationInfo = document.querySelector('.security-selection div:nth-child(4)');
+
+        if (selectedLevel === 'low') {
+            captchaSection.style.display = 'none';
+            faceVerificationInfo.style.display = 'none';
+        } else if (selectedLevel === 'medium') {
+            captchaSection.style.display = 'block';
+            faceVerificationInfo.style.display = 'none';
+        } else if (selectedLevel === 'high') {
+            captchaSection.style.display = 'block';
+            faceVerificationInfo.style.display = 'block';
+        }
+    }
+
+    securityLevelSelect.addEventListener('change', updateAuthenticationFactors);
+    updateAuthenticationFactors();
 });

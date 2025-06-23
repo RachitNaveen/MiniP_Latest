@@ -10,10 +10,18 @@ def set_security_level_login():
     """
     try:
         data = request.get_json()
-        if not data or 'level' not in data:
-            return jsonify({'success': False, 'message': 'Invalid request data'}), 400
+        print(f"[DEBUG] Received data: {data}")
+        
+        if not data:
+            print("[DEBUG] No JSON data received")
+            return jsonify({'success': False, 'message': 'No JSON data received'}), 400
+            
+        if 'level' not in data:
+            print(f"[DEBUG] 'level' not in data: {list(data.keys())}")
+            return jsonify({'success': False, 'message': 'Invalid request data: missing level parameter'}), 400
             
         level = data.get('level')
+        print(f"[DEBUG] Selected level: {level}")
         
         # Map the level string to a security level number and name
         if level == 'low':
@@ -50,9 +58,18 @@ def set_security_level_login():
             else:
                 print("[SECURITY] Using AI-based security assessment")
                 
+        # Debugging logs
+        print(f"[DEBUG] Received security level: {level}")
+        print(f"[DEBUG] CAPTCHA enabled: {level in ['medium', 'high']}")
+        print(f"[DEBUG] Face verification enabled: {level == 'high'}")
+
         # Update session with required factors for medium and high levels
         session['captcha_enabled'] = level in ['medium', 'high']
         session['face_verification_enabled'] = level == 'high'
+
+        # Debugging logs for session
+        print(f"[DEBUG] Session captcha_enabled: {session.get('captcha_enabled')}")
+        print(f"[DEBUG] Session face_verification_enabled: {session.get('face_verification_enabled')}")
         
         # Force the session to update
         session.modified = True

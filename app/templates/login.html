@@ -64,7 +64,7 @@
         {% endif %}
       </div>
       
-      {% if show_captcha %}
+      {% if session.get('captcha_enabled') %}
       <div class="form-group">
         {{ form.recaptcha.label }}
         {{ form.recaptcha }}
@@ -137,13 +137,13 @@ document.addEventListener('DOMContentLoaded', function() {
   var setLevelBtn = document.getElementById('set-level-btn');
   setLevelBtn.addEventListener('click', function() {
     var selectedLevel = document.getElementById('security-level').value;
-    fetch('/set_security_level_login', {
+    fetch('/security/set_security_level_login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
       },
-      body: JSON.stringify({ security_level: selectedLevel })
+      body: JSON.stringify({ level: selectedLevel })
     })
     .then(function(response) {
       return response.json();
@@ -151,7 +151,12 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(function(data) {
       if (data.success) {
         document.getElementById('security-info').innerHTML =
-          '<p>Current Mode: <strong>' + data.security_level + '</strong></p>';
+          '<p>Current Mode: <strong>' + data.levelName + '</strong></p>' +
+          '<p>Required factors: <strong>' + data.requiredFactors + '</strong></p>';
+          
+        // Add debug output and don't reload page
+        console.log('[DEBUG-HIGH-SECURITY] Security level set to: ' + data.levelName);
+        console.log('[DEBUG-HIGH-SECURITY] Required factors: ' + data.requiredFactors);
       }
     });
   });

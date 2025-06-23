@@ -167,11 +167,27 @@
     </div>
 
     <script>
+        // Debug function to add more logging
+        function debugLog(message) {
+            console.log(`[FACE-DEBUG] ${message}`);
+            // Also show in messages for user visibility during testing
+            showMessage(message, 'info');
+        }
+
+        // Show initial debug message
+        debugLog('Face verification page loaded. Waiting for camera...');
+
         // Access camera
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(function(stream) {
+                debugLog('Camera accessed successfully');
                 const video = document.getElementById('verification-video');
                 video.srcObject = stream;
+                
+                // Add video load event
+                video.onloadedmetadata = function() {
+                    debugLog('Video stream loaded. Ready for verification.');
+                };
 
                 // Handle verification
                 document.getElementById('verify-btn').onclick = async function() {
@@ -189,7 +205,11 @@
                         const faceImage = canvas.toDataURL('image/jpeg');
                         
                         // Send verification request
-                        const response = await fetch('/verify_face', {
+                        // Debug info to console
+                        console.log('Sending face verification request...');
+                        debugLog('Sending face verification request...');
+                        
+                        const response = await fetch('/auth/verify_face', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -208,6 +228,7 @@
                             stream.getTracks().forEach(track => track.stop());
                             
                             showMessage('Face verified! Redirecting...', 'success');
+                            debugLog('Face verified successfully');
                             
                             // Redirect to chat
                             setTimeout(() => {
@@ -215,13 +236,16 @@
                             }, 1500);
                         } else if (data.match_percentage) {
                             showMessage(`Face verification failed (${data.match_percentage.toFixed(1)}% match, 80% required)`, 'error');
+                            debugLog(`Face verification failed: ${data.match_percentage.toFixed(1)}% match`);
                             showRiskDetails(data.risk_details);
                         } else {
                             showMessage(data.message || 'Error during face verification', 'error');
+                            debugLog(`Error during face verification: ${data.message}`);
                         }
                     } catch (error) {
                         console.error('Error:', error);
                         showMessage('Error during face verification. Please try again.', 'error');
+                        debugLog(`Error during face verification: ${error.message}`);
                     }
                 };
 
@@ -234,6 +258,7 @@
             .catch(function(err) {
                 console.error('Error accessing camera:', err);
                 showMessage('Error accessing camera. Please allow camera access to continue.', 'error');
+                debugLog(`Error accessing camera: ${err.message}`);
             });
 
         function showMessage(message, type) {

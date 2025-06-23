@@ -235,27 +235,38 @@ def register():
 
 @auth_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('main.chat'))
+    """
+    Handle user login with dynamic security level
+    """
+    # Debug the security level at the beginning
+    print(f"[HIGH-SECURITY-DEBUG] Session at start: security_level={session.get('security_level')}, face_verification_enabled={session.get('face_verification_enabled')}")
     
-    form = LoginForm()
-    
-    # Check for manual security level override
+    # Check if security level is manually set in session
     manual_security_level = session.get('manual_security_level')
+    print(f"[HIGH-SECURITY-DEBUG] Manual security level: {manual_security_level}")
     
-    # Determine security level
-    if manual_security_level is not None:
+    if manual_security_level:
         security_level = manual_security_level
+        print(f"[HIGH-SECURITY-DEBUG] Using manual security level: {security_level}")
+        # For High security, always enforce face verification
+        if security_level == SECURITY_LEVEL_HIGH:
+            session['face_verification_enabled'] = True
+            print("[HIGH-SECURITY-DEBUG] Explicitly setting face_verification_enabled=True")
     else:
         security_level = session.get('security_level', SECURITY_LEVEL_LOW)
-
-    # Determine if CAPTCHA should be shown
-    show_captcha = security_level in [SECURITY_LEVEL_MEDIUM, SECURITY_LEVEL_HIGH]
-    
-    # For low security level, make the CAPTCHA optional in the form validation
-    if security_level == SECURITY_LEVEL_LOW:
-        form.recaptcha.validators = []
+        print(f"[HIGH-SECURITY-DEBUG] Using session security level: {security_level}")
         
+    # For form display, determine if CAPTCHA should be shown
+    show_captcha = security_level in [SECURITY_LEVEL_MEDIUM, SECURITY_LEVEL_HIGH]
+    print(f"[HIGH-SECURITY-DEBUG] Show CAPTCHA: {show_captcha}")
+    
+    # Create login form (LoginForm already has CAPTCHA field)
+    form = LoginForm()
+    
+    # Debug form submission
+    if request.method == 'POST':
+        print(f"[HIGH-SECURITY-DEBUG] Form submitted: valid={form.validate_on_submit()}, errors={form.errors}")
+
     # Basic validation - check if username and password are provided
     basic_credentials_provided = form.username.data and form.password.data
     
@@ -368,16 +379,35 @@ def login():
                 return render_template('login.html', form=form, show_captcha=show_captcha)
 
         elif security_level == SECURITY_LEVEL_HIGH:
-            # Require CAPTCHA validation and redirect to face verification
-            if form_valid:
-                print(f"[DEBUG] Redirecting to face verification for high security level. User ID: {user.id}")
+            # For HIGH security, ALWAYS redirect to face verification after password verification
+            print(f"[HIGH-SECURITY-DEBUG] Processing HIGH security level, form_valid: {form_valid}")
+            
+            # This is critical - even if CAPTCHA failed, if password is correct, proceed to face verification
+            if user and check_password_hash(user.password_hash, password):
+                print(f"[HIGH-SECURITY-DEBUG] Password correct, redirecting to face verification for user ID: {user.id}")
+                
+                # Store necessary data for face verification
                 session['temp_user_id'] = user.id
-                session['username'] = username  # Ensure username is in session for face verification
-                session['captcha_validated'] = True  # Mark CAPTCHA as validated
-                flash('Additional verification required.', 'info')
+                session['username'] = username
+                session['face_verification_enabled'] = True
+                session['high_security_login'] = True
+                
+                # Set risk details if not already set
+                if 'risk_details' not in session:
+                    session['risk_details'] = {
+                        'security_level': 'High',
+                        'security_level_num': SECURITY_LEVEL_HIGH,
+                        'risk_score': 0.8,
+                        'required_factors': ['Password', 'CAPTCHA', 'Face Verification']
+                    }
+                
+                flash('Face verification required for high security login.', 'info')
                 return redirect(url_for('auth.face_verification'))
             else:
-                # If form validation failed, it's likely due to CAPTCHA
+                # If password is incorrect
+                print(f"[HIGH-SECURITY-DEBUG] Login failed for HIGH security: incorrect password or form errors: {form.errors}")
+                flash('Invalid username or password.', 'danger')
+                return render_template('login.html', form=form, show_captcha=show_captcha)
                 flash('CAPTCHA validation failed. Please try again.', 'danger')
                 return render_template('login.html', form=form, show_captcha=show_captcha)
     
@@ -410,17 +440,46 @@ def verify_face_endpoint():
         print(f"[DEBUG] User not found: {username}")
         return jsonify({'success': False, 'message': 'User not found.'}), 404
 
-    # Perform face verification
-    face_verified = verify_user_face(user, face_image_b64)
-    if face_verified:
-        login_user(user, remember=session.get('remember_me', False))
-        session.pop('temp_user_id', None)
-        session.pop('captcha_validated', None)
-        flash('Login successful with High Security.', 'success')
-        return jsonify({'success': True, 'message': 'Face verification successful.'}), 200
-    else:
-        flash('Face verification failed. Please try again.', 'danger')
-        return jsonify({'success': False, 'message': 'Face verification failed.'}), 401
+    # Process the base64 image for face verification
+    print("[DEBUG] Processing face image for verification")
+    try:
+        # Extract the base64 data from the data URL
+        if face_image_b64.startswith('data:image'):
+            # Extract the base64 data from the data URL
+            base64_data = face_image_b64.split(',')[1]
+        else:
+            base64_data = face_image_b64
+        
+        # Decode base64 data to binary
+        image_binary = base64.b64decode(base64_data)
+        
+        # Convert binary to numpy array
+        image_np = np.frombuffer(image_binary, np.uint8)
+        
+        # Decode image with OpenCV
+        img = cv2.imdecode(image_np, cv2.IMREAD_COLOR)
+        
+        # Convert from BGR (OpenCV format) to RGB (face_recognition format)
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        
+        print(f"[DEBUG] Image prepared for verification: {img_rgb.shape}")
+        
+        # Perform face verification with the prepared image
+        face_verified = verify_user_face(user, img_rgb)
+        print(f"[DEBUG] Face verification result: {face_verified}")
+        
+        if face_verified:
+            login_user(user, remember=session.get('remember_me', False))
+            session.pop('temp_user_id', None)
+            session.pop('captcha_validated', None)
+            flash('Login successful with High Security.', 'success')
+            return jsonify({'success': True, 'message': 'Face verification successful.'}), 200
+        else:
+            flash('Face verification failed. Please try again.', 'danger')
+            return jsonify({'success': False, 'message': 'Face verification failed.'}), 401
+    except Exception as e:
+        print(f"[ERROR] Exception in face verification: {str(e)}")
+        return jsonify({'success': False, 'message': f'Error during face verification: {str(e)}'}), 500
 
 @auth_blueprint.route('/logout')
 @login_required
@@ -448,7 +507,17 @@ def logout():
 
 @auth_blueprint.route('/face_verification', methods=['GET', 'POST'])
 def face_verification():
-    print("[DEBUG] Face verification page requested")
+    print("[HIGH-SECURITY-DEBUG] Face verification page requested")
+    print(f"[HIGH-SECURITY-DEBUG] Session: temp_user_id={session.get('temp_user_id')}, username={session.get('username')}")
+    print(f"[HIGH-SECURITY-DEBUG] Session face_verification_enabled: {session.get('face_verification_enabled')}")
+    print(f"[HIGH-SECURITY-DEBUG] Session high_security_login: {session.get('high_security_login')}")
+    
+    # If we don't have the high security flag set, set it now
+    if session.get('manual_security_level') == SECURITY_LEVEL_HIGH:
+        session['high_security_login'] = True
+        session['face_verification_enabled'] = True
+        print("[HIGH-SECURITY-DEBUG] Setting high_security_login flag to True")
+    
     user_id = session.get('temp_user_id')
     if not user_id:
         print("[DEBUG] No temp_user_id in session")
