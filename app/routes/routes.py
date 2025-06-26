@@ -319,6 +319,27 @@ def verify_face():
 @bp.route('/chat', methods=['GET', 'POST'])
 @login_required
 def chat():
+    # Check if high security mode is active and face verification is required but not done
+    manual_security_level = session.get('manual_security_level')
+    face_verification_required = session.get('face_verification_required', False)
+    
+    print(f"[DEBUG] Chat route - security level: {manual_security_level}, face_verification_required: {face_verification_required}")
+    
+    if manual_security_level == SECURITY_LEVEL_HIGH and face_verification_required:
+        print("[SECURITY] High security mode active but face verification not done. Redirecting...")
+        flash('High security mode requires face verification. Please complete verification first.', 'warning')
+        
+        # Store user in session for face verification
+        session['username'] = current_user.username
+        session['temp_user_id'] = current_user.id
+        session['next_page'] = url_for('main.chat')
+        
+        # Force logout since verification was bypassed
+        logout_user()
+        
+        # Redirect to face verification
+        return redirect(url_for('face.face_verification'))
+    
     form = MessageForm()
     users = User.query.filter(User.id != current_user.id).all()
     messages = Message.query.filter(

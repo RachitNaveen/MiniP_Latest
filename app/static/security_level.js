@@ -170,6 +170,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // For high security level testing, add extra debugging
             if (selectedLevel === 'high') {
                 console.log('[DEBUG-HIGH-SECURITY] Setting to HIGH security level');
+                console.log('[DEBUG-HIGH-SECURITY] Ensuring face verification will be required');
+                
+                // Set face verification flag in local storage as well
+                localStorage.setItem('faceVerificationEnabled', 'true');
             }
 
             // Send the security level to the server
