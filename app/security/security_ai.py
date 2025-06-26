@@ -164,18 +164,50 @@ def get_location_risk():
     # Store a session fingerprint of IP
     ip = request.remote_addr
     
+    # Add more randomization to make risk assessment dynamic
+    current_hour = datetime.utcnow().hour
+    hour_factor = (current_hour % 12) / 12.0  # 0.0 to 1.0 based on hour
+    
+    # Add timestamp-based variation to create more dynamic risk scores
+    timestamp_variation = (int(time.time()) % 60) / 60.0  # 0.0 to 1.0 based on seconds
+    
+    # Include randomization for demo purposes
+    import random
+    random_factor = random.random() * 0.4  # Add 0-40% random variation (increased from 0.3)
+    
+    # Introduce more variance based on user-agent
+    user_agent_factor = 0.0
+    user_agent = request.user_agent.string.lower() if hasattr(request, 'user_agent') else ""
+    if 'mobile' in user_agent:
+        user_agent_factor = 0.2
+    elif 'firefox' in user_agent:
+        user_agent_factor = 0.1
+    elif 'chrome' in user_agent:
+        user_agent_factor = 0.05
+    elif 'safari' in user_agent:
+        user_agent_factor = 0.15
+    
     # Check if this is a new IP for this user session
     if 'known_ip' not in session:
         session['known_ip'] = ip
-        # New IP is moderate risk
-        return 0.5
+        # New IP is moderate to high risk with more variability
+        base_risk = 0.4 + (hour_factor * 0.3) + (timestamp_variation * 0.2)  # 0.4-0.9
+        risk = base_risk + random_factor + user_agent_factor
+        print(f"[DEBUG] New IP location risk: {risk:.4f} (base: {base_risk:.2f}, random: {random_factor:.2f}, UA: {user_agent_factor:.2f})")
+        return min(1.0, risk)
     
     # If IP changed during session, high risk
     if session['known_ip'] != ip:
-        return 0.9
+        base_risk = 0.7 + (hour_factor * 0.2) + (timestamp_variation * 0.1)  # 0.7-1.0
+        risk = base_risk + random_factor + user_agent_factor
+        print(f"[DEBUG] Changed IP location risk: {risk:.4f}")
+        return min(1.0, risk)
     
-    # Known IP from session, lower risk
-    return 0.1
+    # Known IP from session, lower risk but with more variation
+    base_risk = 0.1 + (hour_factor * 0.15) + (timestamp_variation * 0.15)  # 0.1-0.4
+    risk = base_risk + (random_factor * 0.5) + user_agent_factor
+    print(f"[DEBUG] Known IP location risk: {risk:.4f}")
+    return min(0.5, risk)  # Cap at 0.5 instead of 0.3 for known IPs
 
 def get_time_risk():
     """Calculate risk based on time of day"""
@@ -210,19 +242,40 @@ def get_previous_breaches_risk(user):
 def get_device_risk():
     """Calculate risk based on device fingerprint"""
     # Simple user agent based analysis
-    user_agent = request.user_agent.string.lower()
+    user_agent = request.user_agent.string.lower() if hasattr(request, 'user_agent') else ""
+    
+    # Add randomization for more dynamic risk assessment
+    import random
+    random_variation = random.random() * 0.2  # 0.0-0.2 random variation
+    
+    # Time-based variation (different times of day have different risk profiles)
+    current_hour = datetime.utcnow().hour
+    # Night time is riskier than day time
+    time_factor = 0.1 if 8 <= current_hour <= 18 else 0.2
     
     # Check for mobile devices (generally higher risk than desktops)
     if 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent:
-        return 0.6
+        base_risk = 0.5 + time_factor
+        final_risk = base_risk + random_variation
+        print(f"[DEBUG] Mobile device risk: {final_risk:.4f}")
+        return min(0.85, final_risk)
     
-    # Check for uncommon browsers (might be bots or unusual clients)
-    common_browsers = ['chrome', 'firefox', 'safari', 'edge']
-    if not any(browser in user_agent for browser in common_browsers):
-        return 0.7
-        
-    # Default for common desktop browsers
-    return 0.3
+    # Different risk levels for different browsers
+    if 'chrome' in user_agent:
+        base_risk = 0.2 + time_factor
+    elif 'firefox' in user_agent:
+        base_risk = 0.25 + time_factor
+    elif 'safari' in user_agent:
+        base_risk = 0.3 + time_factor
+    elif 'edge' in user_agent:
+        base_risk = 0.35 + time_factor
+    else:
+        # Uncommon browsers (might be bots or unusual clients)
+        base_risk = 0.6 + time_factor
+    
+    final_risk = base_risk + random_variation
+    print(f"[DEBUG] Device risk: {final_risk:.4f} (UA: {user_agent[:20]}...)")
+    return min(0.9, final_risk)
 
 def get_risk_details(username):
     """
@@ -246,15 +299,20 @@ def get_risk_details(username):
             mode = f.read().strip()
             use_ml = (mode == 'ml')
     
+    # Debug print
+    print(f"[DEBUG] get_risk_details called for {username}, ML mode enabled: {use_ml}")
+    
     # Check if we should use ML-based risk details
     if ML_SECURITY_AVAILABLE and use_ml and not request.environ.get('USE_RULE_BASED_SECURITY'):
         try:
             if SIMPLIFIED_ML:
                 # Use the simplified ML risk details
                 from ml_mfa.simplified_ml_details import get_simplified_risk_details
+                print(f"[DEBUG] Using simplified ML risk details for {username}")
                 return get_simplified_risk_details(username)
             else:
                 # Use the full ML risk details
+                print(f"[DEBUG] Using full ML risk details for {username}")
                 return get_ml_risk_details(username)
         except Exception as e:
             print(f"Error using ML risk details: {str(e)}")

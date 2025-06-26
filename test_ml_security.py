@@ -19,15 +19,7 @@ try:
     PANDAS_AVAILABLE = True
 except ImportError:
     PANDAS_AVAILABLE = False
-    print("Warning: pandas or numpy not available, limited functionality") python3
-"""
-Test script to compare ML-based and rule-based security level determination
-"""
-import os
-import sys
-import argparse
-import pandas as pd
-import numpy as np
+    print("Warning: pandas or numpy not available, limited functionality")
 from flask import Flask, request, session
 from flask.ctx import AppContext
 
@@ -148,47 +140,47 @@ def compare_security_levels(username=None, n_samples=10, random_samples=True):
                             'breach_risk': row['breach_risk'],
                             'device_risk': row['device_risk']
                         }
+                        
+                        # Calculate rule-based security level
+                        risk_score = sum(value * weight for value, weight in zip(
+                            features.values(), 
+                            [0.3, 0.2, 0.15, 0.2, 0.15]
+                        ))
+                        
+                        if risk_score < 0.3:
+                            rule_level = 'low'
+                        elif risk_score < 0.7:
+                            rule_level = 'medium'
+                        else:
+                            rule_level = 'high'
+                        
+                        # Get ML prediction
+                        from ml_mfa.ml_security import MLSecurityClassifier
+                        classifier = MLSecurityClassifier()
+                        ml_level = classifier.predict(features)
+                        
+                        # Update match/mismatch count
+                        if rule_level == ml_level:
+                            results['match'] += 1
+                        else:
+                            results['mismatch'] += 1
+                        
+                        # Format feature string
+                        features_str = ", ".join([f"{k[:5]}:{v:.2f}" for k, v in features.items()])
+                        
+                        # Print comparison
+                        print("{:<60} | {:<15} | {:<15}".format(
+                            features_str, rule_level, ml_level
+                        ))
                     
-                    # Calculate rule-based security level
-                    risk_score = sum(value * weight for value, weight in zip(
-                        features.values(), 
-                        [0.3, 0.2, 0.15, 0.2, 0.15]
-                    ))
+                    # Print summary
+                    print("\nSummary:")
+                    print(f"Total samples: {len(samples)}")
+                    print(f"Matches: {results['match']} ({results['match']/len(samples)*100:.1f}%)")
+                    print(f"Mismatches: {results['mismatch']} ({results['mismatch']/len(samples)*100:.1f}%)")
                     
-                    if risk_score < 0.3:
-                        rule_level = 'low'
-                    elif risk_score < 0.7:
-                        rule_level = 'medium'
-                    else:
-                        rule_level = 'high'
-                    
-                    # Get ML prediction
-                    from ml_mfa.ml_security import MLSecurityClassifier
-                    classifier = MLSecurityClassifier()
-                    ml_level = classifier.predict(features)
-                    
-                    # Update match/mismatch count
-                    if rule_level == ml_level:
-                        results['match'] += 1
-                    else:
-                        results['mismatch'] += 1
-                    
-                    # Format feature string
-                    features_str = ", ".join([f"{k[:5]}:{v:.2f}" for k, v in features.items()])
-                    
-                    # Print comparison
-                    print("{:<60} | {:<15} | {:<15}".format(
-                        features_str, rule_level, ml_level
-                    ))
-                
-                # Print summary
-                print("\nSummary:")
-                print(f"Total samples: {len(samples)}")
-                print(f"Matches: {results['match']} ({results['match']/len(samples)*100:.1f}%)")
-                print(f"Mismatches: {results['mismatch']} ({results['mismatch']/len(samples)*100:.1f}%)")
-                
-            except Exception as e:
-                print(f"Error testing with random samples: {str(e)}")
+                except Exception as e:
+                    print(f"Error testing with random samples: {str(e)}")
 
 def main():
     """Main function to run the comparison"""

@@ -78,6 +78,17 @@ def get_simplified_risk_details(username):
             features['device_risk'] * 0.15
         )
         
+        # Add a larger random variation to risk score to reflect ML uncertainty
+        import random
+        random_factor = (random.random() * 0.25) - 0.1  # Add -0.1 to +0.15 variation
+        risk_score += random_factor
+        print(f"[DEBUG] Adding random factor to risk: {random_factor:.4f}, original: {risk_score - random_factor:.4f}, new: {risk_score:.4f}")
+        
+        # Ensure score is in valid range
+        risk_score = max(0.01, min(0.99, risk_score))
+        
+        print(f"[DEBUG] ML simplified risk score calculated: {risk_score:.4f}")
+        
         # Create risk factors with descriptions
         risk_factors = {
             'failed_attempts': {
@@ -115,13 +126,19 @@ def get_simplified_risk_details(username):
         # Map security level to required factors
         if prediction == 'low':
             security_level_num = SECURITY_LEVEL_LOW
+            security_level = 'Low'
             required_factors = ['Password']
         elif prediction == 'medium':
             security_level_num = SECURITY_LEVEL_MEDIUM
+            security_level = 'Medium'
             required_factors = ['Password', 'CAPTCHA']
         else:
             security_level_num = SECURITY_LEVEL_HIGH
+            security_level = 'High'
             required_factors = ['Password', 'CAPTCHA', 'Face Verification']
+            
+        # Debug print
+        print(f"[DEBUG] ML prediction: {prediction}, security level: {security_level} ({security_level_num})")
         
         # Capitalize security level for display
         display_level = prediction.capitalize()
