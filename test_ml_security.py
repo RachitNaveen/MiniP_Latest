@@ -9,6 +9,12 @@ import json
 from flask import Flask, request, session
 from flask.ctx import AppContext
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../app')))
+from app import create_app
+from app.models.models import User
+from app.security.security_ai import calculate_security_level, get_risk_details
+from ml_mfa.ml_security import get_ml_security_level, get_ml_risk_details
+
 # Add the parent directory to the path
 sys.path.insert(0, os.path.abspath('.'))
 
@@ -29,12 +35,6 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 # Create a simple Flask app for testing
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'test-key'
-
-# Import security modules
-from app import create_app
-from app.models.models import User
-from app.security.security_ai import calculate_security_level, get_risk_details
-from ml_mfa.ml_security import get_ml_security_level, get_ml_risk_details
 
 def compare_security_levels(username=None, n_samples=10, random_samples=True):
     """
