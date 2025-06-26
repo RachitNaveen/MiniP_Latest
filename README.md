@@ -20,6 +20,83 @@ The application implements three security levels:
    - Requires: Username, Password, CAPTCHA, and Face Verification
    - Use case: High-risk scenarios, sensitive operations, or when multiple risk factors are detected
 
+## Running with Docker (Recommended)
+
+The easiest way to run SecureChat is using Docker, which ensures all dependencies are properly installed and configured. This is especially important for the face recognition features.
+
+### Prerequisites
+
+- Docker installed on your system
+- Git to clone the repository
+
+### Quick Start
+
+1. Clone the repository and enter the directory:
+   ```
+   git clone <repository-url>
+   cd MiniP_Latest
+   ```
+
+2. Run the application using the provided Docker script:
+   ```
+   ./docker-run.sh
+   ```
+   
+   This script will:
+   - Create necessary directories (instance and logs)
+   - Build the Docker image with all dependencies
+   - Start the container with proper volume mapping
+
+3. Access the application at:
+   ```
+   http://localhost:5000
+   ```
+
+### Using Docker Compose (Alternative)
+
+For a more managed deployment approach, you can use Docker Compose:
+
+1. Run the application using Docker Compose:
+   ```
+   docker-compose up
+   ```
+
+2. To run in detached mode (background):
+   ```
+   docker-compose up -d
+   ```
+
+3. To stop the application:
+   ```
+   docker-compose down
+   ```
+
+### Manual Docker Setup
+
+If you prefer to run Docker commands manually:
+
+1. Build the Docker image:
+   ```
+   docker build -t securechat .
+   ```
+
+2. Run the Docker container:
+   ```
+   docker run -p 5000:5000 \
+     -v $(pwd)/instance:/app/instance \
+     -v $(pwd)/logs:/app/logs \
+     securechat
+   ```
+
+### Data Persistence
+
+The application maintains persistent data in two directories:
+
+- `instance/`: Contains the SQLite database files
+- `logs/`: Contains application log files
+
+Both directories are mounted as Docker volumes to ensure data persists between container restarts.
+
 ## Testing the Security Levels
 
 ### Option 1: Using the Test Script

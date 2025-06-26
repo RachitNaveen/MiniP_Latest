@@ -30,6 +30,11 @@ import uuid
 from datetime import datetime
 from app.static.face_api_models import FaceAPI
 
+# Ensure logs directory exists
+import os
+if not os.path.exists('logs'):
+    os.makedirs('logs', exist_ok=True)
+
 # Set up logging to a file
 logging.basicConfig(
     level=logging.DEBUG,
