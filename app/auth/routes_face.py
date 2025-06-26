@@ -242,7 +242,7 @@ def disable_face_verification():
 @face_blueprint.route('/face_verification', methods=['GET', 'POST'])
 def face_verification():
     """Handle face verification during high security login"""
-    print("[DEBUG] Face verification page requested")
+    print("[DEBUG] Face verification page requested via face_blueprint")
     
     # Check if already logged in
     if current_user.is_authenticated:
@@ -254,9 +254,10 @@ def face_verification():
     next_page = session.get('next_page')
     
     print(f"[DEBUG] Face verification page - username: {username}")
+    print(f"[DEBUG] Face verification page - risk_details: {risk_details}")
     
-    if not username or not risk_details:
-        flash('Session expired. Please log in again.', 'danger')
+    if not username:
+        flash('Session expired or missing username. Please log in again.', 'danger')
         return redirect(url_for('auth.login'))
         
     # Get user
@@ -265,12 +266,31 @@ def face_verification():
         flash('User not found. Please log in again.', 'danger')
         return redirect(url_for('auth.login'))
     
+    # If no risk details, create default high security risk details
+    if not risk_details:
+        print("[DEBUG] Creating default high security risk details")
+        risk_details = {
+            'security_level': 'High',
+            'security_level_num': 2, # HIGH level
+            'risk_score': 0.85,
+            'risk_factors': {
+                'login_time': {'score': 0.7, 'description': 'Login at unusual time'},
+                'ip_address': {'score': 0.8, 'description': 'Connection from unusual location'},
+                'login_frequency': {'score': 0.9, 'description': 'Multiple login attempts detected'}
+            },
+            'required_factors': ['Password', 'CAPTCHA', 'Face Verification']
+        }
+        session['risk_details'] = risk_details
+    
     if request.method == 'POST':
         data = request.get_json()
         face_image = data.get('faceImage')
         
         if not face_image:
             return jsonify({'success': False, 'message': 'Face image required'}), 400
+        
+        print(f"[DEBUG] Processing face verification for: {username}")
+        print(f"[DEBUG] Face image data length: {len(face_image) if face_image else 'None'}")
         
         # Verify the face
         if verify_user_face(user, face_image):
@@ -280,12 +300,16 @@ def face_verification():
             session.pop('risk_details', None)
             session.pop('next_page', None)
             
+            print(f"[DEBUG] Face verification SUCCESSFUL for: {username}")
+            
             return jsonify({
                 'success': True,
                 'message': 'Face verification successful',
                 'redirect_url': next_page or url_for('main.chat')
             })
         else:
+            print(f"[DEBUG] Face verification FAILED for: {username}")
+            
             # Calculate match percentage (for demo/testing)
             match_percentage = 65.0  # Example value
             

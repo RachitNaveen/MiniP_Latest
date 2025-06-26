@@ -26,11 +26,18 @@ function decodeHTMLEntities(text) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Debug function
+    function debugLog(message) {
+        console.log(`[SECURITY-DEBUG] ${message}`);
+    }
+    
+    debugLog('Security level script loaded');
+    
     // Configuration for security levels
     const securityLevels = {
         'low': {
             title: 'LOW Security Level',
-            description: 'Basic security with minimal verification steps.',
+            description: 'Basic security with password verification.',
             factors: 'Password only',
             color: '#E8F5E9',
             borderColor: '#4CAF50'
@@ -266,20 +273,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (hasRiskDetails) {
             console.log('[SECURITY] Risk details found in data attribute');
             
-            // Parse the risk details from the data attribute
-            const riskDetailsJson = riskDataElement.getAttribute('data-risk-details');
-            console.log('[SECURITY] Raw risk details JSON:', riskDetailsJson);
+            // Parse the risk details from window object instead of data attribute
+            const riskDetails = window.RISK_DETAILS || {};
+            console.log('[SECURITY] Risk details from window:', riskDetails);
             
-            if (riskDetailsJson) {
+            if (riskDetails && Object.keys(riskDetails).length > 0) {
                 try {
-                    // First decode any HTML entities in the JSON string
-                    const decodedJson = decodeHTMLEntities(riskDetailsJson);
-                    console.log('[SECURITY] Decoded JSON (first 100 chars):', decodedJson.substring(0, 100));
-                    console.log('[SECURITY] Character codes of first 10 chars:', 
-                        Array.from(decodedJson.substring(0, 10)).map(c => c.charCodeAt(0)));
+                    console.log('[SECURITY] Risk details object found with keys:', Object.keys(riskDetails));
                     
-                    // Try parsing with a more robust method
-                    let riskDetails;
+                    // No need to decode/parse since we're getting it directly as an object
                     try {
                         // Remove any BOM or unexpected characters at the beginning
                         const cleanJson = decodedJson.replace(/^\s*[^\[{]/, '');
@@ -322,4 +324,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
     securityLevelSelect.addEventListener('change', updateAuthenticationFactors);
     updateAuthenticationFactors();
+    
+    // Check if we have risk details from the backend
+    var riskData = document.getElementById('risk-data');
+    if (!riskData) {
+        debugLog('No risk-data element found');
+        return;
+    }
+    
+    var hasRiskDetails = riskData.getAttribute('data-has-risk-details') === 'true';
+    debugLog('Has risk details: ' + hasRiskDetails);
+    
+    // Try to parse risk details from window.RISK_DETAILS
+    if (window.RISK_DETAILS) {
+        try {
+            debugLog('Found risk details on window object');
+            
+            // Initialize manually if we have RISK_DETAILS
+            if (typeof displaySecurityAssessment === 'function') {
+                debugLog('Calling displaySecurityAssessment function');
+                displaySecurityAssessment(window.RISK_DETAILS);
+            }
+        } catch (e) {
+            debugLog('Error processing risk details: ' + e.message);
+        }
+    } else {
+        debugLog('No risk details available on window object');
+    }
 });

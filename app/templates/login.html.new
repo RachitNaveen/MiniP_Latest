@@ -44,7 +44,7 @@
     {% endwith %}
     
     <!-- Login Form - Simplified -->
-    <form id="loginForm" method="POST" action="{{ url_for('auth.login') }}" onsubmit="return validateLoginForm()">
+    <form id="loginForm" method="POST" action="{{ url_for('auth.login') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       
       <!-- Username field - Always visible -->
@@ -53,10 +53,10 @@
         <input type="text" id="username" name="username" required>
       </div>
       
-      <!-- Password field - Always visible and enforced -->
-      <div class="form-group" style="display: block !important; visibility: visible !important;">
+      <!-- Password field - Always visible -->
+      <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" required style="display: block !important; visibility: visible !important; opacity: 1 !important;">
+        <input type="password" id="password" name="password" required>
       </div>
       
       <!-- CAPTCHA field - Only for Medium and High security -->
@@ -145,32 +145,6 @@
         });
       }
     });
-  </script>
-  
-  <!-- Additional validation script to ensure password is always validated -->
-  <script>
-    function validateLoginForm() {
-      var usernameField = document.getElementById('username');
-      var passwordField = document.getElementById('password');
-      
-      // Always validate username
-      if (!usernameField || !usernameField.value.trim()) {
-        alert('Username is required');
-        if (usernameField) usernameField.focus();
-        return false;
-      }
-      
-      // CRITICAL: Always validate password regardless of security level
-      if (!passwordField || !passwordField.value.trim()) {
-        alert('Password is required');
-        if (passwordField) passwordField.focus();
-        return false;
-      }
-      
-      // If we got here, basic validation passed
-      console.log('Form validation passed: username and password provided');
-      return true;
-    }
   </script>
 </body>
 </html>

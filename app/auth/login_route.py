@@ -46,31 +46,18 @@ def login():
         
         # Step 4: Validate credentials based on security level
         if security_level == SECURITY_LEVEL_LOW:
-            # Low security requires username and password - ALWAYS CHECK PASSWORD
-            if not username:
-                logger.warning("Login attempt with missing username")
-                flash('Username is required.', 'danger')
-                return render_template('login.html', form=form, show_captcha=False)
-                
-            if not password:
-                logger.warning(f"Login attempt for user '{username}' with missing password")
-                flash('Password is required.', 'danger')
+            # Low security only requires username and password
+            if not username or not password:
+                flash('Username and password are required.', 'danger')
                 return render_template('login.html', form=form, show_captcha=False)
                 
             # Check credentials
             user = User.query.filter_by(username=username).first()
-            if not user:
-                logger.warning(f"Login attempt for non-existent user: {username}")
-                flash('Invalid username or password.', 'danger')
-                return render_template('login.html', form=form, show_captcha=False)
-                
-            if not check_password_hash(user.password_hash, password):
-                logger.warning(f"Failed password attempt for user: {username}")
+            if not user or not check_password_hash(user.password_hash, password):
                 flash('Invalid username or password.', 'danger')
                 return render_template('login.html', form=form, show_captcha=False)
                 
             # Success - log the user in
-            logger.info(f"Successful login for user: {username} with Low Security")
             login_user(user)
             flash('Login successful with Low Security.', 'success')
             return redirect(url_for('main.chat'))

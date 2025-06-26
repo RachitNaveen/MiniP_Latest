@@ -16,11 +16,14 @@ def set_security_level_login():
             print("[DEBUG] No JSON data received")
             return jsonify({'success': False, 'message': 'No JSON data received'}), 400
             
-        if 'level' not in data:
-            print(f"[DEBUG] 'level' not in data: {list(data.keys())}")
-            return jsonify({'success': False, 'message': 'Invalid request data: missing level parameter'}), 400
+        # Support both 'level' and 'security_level' keys for backwards compatibility
+        level_key = 'level' if 'level' in data else 'security_level'
+        
+        if level_key not in data:
+            print(f"[DEBUG] Neither 'level' nor 'security_level' in data: {list(data.keys())}")
+            return jsonify({'success': False, 'message': 'Invalid request data: missing security level parameter'}), 400
             
-        level = data.get('level')
+        level = data.get(level_key)
         print(f"[DEBUG] Selected level: {level}")
         
         # Map the level string to a security level number and name

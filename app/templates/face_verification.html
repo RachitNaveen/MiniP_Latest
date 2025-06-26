@@ -173,21 +173,44 @@
             // Also show in messages for user visibility during testing
             showMessage(message, 'info');
         }
-
+        
+        // Print risk details to console if available
+        const riskDetails = JSON.parse('{{ risk_details|tojson|safe }}');
+        console.log('[FACE-DEBUG] Risk details:', riskDetails);
+        
         // Show initial debug message
         debugLog('Face verification page loaded. Waiting for camera...');
-
-        // Access camera
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function(stream) {
-                debugLog('Camera accessed successfully');
-                const video = document.getElementById('verification-video');
-                video.srcObject = stream;
-                
-                // Add video load event
-                video.onloadedmetadata = function() {
-                    debugLog('Video stream loaded. Ready for verification.');
-                };
+        
+        // Add status message to UI
+        showMessage('Initializing camera... Please allow camera access when prompted.', 'info');
+        
+        // First, ensure we preload all face-api.js models
+        debugLog('Loading face models...');
+        Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri('/static/face-api-models'),
+            faceapi.nets.faceLandmark68Net.loadFromUri('/static/face-api-models'),
+            faceapi.nets.faceRecognitionNet.loadFromUri('/static/face-api-models')
+        ]).then(() => {
+            debugLog('Face detection models loaded successfully!');
+            
+            // Now access camera
+            return navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    facingMode: 'user'
+                } 
+            });
+        }).then(function(stream) {
+            debugLog('Camera accessed successfully');
+            const video = document.getElementById('verification-video');
+            video.srcObject = stream;
+            
+            // Add video load event
+            video.onloadedmetadata = function() {
+                debugLog('Video stream loaded. Ready for verification.');
+                showMessage('Camera ready. Please center your face and click "Verify Face".', 'success');
+            };
 
                 // Handle verification
                 document.getElementById('verify-btn').onclick = async function() {
@@ -195,6 +218,25 @@
                         // Show loading message
                         showMessage('Verifying face...', 'success');
                         
+                        // First, check if face detection can find a face in the current frame
+                        debugLog('Running face detection on current frame to ensure a face is visible...');
+                        try {
+                            const detections = await faceapi.detectSingleFace(video, 
+                                new faceapi.TinyFaceDetectorOptions());
+                                
+                            if (!detections) {
+                                debugLog('No face detected in the current frame. Please position yourself correctly.');
+                                showMessage('No face detected. Please position your face clearly in the frame.', 'error');
+                                return;
+                            }
+                            debugLog(`Face detected at position: ${JSON.stringify(detections.box)}`);
+                            showMessage('Face detected! Processing verification...', 'success');
+                        } catch (faceError) {
+                            debugLog('Error during face detection check: ' + faceError.message);
+                            // Continue anyway, the server will handle it
+                        }
+                        
+                        // Capture image from video
                         const canvas = document.createElement('canvas');
                         const videoWidth = video.videoWidth || 400;
                         const videoHeight = video.videoHeight || 300;
@@ -203,13 +245,13 @@
                         canvas.getContext('2d').drawImage(video, 0, 0);
                         
                         const faceImage = canvas.toDataURL('image/jpeg');
+                        debugLog(`Captured image size: ${faceImage.length} characters`);
                         
                         // Send verification request
-                        // Debug info to console
-                        console.log('Sending face verification request...');
-                        debugLog('Sending face verification request...');
+                        debugLog('Sending face verification request to /auth/verify_face');
                         
-                        const response = await fetch('/auth/verify_face', {
+                        // Actually use the face blueprint's endpoint instead
+                        const response = await fetch('/face/face_verification', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',

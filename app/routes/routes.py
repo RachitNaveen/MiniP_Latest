@@ -51,48 +51,52 @@ def profile():
 # Login route
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
-    form = LoginForm()
-    next_page = request.args.get('next')
+    # Use auth.login route instead to benefit from security level processing
+    return redirect(url_for('auth.login'))
     
-    if request.method == 'POST':
-        username = form.username.data
-        password = form.password.data
-
-        if not username or not password:
-            flash('Username and password are required', 'error')
-            return redirect(url_for('main.login', next=next_page))
-
-        user = User.query.filter_by(username=username).first()
-
-        if not user:
-            flash('Invalid username or password', 'error')
-            return redirect(url_for('main.login', next=next_page))
-
-        # Verify password
-        if not check_password_hash(user.password, password):
-            flash('Invalid username or password', 'error')
-            return redirect(url_for('main.login', next=next_page))
-
-        # Clear any existing temp session data
-        session.pop('temp_user_id', None)
-        session.pop('next_page', None)
-        
-        # Store user ID in session for verification
-        session['temp_user_id'] = user.id
-        
-        # Store next page in session
-        if next_page:
-            session['next_page'] = next_page
-        
-        # Check if face verification is required
-        if user.face_data and current_app.config.get('FACE_VERIFICATION_REQUIRED', False):
-            return redirect(url_for('main.face_verification'))
-        
-        # Otherwise log in directly
-        login_user(user)
-        return redirect(next_page or url_for('main.chat'))
-
-    return render_template('login.html', form=form, next=next_page)
+    # The following code is now handled by auth.login
+    # form = LoginForm()
+    # next_page = request.args.get('next')
+    # 
+    # if request.method == 'POST':
+    #     username = form.username.data
+    #     password = form.password.data
+    # 
+    #     if not username or not password:
+    #         flash('Username and password are required', 'error')
+    #         return redirect(url_for('main.login', next=next_page))
+    # 
+    #     user = User.query.filter_by(username=username).first()
+    # 
+    #     if not user:
+    #         flash('Invalid username or password', 'error')
+    #         return redirect(url_for('main.login', next=next_page))
+    # 
+    #     # Verify password
+    #     if not check_password_hash(user.password, password):
+    #         flash('Invalid username or password', 'error')
+    #         return redirect(url_for('main.login', next=next_page))
+    # 
+    #     # Clear any existing temp session data
+    #     session.pop('temp_user_id', None)
+    #     session.pop('next_page', None)
+    #     
+    #     # Store user ID in session for verification
+    #     session['temp_user_id'] = user.id
+    #     
+    #     # Store next page in session
+    #     if next_page:
+    #         session['next_page'] = next_page
+    #     
+    #     # Check if face verification is required
+    #     if user.face_data and current_app.config.get('FACE_VERIFICATION_REQUIRED', False):
+    #         return redirect(url_for('main.face_verification'))
+    #     
+    #     # Otherwise log in directly
+    #     login_user(user)
+    #     return redirect(next_page or url_for('main.chat'))
+    # 
+    # return render_template('login.html', form=form, next=next_page)
 
 # Register route
 @bp.route('/register', methods=['GET', 'POST'])
