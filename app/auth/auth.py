@@ -151,6 +151,39 @@ def login():
                     logger.warning(f"Missing credentials for high security login attempt")
                 return render_template('login.html', form=form, show_captcha=True)
     
+    # Integrate AI-based security level determination
+    from ml_mfa.ml_security import increment_failed_attempts, reset_failed_attempts, get_security_level
+
+    if request.method == 'POST':
+        user = User.query.filter_by(username=username).first()
+        if not user or not check_password_hash(user.password_hash, password):
+            logger.warning(f"Failed password attempt for user: {username}")
+            # Increment failed login attempts and escalate risk level
+            increment_failed_attempts(username)
+            security_level = get_security_level(username)
+            session['security_level'] = security_level
+            logger.info(f"Escalated security level to {security_level} after failed login attempt")
+            flash('Invalid username or password.', 'danger')
+            return render_template('login.html', form=form, show_captcha=(security_level >= SECURITY_LEVEL_MEDIUM))
+
+        # Reset failed attempts on successful login
+        reset_failed_attempts(username)
+        session['security_level'] = SECURITY_LEVEL_LOW
+        logger.info(f"Successful login for user: {username} with security level: {security_level}")
+    
+    # Fetch AI risk assessment for the user
+    risk_details = get_risk_details(username)
+    logger.info(f"AI Risk Assessment for {username}: {risk_details}")
+
+    # Use AI risk assessment to dynamically adjust security level
+    if risk_details['security_level_num'] > security_level:
+        security_level = risk_details['security_level_num']
+        session['security_level'] = security_level
+        logger.info(f"Updated security level to {security_level} based on AI risk assessment")
+
+    # Log risk details for debugging
+    logger.info(f"Risk details: {risk_details}")
+    
     # Step 5: Display the login form (GET request)
     return render_template('login.html', form=form, show_captcha=show_captcha)
 

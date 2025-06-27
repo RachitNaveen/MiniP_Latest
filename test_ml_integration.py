@@ -11,8 +11,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../a
 from app import create_app
 from app.models.models import User
 from app.security.security_ai import calculate_security_level, get_risk_details
+from ml_mfa.ml_security import MLSecurityClassifier
 
-def test_with_user(username='testuser'):
+classifier = MLSecurityClassifier()
+
+def test_with_user(username='tshreek'):
     """
     Test ML integration with a real user
     
@@ -132,3 +135,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+classifier.train(data_file='synthetic_login_data.csv', model_type='rf')

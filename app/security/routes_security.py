@@ -133,3 +133,25 @@ def get_security_metrics():
             'success': False, 
             'message': 'Error retrieving security metrics'
         }), 500
+
+@security_blueprint.route('/api/security_assessment', methods=['GET'])
+def security_assessment():
+    """
+    Perform AI-based security assessment and return the security level.
+    """
+    try:
+        from app.security.security_ai import get_risk_details
+        username = session.get('username')
+        if not username:
+            return jsonify({'success': False, 'message': 'No user logged in'}), 400
+
+        risk_details = get_risk_details(username)
+
+        # Update session security level based on AI risk assessment
+        session['security_level'] = risk_details['security_level_num']
+        print(f"[SECURITY] Updated session security level to {session['security_level']}")
+        
+        return jsonify({'success': True, 'details': risk_details}), 200
+    except Exception as e:
+        print(f"Error during security assessment: {str(e)}")
+        return jsonify({'success': False, 'message': 'Error during security assessment'}), 500
