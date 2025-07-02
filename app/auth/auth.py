@@ -230,23 +230,27 @@ def register():
         username = form.username.data
         password = form.password.data
         
-        # Get face data from any available source (same logic as above)
+        # Print all form data for debugging
+        print(f"[DEBUG] All form fields: {dir(form)}")
+        print(f"[DEBUG] All request.form keys: {list(request.form.keys())}")
+        
+        # Get face data - directly from request.form for simplicity and reliability
         face_data = None
         
-        # Check if face_data is in the form object
-        if hasattr(form, 'face_data') and form.face_data.data and form.face_data.data.strip():
-            face_data = form.face_data.data
-            print(f"[DEBUG] Face data found in form.face_data.data. Length: {len(face_data)}")
-            
-        # Check if face_data is in request.form
-        elif 'face_data' in request.form and request.form['face_data'] and request.form['face_data'].strip():
+        # First try the standard field
+        if 'face_data' in request.form and request.form['face_data']:
             face_data = request.form['face_data']
             print(f"[DEBUG] Face data found in request.form['face_data']. Length: {len(face_data)}")
             
-        # Check if face_data_backup is in request.form
-        elif 'face_data_backup' in request.form and request.form['face_data_backup'] and request.form['face_data_backup'].strip():
+        # If that fails, try the backup field
+        elif 'face_data_backup' in request.form and request.form['face_data_backup']:
             face_data = request.form['face_data_backup']
             print(f"[DEBUG] Face data found in request.form['face_data_backup']. Length: {len(face_data)}")
+        
+        # Fallback to form data only if necessary
+        elif hasattr(form, 'face_data') and form.face_data.data:
+            face_data = form.face_data.data
+            print(f"[DEBUG] Face data found in form.face_data.data. Length: {len(face_data)}")
         
         print(f"[DEBUG] Username: {username}")
         print(f"[DEBUG] Password set: {bool(password)}")
@@ -585,9 +589,24 @@ def register_with_face():
             
             # Process face data
             try:
+                print(f"[DEBUG] Processing face data for API registration. Raw data type: {type(face_data)}")
+                if not isinstance(face_data, str):
+                    return jsonify({'success': False, 'message': 'Face data must be a string'}), 400
+                
+                print(f"[DEBUG] Face data starts with: {face_data[:30]}...")
+                print(f"[DEBUG] Face data is data URL format: {'data:image' in face_data}")
+                
                 # Extract base64 data
                 face_data = face_data.split(',')[1] if ',' in face_data else face_data
-                img_data = base64.b64decode(face_data)
+                print(f"[DEBUG] Face data after splitting: {face_data[:30]}...")
+                
+                # Decode base64
+                try:
+                    img_data = base64.b64decode(face_data)
+                    print(f"[DEBUG] Decoded image data size: {len(img_data)} bytes")
+                except Exception as e:
+                    print(f"[ERROR] Base64 decode error: {str(e)}")
+                    return jsonify({'success': False, 'message': f'Invalid base64 data: {str(e)}'}), 400
                 
                 # Decode image
                 nparr = np.frombuffer(img_data, np.uint8)

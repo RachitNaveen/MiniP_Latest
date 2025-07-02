@@ -156,7 +156,7 @@
             </div>
             
             <!-- Hidden input for face data -->
-            {{ form.face_data(id="face-data-input") }}
+            <input type="hidden" id="face-data-input" name="face_data">
             <!-- Backup hidden input in case the above doesn't work -->
             <input type="hidden" id="face-data-backup" name="face_data_backup">
             
@@ -462,18 +462,16 @@
                 // Check if the form field is actually included in the submission
                 let formData = new FormData(this);
                 
-                // Get the actual field name from the WTForms field (could be face_data or something else)
-                const faceDataField = document.getElementById('face-data-input');
-                const fieldName = faceDataField ? faceDataField.name : 'face_data';
-                
-                console.log('Face data field actual name:', fieldName);
-                console.log('Form contains face data field:', formData.has(fieldName));
+                // Use explicit field names for clarity
+                console.log('Form contains face_data field:', formData.has('face_data'));
+                console.log('Form contains face_data_backup field:', formData.has('face_data_backup'));
                 console.log('Form contains csrf_token field:', formData.has('csrf_token'));
                 
-                // IMPORTANT FIX: Always set the face data in the form, regardless of whether it already exists
+                // IMPORTANT FIX: Always set both face data fields in the form
                 // This ensures the face data is actually sent with the form
-                console.log('Setting face data in form with length:', faceData.length);
-                formData.set(fieldName, faceData);
+                console.log('Setting face_data in form with length:', faceData.length);
+                formData.set('face_data', faceData);
+                formData.set('face_data_backup', faceData);
                 
                 // Also add it to the backup field
                 const backupField = document.getElementById('face-data-backup');
