@@ -539,6 +539,10 @@ def get_security_level(user=None, request_info=None):
     Returns:
         int: The security level (always HIGH)
     """
+    # Set high security level in session
+    from flask import session
+    session['security_level'] = SECURITY_LEVEL_HIGH
+    
     # Always return high security level
     return SECURITY_LEVEL_HIGH
 

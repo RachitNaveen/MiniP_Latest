@@ -32,13 +32,14 @@ def profile():
     # Get security level
     from sqlalchemy import desc
     
-    security_level = session.get('security_level', SECURITY_LEVEL_LOW)
-    security_level_name = "Low"
+    security_level = session.get('security_level', SECURITY_LEVEL_HIGH)
+    security_level_name = "High"
     
+    # These conditions remain for backward compatibility but will rarely be used
     if security_level == SECURITY_LEVEL_MEDIUM:
         security_level_name = "Medium"
-    elif security_level == SECURITY_LEVEL_HIGH:
-        security_level_name = "High"
+    elif security_level == SECURITY_LEVEL_LOW:
+        security_level_name = "Low"
     
     # Get face verification logs
     face_logs = current_user.face_logs.order_by(desc("timestamp")).limit(5).all()
