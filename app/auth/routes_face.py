@@ -242,6 +242,35 @@ def disable_face_verification():
         db.session.rollback()
         return jsonify({'success': False, 'message': f'Error: {str(e)}'})
 
+# --- Helper functions ---
+
+def validate_face_verification_session(session_data):
+    """
+    Validates that the face verification session data is consistent and complete.
+    Returns a tuple of (is_valid, error_message, user)
+    """
+    # Check required session data
+    temp_user_id = session_data.get('temp_user_id')
+    username = session_data.get('username')
+    
+    if not temp_user_id:
+        return False, "Missing user ID in session", None
+        
+    if not username:
+        return False, "Missing username in session", None
+    
+    # Get the user by ID
+    user = User.query.get(temp_user_id)
+    
+    if not user:
+        return False, f"User ID {temp_user_id} not found", None
+    
+    # Verify username matches the user ID
+    if user.username != username:
+        return False, f"Session username '{username}' does not match user ID {temp_user_id} (username: {user.username})", None
+    
+    return True, None, user
+
 # --- Routes ---
 
 @face_blueprint.route('/face_verification', methods=['GET', 'POST'])
@@ -253,27 +282,24 @@ def face_verification():
     if current_user.is_authenticated:
         return redirect(url_for('main.chat'))
     
-    # Get session data
-    username = session.get('username') 
+    # Validate the face verification session
+    is_valid, error_message, user = validate_face_verification_session(session)
+    
+    if not is_valid:
+        print(f"[ERROR] Face verification session validation failed: {error_message}")
+        flash(f'Authentication error: {error_message}. Please log in again.', 'danger')
+        return redirect(url_for('auth.login'))
+        
+    # Get remaining session data
+    username = session.get('username')  # We know this exists and matches user.username from validation
     risk_details = session.get('risk_details')
     next_page = session.get('next_page')
     high_security_auth = session.get('high_security_auth', False)
     face_verification_required = session.get('face_verification_required', False)
     
     print(f"[DEBUG] Face verification page - session data: high_security_auth={high_security_auth}, face_verification_required={face_verification_required}")
-    
-    print(f"[DEBUG] Face verification page - username: {username}")
+    print(f"[DEBUG] Face verification page - username: {username}, user_id: {user.id}")
     print(f"[DEBUG] Face verification page - risk_details: {risk_details}")
-    
-    if not username:
-        flash('Session expired or missing username. Please log in again.', 'danger')
-        return redirect(url_for('auth.login'))
-        
-    # Get user
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        flash('User not found. Please log in again.', 'danger')
-        return redirect(url_for('auth.login'))
     
     # If no risk details, create default high security risk details
     if not risk_details:
@@ -292,6 +318,17 @@ def face_verification():
         session['risk_details'] = risk_details
     
     if request.method == 'POST':
+        # Re-validate session to ensure it's still valid
+        is_valid, error_message, user = validate_face_verification_session(session)
+        
+        if not is_valid:
+            print(f"[ERROR] Face verification POST validation failed: {error_message}")
+            return jsonify({
+                'success': False, 
+                'message': f'Authentication error: {error_message}. Please log in again.',
+                'redirect_url': url_for('auth.login')
+            }), 401
+            
         data = request.get_json()
         face_image = data.get('faceImage')
         
@@ -361,7 +398,20 @@ def face_verification():
                 # Mark face verification as completed
                 session['face_verification_required'] = False
                 
-                # Log in user
+                # Double-check that we're logging in the correct user from session
+                temp_user_id = session.get('temp_user_id')
+                session_username = session.get('username')
+                
+                if not temp_user_id or not session_username or user.id != temp_user_id or user.username != session_username:
+                    print(f"[ERROR] User mismatch during login: session_user_id={temp_user_id}, user.id={user.id}, session_username={session_username}, user.username={user.username}")
+                    return jsonify({
+                        'success': False,
+                        'message': 'Authentication error: user mismatch. Please log in again.',
+                        'redirect_url': url_for('auth.login')
+                    }), 401
+                
+                # Log in the correct user
+                print(f"[DEBUG] Logging in user: id={user.id}, username={user.username}")
                 login_user(user)
                 
                 # Update user's last login time
@@ -421,3 +471,27 @@ def face_verification():
     
     print(f"[DEBUG] Rendering face verification page for {username}")
     return render_template('face_verification.html', risk_details=risk_details, username=username)
+
+@face_blueprint.route('/debug_user_session', methods=['GET'])
+@login_required
+def debug_user_session():
+    """Debug endpoint to verify the current user session"""
+    try:
+        return jsonify({
+            'success': True,
+            'user': {
+                'id': current_user.id,
+                'username': current_user.username
+            },
+            'session_data': {
+                'temp_user_id': session.get('temp_user_id'),
+                'username': session.get('username'),
+                'face_verified': session.get('face_verified'),
+                'security_level': session.get('security_level'),
+            }
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500

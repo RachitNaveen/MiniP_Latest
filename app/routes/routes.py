@@ -99,75 +99,13 @@ def login():
     # 
     # return render_template('login.html', form=form, next=next_page)
 
-# Register route
+# Register route - Redirecting to auth.register to avoid duplication
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
+    """Redirect to the auth blueprint's registration route"""
+    from app.auth.forms import RegistrationForm
     form = RegistrationForm()
-
-    if form.validate_on_submit():
-        username = form.username.data
-        password = form.password.data
-        confirm_password = form.confirm_password.data
-        face_data = form.face_data.data
-        
-        # Validate input
-        if not username or not password:
-            flash('Username and password are required')
-            return render_template('register.html', form=form)
-            
-        if password != confirm_password:
-            flash('Passwords do not match')
-            return render_template('register.html', form=form)
-            
-        # Check if username exists
-        existing_user = User.query.filter_by(username=username).first()
-        if existing_user:
-            flash('Username already exists')
-            return render_template('register.html', form=form)
-        
-        # Create new user
-        hashed_password = generate_password_hash(password)
-        new_user = User(username=username, password=hashed_password)
-        
-        # Save face data if provided
-        if face_data:
-            try:
-                # Remove the data URL prefix to get the base64 data
-                face_data = face_data.split(',')[1] if ',' in face_data else face_data
-                
-                # Decode the base64 data
-                img_data = base64.b64decode(face_data)
-                
-                # Convert to numpy array and decode image
-                nparr = np.frombuffer(img_data, np.uint8)
-                img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-                
-                # Detect and encode face
-                face_locations = face_recognition.face_locations(img_rgb)
-                if not face_locations:
-                    flash('No face detected in the image. Please try again with a clear face image.')
-                    return render_template('register.html', form=form)
-                    
-                # Get the face encoding
-                face_encoding = face_recognition.face_encodings(img_rgb, face_locations)[0]
-                
-                # Convert encoding to string and store
-                new_user.face_data = json.dumps({
-                    'encoding': face_encoding.tolist(),
-                    'timestamp': datetime.utcnow().isoformat()
-                })
-                
-            except Exception as e:
-                flash(f'Error processing face image: {str(e)}')
-                return render_template('register.html', form=form)
-        
-        db.session.add(new_user)
-        db.session.commit()
-        
-        flash('Registration successful! Please login.')
-        return redirect(url_for('main.login'))
-        
-    return render_template('register.html', form=form)
+    return redirect(url_for('auth.register'))
 
 # Face verification route
 @bp.route('/face_verification', methods=['GET', 'POST'])

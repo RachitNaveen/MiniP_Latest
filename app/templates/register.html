@@ -118,10 +118,9 @@
             {% endif %}
         {% endwith %}
 
-        <form id="registerForm" method="POST" action="{{ url_for('auth.register') }}" enctype="multipart/form-data">
+        <form id="registerForm" method="POST" action="{{ url_for('auth.register') }}">
             {{ form.hidden_tag() }}
-            <!-- Add CSRF token explicitly -->
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <!-- Only need one CSRF token -->
 
             <div class="form-group">
                 <label for="username">Username</label>
@@ -158,6 +157,8 @@
             
             <!-- Hidden input for face data -->
             {{ form.face_data(id="face-data-input") }}
+            <!-- Backup hidden input in case the above doesn't work -->
+            <input type="hidden" id="face-data-backup" name="face_data_backup">
             
             <!-- Face Registration Section -->
             <div id="face-registration-container">
@@ -383,6 +384,26 @@
                     // Store the image data in the hidden input
                     faceDataInput.value = dataURL;
                     
+                    // Also store in the backup field
+                    const backupField = document.getElementById('face-data-backup');
+                    if (backupField) {
+                        backupField.value = dataURL;
+                        console.log('Face data also stored in backup field');
+                    }
+                    
+                    // Double-check the data was stored correctly
+                    console.log('Face data set in form field. Length:', dataURL.length);
+                    console.log('Value actually in input field length:', faceDataInput.value.length);
+                    
+                    // Verify the field exists in the DOM
+                    const faceDataField = document.getElementById('face-data-input');
+                    console.log('Face data input field found in DOM:', faceDataField !== null);
+                    if (faceDataField) {
+                        console.log('Face data field name:', faceDataField.name);
+                        console.log('Face data field ID:', faceDataField.id);
+                        console.log('Face data field type:', faceDataField.type);
+                    }
+                    
                     // Show debug info
                     document.getElementById('debug-info').style.display = 'block';
                     document.getElementById('face-data-status').textContent = 'Yes';
@@ -426,23 +447,124 @@
             
             // Add form submission check
             document.getElementById('registerForm').addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent default submission to handle it ourselves
+                console.log('Form submission started');
+                
                 const faceData = faceDataInput.value;
                 if (!faceData || faceData.trim() === '') {
-                    e.preventDefault();
                     alert('Face data is required. Please capture your face before submitting.');
+                    console.log('Submission prevented: No face data');
                     return false;
                 }
                 
                 console.log('Form submitted with face data length:', faceData.length);
                 
-                // Add a hidden debug field to help track what's happening
-                const debugField = document.createElement('input');
-                debugField.type = 'hidden';
-                debugField.name = 'debug_info';
-                debugField.value = 'Face data size: ' + faceData.length + ' bytes';
-                this.appendChild(debugField);
+                // Check if the form field is actually included in the submission
+                let formData = new FormData(this);
                 
-                return true;
+                // Get the actual field name from the WTForms field (could be face_data or something else)
+                const faceDataField = document.getElementById('face-data-input');
+                const fieldName = faceDataField ? faceDataField.name : 'face_data';
+                
+                console.log('Face data field actual name:', fieldName);
+                console.log('Form contains face data field:', formData.has(fieldName));
+                console.log('Form contains csrf_token field:', formData.has('csrf_token'));
+                
+                // IMPORTANT FIX: Always set the face data in the form, regardless of whether it already exists
+                // This ensures the face data is actually sent with the form
+                console.log('Setting face data in form with length:', faceData.length);
+                formData.set(fieldName, faceData);
+                
+                // Also add it to the backup field
+                const backupField = document.getElementById('face-data-backup');
+                if (backupField) {
+                    formData.set('face_data_backup', faceData);
+                    console.log('Face data also set in backup field in form submission');
+                }
+                
+                // Add a hidden debug field to help track what's happening
+                formData.append('debug_info', 'Face data size: ' + faceData.length + ' bytes');
+                
+                // Create a variable to store the URLs outside the fetch call
+                const registerUrl = document.getElementById('registerForm').action;
+                const loginUrl = document.querySelector('a[href*="login"]').href;
+                
+                // Log the keys and values in the form before submission
+                console.log('Form keys before submission:');
+                for (let [key, value] of formData.entries()) {
+                    if (key === 'face_data' || key === 'face_data_backup') {
+                        console.log(`${key}: [data length: ${value.length}]`);
+                    } else {
+                        console.log(`${key}: ${value}`);
+                    }
+                }
+                
+                // Try to submit the form using the regular form method first
+                fetch(registerUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    console.log('Response received:', response);
+                    if (response.redirected) {
+                        // If we're redirected to login page, follow the redirect
+                        window.location.href = response.url;
+                        return;
+                    } 
+                    
+                    // Parse response for error messages
+                    return response.text().then(html => {
+                        // Check if registration was successful
+                        if (html.includes('Account created!')) {
+                            alert('Account created successfully! Please log in.');
+                            window.location.href = loginUrl;
+                        } else {
+                            console.log('Form submission was not successful, trying API endpoint instead');
+                            
+                            // Try the direct API endpoint instead
+                            return fetch('/auth/register_with_face', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify({
+                                    username: document.getElementById('username').value,
+                                    password: document.getElementById('password').value,
+                                    confirm_password: document.getElementById('confirm_password').value,
+                                    face_data: faceDataInput.value
+                                })
+                            })
+                            .then(apiResponse => apiResponse.json())
+                            .then(data => {
+                                if (data.success) {
+                                    alert('Account created successfully! Please log in.');
+                                    window.location.href = data.redirect || loginUrl;
+                                } else {
+                                    alert('Registration failed: ' + data.message);
+                                }
+                            })
+                            .catch(apiError => {
+                                console.error('API error:', apiError);
+                                alert('Error during registration. Please try again.');
+                                
+                                // Display the original response for debugging
+                                document.open();
+                                document.write(html);
+                                document.close();
+                            });
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error submitting form:', error);
+                    alert('Error submitting form. Please try again.');
+                });
+                
+                return false; // We're handling the submission ourselves
             });
         });
     </script>

@@ -119,6 +119,11 @@
     <div class="verification-container">
         <h2>Face Verification Required</h2>
         <p>High security level detected - please verify your face to continue</p>
+        {% if username %}
+        <div class="user-info" style="background-color: #e7f3fe; border-left: 6px solid #2196F3; padding: 10px; margin: 15px 0;">
+            <p style="font-size: 18px; margin: 0;"><strong>Verifying User:</strong> {{ username }}</p>
+        </div>
+        {% endif %}
         <div id="message" class="message"></div>
         <div style="position: relative; width: 400px; margin: 0 auto;">
             <video id="verification-video" autoplay width="400" height="300"></video>
@@ -369,6 +374,18 @@
                             setTimeout(() => {
                                 window.location.href = data.redirect_url || '/chat';
                             }, 1500);
+                        } else if (data.redirect_url) {
+                            // Session error - needs to redirect to login
+                            showMessage(`${data.message} Redirecting to login...`, 'error');
+                            debugLog(`Authentication error: ${data.message}`);
+                            
+                            // Stop video stream
+                            stream.getTracks().forEach(track => track.stop());
+                            
+                            // Redirect to login
+                            setTimeout(() => {
+                                window.location.href = data.redirect_url;
+                            }, 2000);
                         } else if (data.match_percentage !== undefined) {
                             showMessage(`Face verification failed (${data.match_percentage.toFixed(1)}% match, 80% required)`, 'error');
                             debugLog(`Face verification failed: ${data.match_percentage.toFixed(1)}% match`);
