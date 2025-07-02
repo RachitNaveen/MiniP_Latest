@@ -298,3 +298,36 @@ def face_verification():
     
     print(f"[DEBUG] Rendering face verification page for {username}")
     return render_template('face_verification.html', risk_details=risk_details, username=username)
+
+@face_blueprint.route('/register_face', methods=['POST'])
+def register_face():
+    """Register face data for a user during account creation."""
+    data = request.get_json()
+    if not data or 'faceData' not in data:
+        return jsonify({'success': False, 'message': 'No face data provided'}), 400
+
+    try:
+        face_data = data['faceData']
+        if ',' in face_data:
+            face_data = face_data.split(',')[1]
+
+        img_data = base64.b64decode(face_data)
+        nparr = np.frombuffer(img_data, np.uint8)
+        img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        face_locations = face_recognition.face_locations(img_rgb)
+        if not face_locations:
+            return jsonify({'success': False, 'message': 'No face detected in the image'}), 400
+
+        face_encoding = face_recognition.face_encodings(img_rgb, face_locations)[0]
+
+        user = User.query.get(current_user.id)
+        user.face_data = json.dumps({'encoding': face_encoding.tolist(), 'timestamp': datetime.utcnow().isoformat()})
+        user.face_verification_enabled = True
+
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Face data registered successfully'})
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500

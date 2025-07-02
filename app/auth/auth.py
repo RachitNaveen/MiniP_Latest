@@ -21,14 +21,29 @@ auth_blueprint = Blueprint('auth', __name__)
 
 # --- Face Data Helper Functions (Implement with actual face recognition logic) ---
 def save_face_data_for_user(user, face_image_data_url):
-    """
-    IMPLEMENTATION REQUIRED: Process face_image_data_url, extract face descriptor,
-    and store it securely associated with the user in the database.
-    """
-    print(f"[INFO] Placeholder: Saving face data for user {user.username}.")
-    # Example: user.face_descriptor = extract_descriptor(face_image_data_url)
-    # db.session.commit()
-    return True # Return True on success, False on failure
+    """Save face data for a user."""
+    try:
+        if ',' in face_image_data_url:
+            face_image_data_url = face_image_data_url.split(',')[1]
+
+        img_data = base64.b64decode(face_image_data_url)
+        nparr = np.frombuffer(img_data, np.uint8)
+        img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        face_locations = face_recognition.face_locations(img_rgb)
+        if not face_locations:
+            return False
+
+        face_encoding = face_recognition.face_encodings(img_rgb, face_locations)[0]
+        user.face_data = json.dumps({'encoding': face_encoding.tolist(), 'timestamp': datetime.utcnow().isoformat()})
+        user.face_verification_enabled = True
+
+        db.session.commit()
+        return True
+
+    except Exception as e:
+        db.session.rollback()
+        return False
 
 def verify_user_face(user, submitted_face_image_data_url):
     """
@@ -187,7 +202,7 @@ def register():
 
         new_user = User(
             username=username,
-            password_hash=generate_password_hash(password, method='sha256')
+            password_hash=generate_password_hash(password, method='pbkdf2:sha256')
         )
         
         # Process the face data if provided

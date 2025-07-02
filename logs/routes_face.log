@@ -254,3 +254,179 @@
 2025-06-09 19:24:01,310 - INFO - 127.0.0.1 - - [09/Jun/2025 19:24:01] "GET /security/get_security_metrics HTTP/1.1" 200 -
 2025-06-09 19:24:01,318 - INFO - 127.0.0.1 - - [09/Jun/2025 19:24:01] "GET /security/get_security_metrics HTTP/1.1" 200 -
 2025-06-09 19:24:22,265 - INFO - 127.0.0.1 - - [09/Jun/2025 19:24:22] "GET /socket.io/?EIO=4&transport=websocket&sid=_KRT4Yr9XfNjL1WMAAAE HTTP/1.1" 200 -
+2025-07-02 14:38:38,536 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-02 14:38:38,537 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 14:39:17,906 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:17] "[32mGET / HTTP/1.1[0m" 302 -
+2025-07-02 14:39:17,919 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:17] "GET /login HTTP/1.1" 200 -
+2025-07-02 14:39:17,940 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:17] "GET /static/styles.css HTTP/1.1" 200 -
+2025-07-02 14:39:17,941 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:17] "GET /static/face_auth.js HTTP/1.1" 200 -
+2025-07-02 14:39:17,941 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:17] "GET /static/face-api.js HTTP/1.1" 200 -
+2025-07-02 14:39:17,948 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:17] "GET /static/security_level.js HTTP/1.1" 200 -
+2025-07-02 14:39:17,982 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:17] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:39:17,984 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:17] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:39:17,984 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:17] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:39:18,001 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:18] "GET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1" 200 -
+2025-07-02 14:39:18,001 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:18] "GET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1" 200 -
+2025-07-02 14:39:18,003 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:18] "GET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1" 200 -
+2025-07-02 14:39:18,004 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:18] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:39:18,506 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:18] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-07-02 14:39:22,943 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:22] "GET /register HTTP/1.1" 200 -
+2025-07-02 14:39:22,953 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:22] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 14:39:22,955 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:22] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 14:39:42,335 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:42] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:39:42,340 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:42] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:39:42,368 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:42] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:39:42,370 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:42] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:39:42,395 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:42] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:39:42,398 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:42] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 14:39:42,399 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:42] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:39:42,561 - ERROR - Exception on /auth/register [POST]
+Traceback (most recent call last):
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/tshreek/MiniP_Latest/app/auth/auth.py", line 205, in register
+    password_hash=generate_password_hash(password, method='sha256')
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/werkzeug/security.py", line 108, in generate_password_hash
+    h, actual_method = _hash_internal(method, salt, password)
+                       ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/werkzeug/security.py", line 70, in _hash_internal
+    raise ValueError(f"Invalid hash method '{method}'.")
+ValueError: Invalid hash method 'sha256'.
+2025-07-02 14:39:42,564 - INFO - 127.0.0.1 - - [02/Jul/2025 14:39:42] "[35m[1mPOST /auth/register HTTP/1.1[0m" 500 -
+2025-07-02 14:46:12,553 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-02 14:46:12,553 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 14:49:37,669 - INFO - 127.0.0.1 - - [02/Jul/2025 14:49:37] "POST /auth/register HTTP/1.1" 200 -
+2025-07-02 14:49:37,714 - INFO - 127.0.0.1 - - [02/Jul/2025 14:49:37] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 14:49:37,714 - INFO - 127.0.0.1 - - [02/Jul/2025 14:49:37] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 14:49:47,872 - INFO - 127.0.0.1 - - [02/Jul/2025 14:49:47] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:49:47,879 - INFO - 127.0.0.1 - - [02/Jul/2025 14:49:47] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:49:47,928 - INFO - 127.0.0.1 - - [02/Jul/2025 14:49:47] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:49:47,932 - INFO - 127.0.0.1 - - [02/Jul/2025 14:49:47] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:49:47,957 - INFO - 127.0.0.1 - - [02/Jul/2025 14:49:47] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:49:47,962 - INFO - 127.0.0.1 - - [02/Jul/2025 14:49:47] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:49:47,962 - INFO - 127.0.0.1 - - [02/Jul/2025 14:49:47] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 14:49:48,071 - ERROR - Exception on /auth/register [POST]
+Traceback (most recent call last):
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/tshreek/MiniP_Latest/app/auth/auth.py", line 205, in register
+    password_hash=generate_password_hash(password, method='sha256')
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/werkzeug/security.py", line 108, in generate_password_hash
+    h, actual_method = _hash_internal(method, salt, password)
+                       ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/werkzeug/security.py", line 70, in _hash_internal
+    raise ValueError(f"Invalid hash method '{method}'.")
+ValueError: Invalid hash method 'sha256'.
+2025-07-02 14:49:48,075 - INFO - 127.0.0.1 - - [02/Jul/2025 14:49:48] "[35m[1mPOST /auth/register HTTP/1.1[0m" 500 -
+2025-07-02 14:51:57,447 - INFO - 127.0.0.1 - - [02/Jul/2025 14:51:57] "POST /auth/register HTTP/1.1" 200 -
+2025-07-02 14:51:57,500 - INFO - 127.0.0.1 - - [02/Jul/2025 14:51:57] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 14:51:57,501 - INFO - 127.0.0.1 - - [02/Jul/2025 14:51:57] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 14:52:07,033 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:07] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:52:07,038 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:07] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:52:07,083 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:07] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:52:07,086 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:07] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:52:07,111 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:07] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:52:07,114 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:07] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:52:07,115 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:07] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 14:52:07,179 - ERROR - Exception on /auth/register [POST]
+Traceback (most recent call last):
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/tshreek/MiniP_Latest/app/auth/auth.py", line 205, in register
+    password_hash=generate_password_hash(password, method='pbkdf2:sha256')
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/werkzeug/security.py", line 108, in generate_password_hash
+    h, actual_method = _hash_internal(method, salt, password)
+                       ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/werkzeug/security.py", line 70, in _hash_internal
+    raise ValueError(f"Invalid hash method '{method}'.")
+ValueError: Invalid hash method 'sha256'.
+2025-07-02 14:52:07,186 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:07] "[35m[1mPOST /auth/register HTTP/1.1[0m" 500 -
+2025-07-02 14:52:17,265 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-02 14:52:17,265 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 14:52:23,966 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:23] "POST /auth/register HTTP/1.1" 200 -
+2025-07-02 14:52:23,988 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:23] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 14:52:23,988 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:23] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 14:52:25,984 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:25] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:52:26,005 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:26] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:52:26,059 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:26] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:52:26,063 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:26] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:52:26,094 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:26] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:52:26,100 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:26] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:52:26,101 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:26] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 14:52:44,884 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:44] "[32mPOST /auth/register HTTP/1.1[0m" 302 -
+2025-07-02 14:52:44,896 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:44] "GET /auth/login HTTP/1.1" 200 -
+2025-07-02 14:52:44,956 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:44] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 14:52:44,958 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:44] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 14:52:44,959 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:44] "[36mGET /static/face_auth.js HTTP/1.1[0m" 304 -
+2025-07-02 14:52:44,959 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:44] "[36mGET /static/security_level.js HTTP/1.1[0m" 304 -
+2025-07-02 14:52:44,987 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:44] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:52:44,988 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:44] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:52:44,988 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:44] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:52:45,030 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:45] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:52:45,031 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:45] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:52:45,036 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:45] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:52:45,036 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:45] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 14:52:51,077 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:51] "[33mPOST /set_security_level_login HTTP/1.1[0m" 404 -
+2025-07-02 14:52:51,079 - INFO - 127.0.0.1 - - [02/Jul/2025 14:52:51] "[33mPOST /set_security_level_login HTTP/1.1[0m" 404 -
+2025-07-02 14:54:28,553 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-02 14:54:28,567 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "GET /chat HTTP/1.1" 200 -
+2025-07-02 14:54:28,607 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 14:54:28,613 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 14:54:28,617 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "GET /static/face_modal.js HTTP/1.1" 200 -
+2025-07-02 14:54:28,617 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "GET /static/chat.js HTTP/1.1" 200 -
+2025-07-02 14:54:28,618 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "GET /static/security_metrics.js HTTP/1.1" 200 -
+2025-07-02 14:54:28,624 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:54:28,628 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "GET /socket.io/?EIO=4&transport=polling&t=PVASwzF HTTP/1.1" 200 -
+2025-07-02 14:54:28,628 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:54:28,632 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 14:54:28,635 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 14:54:28,670 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "GET /socket.io/?EIO=4&transport=polling&t=PVASwzq&sid=SjBSOqK8z_gSs7vlAAAA HTTP/1.1" 200 -
+2025-07-02 14:54:28,671 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "POST /socket.io/?EIO=4&transport=polling&t=PVASwzp&sid=SjBSOqK8z_gSs7vlAAAA HTTP/1.1" 200 -
+2025-07-02 14:54:28,672 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:54:28,677 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:54:28,709 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:54:28,720 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 14:54:28,722 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:54:28,723 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:28] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 14:54:32,287 - INFO - 127.0.0.1 - - [02/Jul/2025 14:54:32] "GET /socket.io/?EIO=4&transport=websocket&sid=SjBSOqK8z_gSs7vlAAAA HTTP/1.1" 200 -
+2025-07-02 16:14:41,148 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-02 16:14:41,148 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 16:14:45,566 - INFO - 127.0.0.1 - - [02/Jul/2025 16:14:45] "[33mGET /auth HTTP/1.1[0m" 404 -
+2025-07-02 16:14:48,521 - INFO - 127.0.0.1 - - [02/Jul/2025 16:14:48] "GET /auth/login HTTP/1.1" 200 -
+2025-07-02 16:14:48,558 - INFO - 127.0.0.1 - - [02/Jul/2025 16:14:48] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 16:14:48,558 - INFO - 127.0.0.1 - - [02/Jul/2025 16:14:48] "[36mGET /static/face_auth.js HTTP/1.1[0m" 304 -
+2025-07-02 16:14:48,559 - INFO - 127.0.0.1 - - [02/Jul/2025 16:14:48] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 16:14:48,559 - INFO - 127.0.0.1 - - [02/Jul/2025 16:14:48] "GET /static/security_level.js HTTP/1.1" 200 -
+2025-07-02 16:14:48,681 - INFO - 127.0.0.1 - - [02/Jul/2025 16:14:48] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 16:14:48,696 - INFO - 127.0.0.1 - - [02/Jul/2025 16:14:48] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 16:14:48,698 - INFO - 127.0.0.1 - - [02/Jul/2025 16:14:48] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 16:14:48,700 - INFO - 127.0.0.1 - - [02/Jul/2025 16:14:48] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 16:14:48,704 - INFO - 127.0.0.1 - - [02/Jul/2025 16:14:48] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 16:14:48,705 - INFO - 127.0.0.1 - - [02/Jul/2025 16:14:48] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 16:14:48,706 - INFO - 127.0.0.1 - - [02/Jul/2025 16:14:48] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -

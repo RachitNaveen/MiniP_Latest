@@ -159,29 +159,20 @@
             
             <!-- Face Registration Section -->
             <div id="face-registration-container">
-                <h3>Face Registration</h3>
-                <p>Please register your face for enhanced security and to access face-locked messages.</p>
+                <h3>Face Registration (Optional)</h3>
+                <p>Register your face for enhanced security.</p>
                 
                 <div id="video-container">
                     <video id="face-video" autoplay muted></video>
                     <canvas id="face-canvas"></canvas>
                 </div>
                 
-                <div id="capture-status"></div>
+                <div id="capture-status" class="status-message"></div>
                 
                 <div class="face-buttons">
-                    <button type="button" id="start-camera-btn" class="btn">Start Camera</button>
-                    <button type="button" id="capture-face-btn" class="btn" disabled>Capture Face</button>
-                </div>
-                
-                <div class="face-benefits" style="margin-top: 15px; padding: 10px; background-color: #e9f7ef; border-left: 4px solid #2ecc71; border-radius: 4px;">
-                    <h4 style="margin-top: 0;">Benefits of Face Registration:</h4>
-                    <ul>
-                        <li>Securely log in with facial recognition</li>
-                        <li>Send and receive face-locked messages</li>
-                        <li>Enhanced security during high-risk sessions</li>
-                        <li>Protect sensitive files with face verification</li>
-                    </ul>
+                    <button id="start-camera-btn" class="btn">Start Camera</button>
+                    <button id="capture-face-btn" class="btn" disabled>Capture Face</button>
+                    <button id="cancel-face-btn" class="btn">Cancel</button>
                 </div>
             </div>
 
