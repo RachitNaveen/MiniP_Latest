@@ -185,8 +185,8 @@
                 </div>
             </div>
 
-            <button type="submit" id="register-btn" class="btn btn-primary">Register</button>
-            <p class="face-requirement" style="color: #856404; margin-top: 5px;">Note: Face registration is recommended but optional</p>
+            <button type="submit" id="register-btn" class="btn btn-primary" disabled>Register</button>
+            <p class="face-requirement" style="color: #dc3545; margin-top: 5px;">Note: Face registration is required for account creation</p>
         </form>
 
         <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
@@ -210,11 +210,41 @@
             async function loadFaceDetectionModels() {
                 showStatus('Loading face detection models...', 'warning');
                 try {
-                    await faceapi.nets.tinyFaceDetector.loadFromUri('/static/face-api-models');
-                    await faceapi.nets.faceLandmark68Net.loadFromUri('/static/face-api-models');
-                    await faceapi.nets.faceRecognitionNet.loadFromUri('/static/face-api-models');
-                    showStatus('Face detection models loaded!', 'success');
-                    return true;
+                    // Make sure the path to models is correct
+                    const modelPath = '/static/face-api-models';
+                    console.log("Loading face-api.js models from:", modelPath);
+                    
+                    // Check if we already have the models loaded
+                    if (faceapi.nets.tinyFaceDetector.isLoaded && 
+                        faceapi.nets.faceLandmark68Net.isLoaded && 
+                        faceapi.nets.faceRecognitionNet.isLoaded) {
+                        console.log("Models already loaded!");
+                        showStatus('Face detection models already loaded!', 'success');
+                        return true;
+                    }
+                    
+                    // Load models sequentially for better reliability
+                    console.log("Loading TinyFaceDetector...");
+                    await faceapi.nets.tinyFaceDetector.loadFromUri(modelPath);
+                    console.log("TinyFaceDetector loaded:", faceapi.nets.tinyFaceDetector.isLoaded);
+                    
+                    console.log("Loading FaceLandmark68Net...");
+                    await faceapi.nets.faceLandmark68Net.loadFromUri(modelPath);
+                    console.log("FaceLandmark68Net loaded:", faceapi.nets.faceLandmark68Net.isLoaded);
+                    
+                    console.log("Loading FaceRecognitionNet...");
+                    await faceapi.nets.faceRecognitionNet.loadFromUri(modelPath);
+                    console.log("FaceRecognitionNet loaded:", faceapi.nets.faceRecognitionNet.isLoaded);
+                    
+                    // Verify all models loaded
+                    if (faceapi.nets.tinyFaceDetector.isLoaded && 
+                        faceapi.nets.faceLandmark68Net.isLoaded && 
+                        faceapi.nets.faceRecognitionNet.isLoaded) {
+                        showStatus('Face detection models loaded successfully!', 'success');
+                        return true;
+                    } else {
+                        throw new Error("Not all models were loaded successfully");
+                    }
                 } catch (error) {
                     console.error('Error loading face detection models:', error);
                     showStatus('Failed to load face models. Please try again.', 'error');
@@ -243,33 +273,64 @@
             
             // Start face detection on video
             function startFaceDetection() {
-                const displaySize = { width: faceVideo.width, height: faceVideo.height };
+                // Make sure video dimensions are set correctly
+                const videoWidth = faceVideo.videoWidth || 400;
+                const videoHeight = faceVideo.videoHeight || 300;
+                const displaySize = { width: videoWidth, height: videoHeight };
+                
+                // Ensure canvas has the right dimensions
+                faceCanvas.width = videoWidth;
+                faceCanvas.height = videoHeight;
                 faceapi.matchDimensions(faceCanvas, displaySize);
+                
+                console.log(`Video dimensions: ${videoWidth}x${videoHeight}`);
                 
                 // Check for faces every 100ms
                 const interval = setInterval(async () => {
-                    if (!faceVideo.paused && !faceVideo.ended) {
-                        const detections = await faceapi.detectAllFaces(
-                            faceVideo, 
-                            new faceapi.TinyFaceDetectorOptions()
-                        ).withFaceLandmarks().withFaceDescriptors();
+                    if (!faceVideo.paused && !faceVideo.ended && faceVideo.readyState >= 2) {
+                        try {
+                            // First try with TinyFaceDetector which is faster
+                            let detections = await faceapi.detectAllFaces(
+                                faceVideo, 
+                                new faceapi.TinyFaceDetectorOptions({ 
+                                    inputSize: 320,     // Smaller input size increases detection rate
+                                    scoreThreshold: 0.3 // Even lower threshold for better detection
+                                })
+                            ).withFaceLandmarks();
                         
-                        // Clear previous drawings
-                        const ctx = faceCanvas.getContext('2d');
-                        ctx.clearRect(0, 0, faceCanvas.width, faceCanvas.height);
-                        
-                        // Draw detections
-                        const resizedDetections = faceapi.resizeResults(detections, displaySize);
-                        faceapi.draw.drawDetections(faceCanvas, resizedDetections);
-                        faceapi.draw.drawFaceLandmarks(faceCanvas, resizedDetections);
-                        
-                        // Update face detected status
-                        if (detections.length > 0) {
-                            faceDetected = true;
-                            showStatus('Face detected! You can now capture your face.', 'success');
-                        } else {
-                            faceDetected = false;
-                            showStatus('No face detected. Please position your face in the camera.', 'warning');
+                            // If no detections, try with lower threshold
+                            if (detections.length === 0) {
+                                console.log("No faces detected with default settings, trying with lower threshold...");
+                                detections = await faceapi.detectAllFaces(
+                                    faceVideo,
+                                    new faceapi.TinyFaceDetectorOptions({
+                                        inputSize: 320,
+                                        scoreThreshold: 0.2 // Try with even lower threshold
+                                    })
+                                ).withFaceLandmarks();
+                            }
+                            
+                            // Clear previous drawings
+                            const ctx = faceCanvas.getContext('2d');
+                            ctx.clearRect(0, 0, faceCanvas.width, faceCanvas.height);
+                            
+                            // Draw detections
+                            const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                            faceapi.draw.drawDetections(faceCanvas, resizedDetections);
+                            faceapi.draw.drawFaceLandmarks(faceCanvas, resizedDetections);
+                            
+                            // Update face detected status
+                            if (detections.length > 0) {
+                                faceDetected = true;
+                                console.log("Face detected with confidence:", detections[0].score);
+                                showStatus('Face detected! You can now capture your face.', 'success');
+                            } else {
+                                faceDetected = false;
+                                showStatus('No face detected. Please position your face in the camera and ensure good lighting.', 'warning');
+                            }
+                        } catch (error) {
+                            console.error("Error in face detection:", error);
+                            showStatus('Error detecting face. Please try again.', 'error');
                         }
                     }
                 }, 100);
@@ -283,15 +344,33 @@
                 }
                 
                 try {
+                    showStatus('Processing face image...', 'warning');
+                    
+                    // Double-check face detection before capturing
+                    const detections = await faceapi.detectAllFaces(
+                        faceVideo,
+                        new faceapi.TinyFaceDetectorOptions({
+                            inputSize: 320,
+                            scoreThreshold: 0.3
+                        })
+                    ).withFaceLandmarks();
+                    
+                    if (detections.length === 0) {
+                        showStatus('No face detected during capture. Please try again.', 'error');
+                        return;
+                    }
+                    
+                    console.log("Face detected for capture with score:", detections[0].score);
+                    
                     // Capture the current video frame
                     const canvas = document.createElement('canvas');
-                    canvas.width = faceVideo.videoWidth;
-                    canvas.height = faceVideo.videoHeight;
+                    canvas.width = faceVideo.videoWidth || 400;
+                    canvas.height = faceVideo.videoHeight || 300;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(faceVideo, 0, 0, canvas.width, canvas.height);
                     
-                    // Convert to data URL
-                    const dataURL = canvas.toDataURL('image/jpeg');
+                    // Convert to data URL with higher quality
+                    const dataURL = canvas.toDataURL('image/jpeg', 0.95);
                     
                     // Store the image data in the hidden input
                     faceDataInput.value = dataURL;
@@ -311,6 +390,9 @@
                     img.style.width = '100%';
                     img.style.borderRadius = '5px';
                     videoContainer.appendChild(img);
+                    
+                    // Enable the register button
+                    registerBtn.disabled = false;
                     
                     // Clear canvas drawings
                     const canvasCtx = faceCanvas.getContext('2d');

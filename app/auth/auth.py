@@ -195,6 +195,11 @@ def register():
         password = form.password.data
         face_data = form.face_data.data if hasattr(form, 'face_data') else None
 
+        # Validate that face data is provided (required)
+        if not face_data or not face_data.strip():
+            flash('Face registration is required. Please capture your face image.', 'error')
+            return redirect(url_for('auth.register'))
+
         user = User.query.filter_by(username=username).first()
         if user:
             flash('Username already exists.', 'warning')
@@ -208,33 +213,74 @@ def register():
         # Process the face data if provided
         if face_data and face_data.strip():
             try:
+                # Log face data properties for debugging
+                print(f"[DEBUG] Processing face data of length: {len(face_data)}")
+                
                 # Decode the base64 data
                 face_data = face_data.split(',')[1] if ',' in face_data else face_data
                 img_data = base64.b64decode(face_data)
+                
+                print(f"[DEBUG] Decoded image data size: {len(img_data)} bytes")
 
                 # Convert to numpy array and decode image
                 nparr = np.frombuffer(img_data, np.uint8)
                 img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                
+                if img_rgb is None or img_rgb.size == 0:
+                    print("[ERROR] Failed to decode image data")
+                    flash('Invalid image data. Please try again.', 'error')
+                    return redirect(url_for('auth.register'))
+                    
+                print(f"[DEBUG] Image dimensions: {img_rgb.shape}")
 
-                # Detect faces using face-api.js
-                face_locations = face_recognition.face_locations(img_rgb)
+                # Try multiple methods for more reliable face detection
+                # First try HOG method which is faster
+                face_locations = face_recognition.face_locations(img_rgb, model="hog")
+                
+                # If that fails, try CNN model which is more accurate but slower
                 if not face_locations:
-                    flash('No face detected in the image. Face registration skipped.', 'warning')
+                    print("[DEBUG] No face detected with HOG model, trying CNN model...")
+                    face_locations = face_recognition.face_locations(img_rgb, model="cnn")
+                    
+                if not face_locations:
+                    print("[ERROR] No face detected in the image")
+                    flash('No face detected in the image. Please ensure good lighting and try again.', 'error')
+                    return redirect(url_for('auth.register'))
                 else:
-                    # Get the face encoding
-                    face_encoding = face_recognition.face_encodings(img_rgb, face_locations)[0]
-
+                    print(f"[DEBUG] Face detected at position: {face_locations[0]}")
+                    
+                    # Try to generate face encoding with increased number of jitters for better accuracy
+                    face_encodings = face_recognition.face_encodings(img_rgb, face_locations, num_jitters=5)
+                    
+                    if not face_encodings or len(face_encodings) == 0:
+                        print("[ERROR] Failed to generate face encoding")
+                        flash('Failed to process face features. Please try again with better lighting.', 'error')
+                        return redirect(url_for('auth.register'))
+                    
+                    face_encoding = face_encodings[0]
+                    print(f"[DEBUG] Generated face encoding of length: {len(face_encoding)}")
+                    
                     # Store face data securely
-                    new_user.face_data = json.dumps({
+                    face_data_json = json.dumps({
                         'encoding': face_encoding.tolist(),
                         'timestamp': datetime.utcnow().isoformat()
                     })
-                    new_user.face_verification_enabled = True
-
-                    flash('Face registered successfully!', 'success')
+                    
+                    # Verify the face data is valid JSON
+                    try:
+                        json.loads(face_data_json)
+                        new_user.face_data = face_data_json
+                        new_user.face_verification_enabled = True
+                        print(f"[INFO] Face data stored successfully for user: {username}")
+                        flash('Face registered successfully!', 'success')
+                    except json.JSONDecodeError as json_err:
+                        print(f"[ERROR] Invalid JSON face data: {str(json_err)}")
+                        flash('Error storing face data. Please try again.', 'error')
+                        return redirect(url_for('auth.register'))
             except Exception as e:
                 print(f"[ERROR] Face registration failed: {str(e)}")
-                flash('Error processing face data. Face registration skipped.', 'warning')
+                flash('Error processing face data. Please try again.', 'error')
+                return redirect(url_for('auth.register'))
         
         db.session.add(new_user)
         try:

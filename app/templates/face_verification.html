@@ -120,7 +120,10 @@
         <h2>Face Verification Required</h2>
         <p>High security level detected - please verify your face to continue</p>
         <div id="message" class="message"></div>
-        <video id="verification-video" autoplay width="400" height="300"></video>
+        <div style="position: relative; width: 400px; margin: 0 auto;">
+            <video id="verification-video" autoplay width="400" height="300"></video>
+            <canvas id="face-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+        </div>
         <div class="verification-buttons">
             <button id="verify-btn">Verify Face</button>
             <button id="cancel-btn">Cancel</button>
@@ -301,18 +304,33 @@
                         showMessage('Verifying face...', 'info');
                         debugLog('Starting face verification process');
                         
-                        // Check if a face is visible
+                        // Check if a face is visible with more sensitive settings
                         const detections = await faceapi.detectSingleFace(video, 
-                            new faceapi.TinyFaceDetectorOptions());
+                            new faceapi.TinyFaceDetectorOptions({
+                                inputSize: 320,    // Smaller input size increases detection rate
+                                scoreThreshold: 0.4 // Lower threshold makes detection more sensitive
+                            }));
                             
                         if (!detections) {
                             debugLog('No face detected in the current frame');
-                            showMessage('No face detected. Please position your face clearly in the frame.', 'error');
+                            showMessage('No face detected. Please position your face clearly in the frame and ensure good lighting.', 'error');
                             return;
                         }
                         
-                        debugLog(`Face detected at position: ${JSON.stringify(detections.box)}`);
+                        debugLog(`Face detected at position: ${JSON.stringify(detections.box)}, score: ${detections.score}`);
                         showMessage('Face detected! Processing verification...', 'info');
+                        
+                        // Visualize the detected face with a box
+                        const displaySize = { width: video.width, height: video.height };
+                        const overlayCanvas = document.getElementById('face-overlay');
+                        if (overlayCanvas) {
+                            const ctx = overlayCanvas.getContext('2d');
+                            overlayCanvas.width = video.videoWidth;
+                            overlayCanvas.height = video.videoHeight;
+                            ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+                            const resizedDetection = faceapi.resizeResults(detections, displaySize);
+                            faceapi.draw.drawDetections(overlayCanvas, [resizedDetection]);
+                        }
                         
                         // Capture image
                         const canvas = document.createElement('canvas');
