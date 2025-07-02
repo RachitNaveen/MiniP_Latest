@@ -118,8 +118,10 @@
             {% endif %}
         {% endwith %}
 
-        <form id="registerForm" method="POST" action="{{ url_for('auth.register') }}">
+        <form id="registerForm" method="POST" action="{{ url_for('auth.register') }}" enctype="multipart/form-data">
             {{ form.hidden_tag() }}
+            <!-- Add CSRF token explicitly -->
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
             <div class="form-group">
                 <label for="username">Username</label>
@@ -187,6 +189,12 @@
 
             <button type="submit" id="register-btn" class="btn btn-primary" disabled>Register</button>
             <p class="face-requirement" style="color: #dc3545; margin-top: 5px;">Note: Face registration is required for account creation</p>
+            
+            <!-- Debug information to show the face data is being captured -->
+            <div id="debug-info" style="margin-top: 10px; font-size: 12px; color: #666; display: none;">
+                <p>Face data captured: <span id="face-data-status">No</span></p>
+                <p>Face data size: <span id="face-data-size">0</span> bytes</p>
+            </div>
         </form>
 
         <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
@@ -375,6 +383,12 @@
                     // Store the image data in the hidden input
                     faceDataInput.value = dataURL;
                     
+                    // Show debug info
+                    document.getElementById('debug-info').style.display = 'block';
+                    document.getElementById('face-data-status').textContent = 'Yes';
+                    document.getElementById('face-data-size').textContent = dataURL.length;
+                    console.log('Face data set in form field. Length:', dataURL.length);
+                    
                     // Stop the camera
                     if (stream) {
                         stream.getTracks().forEach(track => track.stop());
@@ -409,6 +423,27 @@
                 captureStatus.className = type;
                 captureStatus.style.display = 'block';
             }
+            
+            // Add form submission check
+            document.getElementById('registerForm').addEventListener('submit', function(e) {
+                const faceData = faceDataInput.value;
+                if (!faceData || faceData.trim() === '') {
+                    e.preventDefault();
+                    alert('Face data is required. Please capture your face before submitting.');
+                    return false;
+                }
+                
+                console.log('Form submitted with face data length:', faceData.length);
+                
+                // Add a hidden debug field to help track what's happening
+                const debugField = document.createElement('input');
+                debugField.type = 'hidden';
+                debugField.name = 'debug_info';
+                debugField.value = 'Face data size: ' + faceData.length + ' bytes';
+                this.appendChild(debugField);
+                
+                return true;
+            });
         });
     </script>
 </body>

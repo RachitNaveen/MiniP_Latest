@@ -190,13 +190,37 @@ def verify_user_face(user, submitted_image_array):
 @auth_blueprint.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
+    
+    # Debug information for form submission
+    if request.method == 'POST':
+        print(f"[DEBUG] Register form submitted. Form data keys: {list(request.form.keys())}")
+        print(f"[DEBUG] Face data present in form: {'face_data' in request.form}")
+        if 'face_data' in request.form:
+            face_data_length = len(request.form['face_data'])
+            print(f"[DEBUG] Face data length: {face_data_length}")
+            print(f"[DEBUG] Face data starts with: {request.form['face_data'][:50]}...")
+        
+        # Check for file uploads or unusual form encoding
+        if request.files:
+            print(f"[DEBUG] Files in request: {list(request.files.keys())}")
+    
     if form.validate_on_submit():  # This will validate the CAPTCHA automatically
+        print("[DEBUG] Form validation passed")
         username = form.username.data
         password = form.password.data
         face_data = form.face_data.data if hasattr(form, 'face_data') else None
-
+        
+        print(f"[DEBUG] Username: {username}")
+        print(f"[DEBUG] Password set: {bool(password)}")
+        print(f"[DEBUG] Face data exists in form: {bool(face_data)}")
+        print(f"[DEBUG] Form has face_data attribute: {hasattr(form, 'face_data')}")
+        
+        if face_data:
+            print(f"[DEBUG] Face data length: {len(face_data)}")
+        
         # Validate that face data is provided (required)
         if not face_data or not face_data.strip():
+            print("[ERROR] Face data missing or empty")
             flash('Face registration is required. Please capture your face image.', 'error')
             return redirect(url_for('auth.register'))
 
@@ -284,12 +308,23 @@ def register():
         
         db.session.add(new_user)
         try:
+            # Print debug information before commit
+            print(f"[DEBUG] About to commit new user: {username}")
+            print(f"[DEBUG] Face data exists: {new_user.face_data is not None}")
+            print(f"[DEBUG] Face verification enabled: {new_user.face_verification_enabled}")
+            print(f"[DEBUG] Face data length: {len(new_user.face_data) if new_user.face_data else 'None'}")
+            
             db.session.commit()
+            print(f"[DEBUG] User committed successfully. User ID: {new_user.id}")
             flash('Account created! Please log in.', 'success')
             return redirect(url_for('auth.login'))
         except Exception as e:
             db.session.rollback()
             flash(f'Error creating account: {str(e)}', 'danger')
+            # Print the full traceback for better debugging
+            import traceback
+            print(f"[ERROR] Registration error: {str(e)}")
+            print(traceback.format_exc())
             return redirect(url_for('auth.register'))
 
     return render_template('register.html', form=form)
