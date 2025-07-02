@@ -491,6 +491,57 @@ def get_ml_risk_details(username):
             'ml_assessment': False
         }
 
+def increment_failed_attempts(user):
+    """
+    Increment the number of failed login attempts for a user
+    
+    Args:
+        user (User): The user object
+        
+    Returns:
+        int: The updated number of failed attempts
+    """
+    from app import db
+    
+    if not hasattr(user, 'face_verification_failed_attempts'):
+        user.face_verification_failed_attempts = 0
+        
+    user.face_verification_failed_attempts += 1
+    
+    # If too many failed attempts, lock the account for some time
+    if user.face_verification_failed_attempts >= 3:
+        user.face_verification_locked_until = datetime.utcnow() + timedelta(minutes=15)
+    
+    db.session.commit()
+    return user.face_verification_failed_attempts
+
+def reset_failed_attempts(user):
+    """
+    Reset the number of failed login attempts for a user
+    
+    Args:
+        user (User): The user object
+    """
+    from app import db
+    
+    user.face_verification_failed_attempts = 0
+    user.face_verification_locked_until = None
+    db.session.commit()
+
+def get_security_level(user=None, request_info=None):
+    """
+    Always returns high security level to enforce username, password and facial verification
+    
+    Args:
+        user (User): The user object (optional, not used)
+        request_info (dict): Information about the login request (optional, not used)
+        
+    Returns:
+        int: The security level (always HIGH)
+    """
+    # Always return high security level
+    return SECURITY_LEVEL_HIGH
+
 def main():
     """Main function to train and test the ML security model"""
     import argparse
