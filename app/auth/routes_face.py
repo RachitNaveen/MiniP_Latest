@@ -16,7 +16,7 @@ Usage:
 
 from flask import Blueprint, jsonify, request, session, render_template, redirect, url_for, flash, current_app
 from flask_login import current_user, login_required, login_user
-from app.models.models import Message, User
+from app.models.models import Message, User, FaceVerificationLog
 from app.auth.auth import verify_user_face
 from app import db, socketio
 import logging
@@ -29,6 +29,11 @@ import os
 import uuid
 from datetime import datetime
 from app.static.face_api_models import FaceAPI
+
+# Ensure logs directory exists
+import os
+if not os.path.exists('logs'):
+    os.makedirs('logs', exist_ok=True)
 
 # Set up logging to a file
 logging.basicConfig(
@@ -237,64 +242,256 @@ def disable_face_verification():
         db.session.rollback()
         return jsonify({'success': False, 'message': f'Error: {str(e)}'})
 
+# --- Helper functions ---
+
+def validate_face_verification_session(session_data):
+    """
+    Validates that the face verification session data is consistent and complete.
+    Returns a tuple of (is_valid, error_message, user)
+    """
+    # Check required session data
+    temp_user_id = session_data.get('temp_user_id')
+    username = session_data.get('username')
+    
+    if not temp_user_id:
+        return False, "Missing user ID in session", None
+        
+    if not username:
+        return False, "Missing username in session", None
+    
+    # Get the user by ID
+    user = User.query.get(temp_user_id)
+    
+    if not user:
+        return False, f"User ID {temp_user_id} not found", None
+    
+    # Verify username matches the user ID
+    if user.username != username:
+        return False, f"Session username '{username}' does not match user ID {temp_user_id} (username: {user.username})", None
+    
+    return True, None, user
+
 # --- Routes ---
 
 @face_blueprint.route('/face_verification', methods=['GET', 'POST'])
 def face_verification():
     """Handle face verification during high security login"""
-    print("[DEBUG] Face verification page requested")
+    print("[DEBUG] Face verification page requested via face_blueprint")
     
     # Check if already logged in
     if current_user.is_authenticated:
         return redirect(url_for('main.chat'))
     
-    # Get session data
-    username = session.get('username') 
-    risk_details = session.get('risk_details')
-    next_page = session.get('next_page')
+    # Validate the face verification session
+    is_valid, error_message, user = validate_face_verification_session(session)
     
-    print(f"[DEBUG] Face verification page - username: {username}")
-    
-    if not username or not risk_details:
-        flash('Session expired. Please log in again.', 'danger')
+    if not is_valid:
+        print(f"[ERROR] Face verification session validation failed: {error_message}")
+        flash(f'Authentication error: {error_message}. Please log in again.', 'danger')
         return redirect(url_for('auth.login'))
         
-    # Get user
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        flash('User not found. Please log in again.', 'danger')
-        return redirect(url_for('auth.login'))
+    # Get remaining session data
+    username = session.get('username')  # We know this exists and matches user.username from validation
+    risk_details = session.get('risk_details')
+    next_page = session.get('next_page')
+    high_security_auth = session.get('high_security_auth', False)
+    face_verification_required = session.get('face_verification_required', False)
+    
+    print(f"[DEBUG] Face verification page - session data: high_security_auth={high_security_auth}, face_verification_required={face_verification_required}")
+    print(f"[DEBUG] Face verification page - username: {username}, user_id: {user.id}")
+    print(f"[DEBUG] Face verification page - risk_details: {risk_details}")
+    
+    # If no risk details, create default high security risk details
+    if not risk_details:
+        print("[DEBUG] Creating default high security risk details")
+        risk_details = {
+            'security_level': 'High',
+            'security_level_num': 2, # HIGH level
+            'risk_score': 0.85,
+            'risk_factors': {
+                'login_time': {'score': 0.7, 'description': 'Login at unusual time'},
+                'ip_address': {'score': 0.8, 'description': 'Connection from unusual location'},
+                'login_frequency': {'score': 0.9, 'description': 'Multiple login attempts detected'}
+            },
+            'required_factors': ['Password', 'CAPTCHA', 'Face Verification']
+        }
+        session['risk_details'] = risk_details
     
     if request.method == 'POST':
+        # Re-validate session to ensure it's still valid
+        is_valid, error_message, user = validate_face_verification_session(session)
+        
+        if not is_valid:
+            print(f"[ERROR] Face verification POST validation failed: {error_message}")
+            return jsonify({
+                'success': False, 
+                'message': f'Authentication error: {error_message}. Please log in again.',
+                'redirect_url': url_for('auth.login')
+            }), 401
+            
         data = request.get_json()
         face_image = data.get('faceImage')
         
         if not face_image:
             return jsonify({'success': False, 'message': 'Face image required'}), 400
         
-        # Verify the face
-        if verify_user_face(user, face_image):
-            # Log in and clear session data
-            login_user(user)
-            session.pop('username', None) 
-            session.pop('risk_details', None)
-            session.pop('next_page', None)
+        print(f"[DEBUG] Processing face verification for: {username}")
+        print(f"[DEBUG] Face image data length: {len(face_image) if face_image else 'None'}")
+        
+        # Process the face image
+        try:
+            import base64
+            import numpy as np
+            import cv2
+            import json
+            import face_recognition
             
-            return jsonify({
-                'success': True,
-                'message': 'Face verification successful',
-                'redirect_url': next_page or url_for('main.chat')
-            })
-        else:
-            # Calculate match percentage (for demo/testing)
-            match_percentage = 65.0  # Example value
+            # Extract the base64 data
+            if ',' in face_image:
+                face_image = face_image.split(',')[1]
+                
+            # Decode the image
+            img_data = base64.b64decode(face_image)
+            nparr = np.frombuffer(img_data, np.uint8)
+            img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
             
+            if img_rgb is None:
+                print(f"[ERROR] Failed to decode image")
+                return jsonify({'success': False, 'message': 'Failed to decode image'}), 400
+                
+            # Get face encodings from the image
+            face_locations = face_recognition.face_locations(img_rgb)
+            
+            if not face_locations:
+                print(f"[ERROR] No face detected in the image")
+                return jsonify({
+                    'success': False, 
+                    'message': 'No face detected in the image. Please try again.',
+                    'match_percentage': 0.0,
+                    'risk_details': risk_details
+                }), 400
+                
+            face_encoding = face_recognition.face_encodings(img_rgb, face_locations)[0]
+            
+            # Get the stored face data
+            if not user.face_data or not user.face_verification_enabled:
+                print(f"[ERROR] User {username} does not have face verification enabled")
+                return jsonify({
+                    'success': False, 
+                    'message': 'Face verification is not set up for this user.',
+                    'match_percentage': 0.0,
+                    'risk_details': risk_details
+                }), 400
+                
+            stored_face_data = json.loads(user.face_data)
+            stored_encoding = np.array(stored_face_data['encoding'])
+            
+            # Compare the face encodings
+            face_distance = face_recognition.face_distance([stored_encoding], face_encoding)[0]
+            match_percentage = (1 - face_distance) * 100
+            
+            # Face verification threshold (0.6 distance = 40% match)
+            if face_distance < 0.6:  # Lower distance is better match
+                # Log successful face verification
+                print(f"[DEBUG] Face verification SUCCESSFUL for: {username} with distance {face_distance}")
+                
+                # Mark face verification as completed
+                session['face_verification_required'] = False
+                
+                # Double-check that we're logging in the correct user from session
+                temp_user_id = session.get('temp_user_id')
+                session_username = session.get('username')
+                
+                if not temp_user_id or not session_username or user.id != temp_user_id or user.username != session_username:
+                    print(f"[ERROR] User mismatch during login: session_user_id={temp_user_id}, user.id={user.id}, session_username={session_username}, user.username={user.username}")
+                    return jsonify({
+                        'success': False,
+                        'message': 'Authentication error: user mismatch. Please log in again.',
+                        'redirect_url': url_for('auth.login')
+                    }), 401
+                
+                # Log in the correct user
+                print(f"[DEBUG] Logging in user: id={user.id}, username={user.username}")
+                login_user(user)
+                
+                # Update user's last login time
+                user.last_login = datetime.utcnow()
+                db.session.commit()
+                
+                # Log the successful verification
+                try:
+                    log_entry = FaceVerificationLog(
+                        user_id=user.id,
+                        success=True,
+                        match_percentage=match_percentage,
+                        timestamp=datetime.utcnow()
+                    )
+                    db.session.add(log_entry)
+                    db.session.commit()
+                    print(f"[INFO] Face verification log entry created for user {user.username}")
+                except Exception as e:
+                    print(f"[ERROR] Failed to log face verification: {str(e)}")
+                
+                # Clear session data related to verification
+                session.pop('username', None) 
+                session.pop('risk_details', None)
+                session.pop('next_page', None)
+                session.pop('face_verification_required', None)
+                session.pop('temp_user_id', None)
+                
+                # Keep a record that face verification was successful
+                session['face_verified'] = True
+                session['face_verified_time'] = datetime.utcnow().timestamp()
+                
+                print(f"[DEBUG] Face verification successful. Session updated: face_verified=True")
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Face verification successful',
+                    'redirect_url': next_page or url_for('main.chat')
+                })
+            else:
+                print(f"[DEBUG] Face verification FAILED for: {username} with distance {face_distance}")
+                
+                return jsonify({
+                    'success': False,
+                    'message': f'Face verification failed. Not enough similarity ({match_percentage:.1f}% match).',
+                    'match_percentage': match_percentage,
+                    'risk_details': risk_details
+                }), 401
+                
+        except Exception as e:
+            print(f"[ERROR] Exception during face verification: {str(e)}")
             return jsonify({
                 'success': False,
-                'message': 'Face verification failed',
-                'match_percentage': match_percentage, 
+                'message': f'Error during face verification: {str(e)}',
+                'match_percentage': 0.0,
                 'risk_details': risk_details
-            }), 401
+            }), 500
     
     print(f"[DEBUG] Rendering face verification page for {username}")
     return render_template('face_verification.html', risk_details=risk_details, username=username)
+
+@face_blueprint.route('/debug_user_session', methods=['GET'])
+@login_required
+def debug_user_session():
+    """Debug endpoint to verify the current user session"""
+    try:
+        return jsonify({
+            'success': True,
+            'user': {
+                'id': current_user.id,
+                'username': current_user.username
+            },
+            'session_data': {
+                'temp_user_id': session.get('temp_user_id'),
+                'username': session.get('username'),
+                'face_verified': session.get('face_verified'),
+                'security_level': session.get('security_level'),
+            }
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500

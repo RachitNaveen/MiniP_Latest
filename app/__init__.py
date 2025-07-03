@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_socketio import SocketIO
@@ -6,6 +6,16 @@ from flask_wtf.csrf import CSRFProtect
 from config import Config
 from flask_migrate import Migrate
 import os
+
+# Custom Flask class that modifies the session cookie name based on URL parameter
+class CustomFlask(Flask):
+    def process_response(self, response):
+        # Get the user_id parameter from the URL
+        user_id = request.args.get('user_id')
+        if user_id:
+            # Set a custom session cookie name based on the user_id
+            self.config['SESSION_COOKIE_NAME'] = f'session_{user_id}'
+        return super().process_response(response)
 
 # Initialize Flask extensions
 db = SQLAlchemy()
@@ -15,11 +25,12 @@ login_manager = LoginManager()
 csrf = CSRFProtect()
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    app = CustomFlask(__name__)
     app.config.from_object(config_class)
     app.config['SECRET_KEY'] = 'your-secret-key'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.db'
     app.config['FACE_VERIFICATION_REQUIRED'] = True
+    app.config['SESSION_COOKIE_NAME'] = 'securechat_session'  # Use a consistent session name
 
     # Initialize extensions with app
     db.init_app(app)

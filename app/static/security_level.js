@@ -26,11 +26,18 @@ function decodeHTMLEntities(text) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Debug function
+    function debugLog(message) {
+        console.log(`[SECURITY-DEBUG] ${message}`);
+    }
+    
+    debugLog('Security level script loaded');
+    
     // Configuration for security levels
     const securityLevels = {
         'low': {
             title: 'LOW Security Level',
-            description: 'Basic security with minimal verification steps.',
+            description: 'Basic security with password verification.',
             factors: 'Password only',
             color: '#E8F5E9',
             borderColor: '#4CAF50'
@@ -156,18 +163,27 @@ document.addEventListener('DOMContentLoaded', function() {
         // Set up event listener for the Apply Level button
         setLevelBtn.addEventListener('click', function() {
             const selectedLevel = securityLevelSelect.value;
-            console.log(`[SECURITY] Setting security level to: ${selectedLevel.toUpperCase()}`);
+            console.log(`[DEBUG-HIGH-SECURITY] Setting security level to: ${selectedLevel.toUpperCase()}`);
             
             localStorage.setItem('selectedSecurityLevel', selectedLevel); // Save to local storage
 
+            // For high security level testing, add extra debugging
+            if (selectedLevel === 'high') {
+                console.log('[DEBUG-HIGH-SECURITY] Setting to HIGH security level');
+                console.log('[DEBUG-HIGH-SECURITY] Ensuring face verification will be required');
+                
+                // Set face verification flag in local storage as well
+                localStorage.setItem('faceVerificationEnabled', 'true');
+            }
+
             // Send the security level to the server
-            fetch('/set_security_level_login', {
+            fetch('/security/set_security_level_login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
-                body: JSON.stringify({ security_level: selectedLevel })
+                body: JSON.stringify({ level: selectedLevel })
             })
             .then(response => response.json())
             .then(data => {                    if (data.success) {
@@ -236,6 +252,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error setting security level:', error);
             });
         });
+        
+        securityLevelSelect.addEventListener('change', function() {
+            const selectedLevel = securityLevelSelect.value;
+            console.log(`[TEST] Security level changed to: ${selectedLevel}`);
+            updateAuthenticationFactors();
+        });
     } else {
         console.log('[SECURITY] Login page security level selector not found');
     }
@@ -255,20 +277,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (hasRiskDetails) {
             console.log('[SECURITY] Risk details found in data attribute');
             
-            // Parse the risk details from the data attribute
-            const riskDetailsJson = riskDataElement.getAttribute('data-risk-details');
-            console.log('[SECURITY] Raw risk details JSON:', riskDetailsJson);
+            // Parse the risk details from window object instead of data attribute
+            const riskDetails = window.RISK_DETAILS || {};
+            console.log('[SECURITY] Risk details from window:', riskDetails);
             
-            if (riskDetailsJson) {
+            if (riskDetails && Object.keys(riskDetails).length > 0) {
                 try {
-                    // First decode any HTML entities in the JSON string
-                    const decodedJson = decodeHTMLEntities(riskDetailsJson);
-                    console.log('[SECURITY] Decoded JSON (first 100 chars):', decodedJson.substring(0, 100));
-                    console.log('[SECURITY] Character codes of first 10 chars:', 
-                        Array.from(decodedJson.substring(0, 10)).map(c => c.charCodeAt(0)));
+                    console.log('[SECURITY] Risk details object found with keys:', Object.keys(riskDetails));
                     
-                    // Try parsing with a more robust method
-                    let riskDetails;
+                    // No need to decode/parse since we're getting it directly as an object
                     try {
                         // Remove any BOM or unexpected characters at the beginning
                         const cleanJson = decodedJson.replace(/^\s*[^\[{]/, '');
@@ -290,5 +307,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     } catch (error) {
         console.error('[SECURITY] Error handling risk details:', error);
+    }
+    
+    function updateAuthenticationFactors() {
+        const selectedLevel = securityLevelSelect.value;
+        const captchaSection = document.querySelector('.form-group:nth-child(3)');
+        const faceVerificationInfo = document.querySelector('.security-selection div:nth-child(4)');
+
+        if (selectedLevel === 'low') {
+            captchaSection.style.display = 'none';
+            faceVerificationInfo.style.display = 'none';
+        } else if (selectedLevel === 'medium') {
+            captchaSection.style.display = 'block';
+            faceVerificationInfo.style.display = 'none';
+        } else if (selectedLevel === 'high') {
+            captchaSection.style.display = 'block';
+            faceVerificationInfo.style.display = 'block';
+        }
+    }
+
+    securityLevelSelect.addEventListener('change', updateAuthenticationFactors);
+    updateAuthenticationFactors();
+    
+    // Check if we have risk details from the backend
+    var riskData = document.getElementById('risk-data');
+    if (!riskData) {
+        debugLog('No risk-data element found');
+        return;
+    }
+    
+    var hasRiskDetails = riskData.getAttribute('data-has-risk-details') === 'true';
+    debugLog('Has risk details: ' + hasRiskDetails);
+    
+    // Try to parse risk details from window.RISK_DETAILS
+    if (window.RISK_DETAILS) {
+        try {
+            debugLog('Found risk details on window object');
+            
+            // Initialize manually if we have RISK_DETAILS
+            if (typeof displaySecurityAssessment === 'function') {
+                debugLog('Calling displaySecurityAssessment function');
+                displaySecurityAssessment(window.RISK_DETAILS);
+            }
+        } catch (e) {
+            debugLog('Error processing risk details: ' + e.message);
+        }
+    } else {
+        debugLog('No risk details available on window object');
     }
 });

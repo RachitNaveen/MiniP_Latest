@@ -48,33 +48,3 @@
 3. For interactive testing with a web browser:
    ```
    python test_run.py
-   ```
-   Then follow the printed instructions.
-
-4. To visualize risk assessments for a specific user:
-   ```
-   python demo_security_ai.py <username>
-   ```
-
-## Next Steps
-
-1. **Monitor System Performance**:
-   - Track how often each security level is triggered
-   - Evaluate if risk factors are weighted appropriately
-
-2. **Fine-tune Risk Factors**:
-   - Adjust weights based on real-world usage patterns
-   - Consider adding additional risk factors like:
-     - Browser anomalies
-     - Geographic distance between login attempts
-     - User behavior patterns
-
-3. **Enhance User Experience**:
-   - Add progressive disclosure of security requirements
-   - Provide more detailed explanations of why increased security is needed
-   - Allow trusted device registration to reduce false positives
-
-4. **Consider Adding Machine Learning**:
-   - Train models on login patterns to better detect anomalies
-   - Implement continuous authentication based on behavior
-   - Add adaptive risk thresholds based on user history

@@ -32,13 +32,14 @@ def profile():
     # Get security level
     from sqlalchemy import desc
     
-    security_level = session.get('security_level', SECURITY_LEVEL_LOW)
-    security_level_name = "Low"
+    security_level = session.get('security_level', SECURITY_LEVEL_HIGH)
+    security_level_name = "High"
     
+    # These conditions remain for backward compatibility but will rarely be used
     if security_level == SECURITY_LEVEL_MEDIUM:
         security_level_name = "Medium"
-    elif security_level == SECURITY_LEVEL_HIGH:
-        security_level_name = "High"
+    elif security_level == SECURITY_LEVEL_LOW:
+        security_level_name = "Low"
     
     # Get face verification logs
     face_logs = current_user.face_logs.order_by(desc("timestamp")).limit(5).all()
@@ -51,118 +52,60 @@ def profile():
 # Login route
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
-    form = LoginForm()
-    next_page = request.args.get('next')
+    # Use auth.login route instead to benefit from security level processing
+    return redirect(url_for('auth.login'))
     
-    if request.method == 'POST':
-        username = form.username.data
-        password = form.password.data
+    # The following code is now handled by auth.login
+    # form = LoginForm()
+    # next_page = request.args.get('next')
+    # 
+    # if request.method == 'POST':
+    #     username = form.username.data
+    #     password = form.password.data
+    # 
+    #     if not username or not password:
+    #         flash('Username and password are required', 'error')
+    #         return redirect(url_for('main.login', next=next_page))
+    # 
+    #     user = User.query.filter_by(username=username).first()
+    # 
+    #     if not user:
+    #         flash('Invalid username or password', 'error')
+    #         return redirect(url_for('main.login', next=next_page))
+    # 
+    #     # Verify password
+    #     if not check_password_hash(user.password, password):
+    #         flash('Invalid username or password', 'error')
+    #         return redirect(url_for('main.login', next=next_page))
+    # 
+    #     # Clear any existing temp session data
+    #     session.pop('temp_user_id', None)
+    #     session.pop('next_page', None)
+    #     
+    #     # Store user ID in session for verification
+    #     session['temp_user_id'] = user.id
+    #     
+    #     # Store next page in session
+    #     if next_page:
+    #         session['next_page'] = next_page
+    #     
+    #     # Check if face verification is required
+    #     if user.face_data and current_app.config.get('FACE_VERIFICATION_REQUIRED', False):
+    #         return redirect(url_for('main.face_verification'))
+    #     
+    #     # Otherwise log in directly
+    #     login_user(user)
+    #     return redirect(next_page or url_for('main.chat'))
+    # 
+    # return render_template('login.html', form=form, next=next_page)
 
-        if not username or not password:
-            flash('Username and password are required', 'error')
-            return redirect(url_for('main.login', next=next_page))
-
-        user = User.query.filter_by(username=username).first()
-
-        if not user:
-            flash('Invalid username or password', 'error')
-            return redirect(url_for('main.login', next=next_page))
-
-        # Verify password
-        if not check_password_hash(user.password, password):
-            flash('Invalid username or password', 'error')
-            return redirect(url_for('main.login', next=next_page))
-
-        # Clear any existing temp session data
-        session.pop('temp_user_id', None)
-        session.pop('next_page', None)
-        
-        # Store user ID in session for verification
-        session['temp_user_id'] = user.id
-        
-        # Store next page in session
-        if next_page:
-            session['next_page'] = next_page
-        
-        # Check if face verification is required
-        if user.face_data and current_app.config.get('FACE_VERIFICATION_REQUIRED', False):
-            return redirect(url_for('main.face_verification'))
-        
-        # Otherwise log in directly
-        login_user(user)
-        return redirect(next_page or url_for('main.chat'))
-
-    return render_template('login.html', form=form, next=next_page)
-
-# Register route
+# Register route - Redirecting to auth.register to avoid duplication
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
+    """Redirect to the auth blueprint's registration route"""
+    from app.auth.forms import RegistrationForm
     form = RegistrationForm()
-
-    if form.validate_on_submit():
-        username = form.username.data
-        password = form.password.data
-        confirm_password = form.confirm_password.data
-        face_data = form.face_data.data
-        
-        # Validate input
-        if not username or not password:
-            flash('Username and password are required')
-            return render_template('register.html', form=form)
-            
-        if password != confirm_password:
-            flash('Passwords do not match')
-            return render_template('register.html', form=form)
-            
-        # Check if username exists
-        existing_user = User.query.filter_by(username=username).first()
-        if existing_user:
-            flash('Username already exists')
-            return render_template('register.html', form=form)
-        
-        # Create new user
-        hashed_password = generate_password_hash(password)
-        new_user = User(username=username, password=hashed_password)
-        
-        # Save face data if provided
-        if face_data:
-            try:
-                # Remove the data URL prefix to get the base64 data
-                face_data = face_data.split(',')[1] if ',' in face_data else face_data
-                
-                # Decode the base64 data
-                img_data = base64.b64decode(face_data)
-                
-                # Convert to numpy array and decode image
-                nparr = np.frombuffer(img_data, np.uint8)
-                img_rgb = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-                
-                # Detect and encode face
-                face_locations = face_recognition.face_locations(img_rgb)
-                if not face_locations:
-                    flash('No face detected in the image. Please try again with a clear face image.')
-                    return render_template('register.html', form=form)
-                    
-                # Get the face encoding
-                face_encoding = face_recognition.face_encodings(img_rgb, face_locations)[0]
-                
-                # Convert encoding to string and store
-                new_user.face_data = json.dumps({
-                    'encoding': face_encoding.tolist(),
-                    'timestamp': datetime.utcnow().isoformat()
-                })
-                
-            except Exception as e:
-                flash(f'Error processing face image: {str(e)}')
-                return render_template('register.html', form=form)
-        
-        db.session.add(new_user)
-        db.session.commit()
-        
-        flash('Registration successful! Please login.')
-        return redirect(url_for('main.login'))
-        
-    return render_template('register.html', form=form)
+    return redirect(url_for('auth.register'))
 
 # Face verification route
 @bp.route('/face_verification', methods=['GET', 'POST'])
@@ -315,6 +258,27 @@ def verify_face():
 @bp.route('/chat', methods=['GET', 'POST'])
 @login_required
 def chat():
+    # Check if high security mode is active and face verification is required but not done
+    manual_security_level = session.get('manual_security_level')
+    face_verification_required = session.get('face_verification_required', False)
+    
+    print(f"[DEBUG] Chat route - security level: {manual_security_level}, face_verification_required: {face_verification_required}")
+    
+    if manual_security_level == SECURITY_LEVEL_HIGH and face_verification_required:
+        print("[SECURITY] High security mode active but face verification not done. Redirecting...")
+        flash('High security mode requires face verification. Please complete verification first.', 'warning')
+        
+        # Store user in session for face verification
+        session['username'] = current_user.username
+        session['temp_user_id'] = current_user.id
+        session['next_page'] = url_for('main.chat')
+        
+        # Force logout since verification was bypassed
+        logout_user()
+        
+        # Redirect to face verification
+        return redirect(url_for('face.face_verification'))
+    
     form = MessageForm()
     users = User.query.filter(User.id != current_user.id).all()
     messages = Message.query.filter(

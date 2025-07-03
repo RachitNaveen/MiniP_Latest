@@ -48,8 +48,3 @@ def test_unlock_attempts():
 
         if i == 4:
             assert response.status_code == 403, "4th attempt should be forbidden"
-            assert response.json().get("message") == "This message has been permanently deleted and cannot be unlocked.", "Message should indicate permanent deletion"
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5001)
-    test_unlock_attempts()

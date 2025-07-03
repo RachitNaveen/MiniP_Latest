@@ -742,4 +742,149 @@ function addIntruderAlertToUI(data) {
     messageContainer.appendChild(alertDiv);
     messageContainer.scrollTop = messageContainer.scrollHeight;
 }
+
+// Micro-Interactions & Animations
+function animateElement(element, animation) {
+    element.style.animation = animation;
+    element.addEventListener('animationend', () => {
+        element.style.animation = '';
+    });
+}
+
+// Real-Time Visual Feedback
+let typingTimeout;
+function showTypingIndicator(username) {
+    const indicator = document.createElement('div');
+    indicator.className = 'typing-indicator';
+    indicator.textContent = `${username} is typing...`;
+    document.getElementById('messageContainer').appendChild(indicator);
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+        indicator.remove();
+    }, 3000);
+}
+
+// Live Status Badges
+function updateUserStatus(userId, status) {
+    const userElement = document.querySelector(`[data-user-id="${userId}"]`);
+    if (userElement) {
+        const badge = userElement.querySelector('.status-badge');
+        if (badge) {
+            badge.className = `status-badge ${status}`;
+        }
+    }
+}
+
+// Risk Level Animation
+function animateRiskLevel(riskLevel) {
+    const dot = document.getElementById('riskIndicatorDot');
+    const text = document.getElementById('riskIndicatorText');
+    dot.className = `risk-indicator-dot risk-${riskLevel}`;
+    text.textContent = `Risk Level by AI: ${riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1)}`;
+    animateElement(dot, 'fadeIn 0.3s ease-in-out');
+}
+
+// Immersive UI Enhancements
+// Dark Mode Toggle
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+}
+
+// Customizable Chat Backgrounds
+function setChatBackground(imageUrl) {
+    document.querySelector('.chat-messages').style.setProperty('--chat-bg-image', `url(${imageUrl})`);
+}
+
+// Sound Effects
+let soundEnabled = false;
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    document.body.classList.toggle('sound-enabled');
+    localStorage.setItem('soundEnabled', soundEnabled);
+}
+
+function playSound(sound) {
+    if (soundEnabled) {
+        const audio = new Audio(sound);
+        audio.play();
+    }
+}
+
+// Enhanced Usability
+// Drag & Drop File Upload
+function setupDragAndDrop() {
+    const dropZone = document.querySelector('.drag-drop-zone');
+    if (dropZone) {
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                document.getElementById('fileInput').files = e.dataTransfer.files;
+                document.getElementById('fileNameDisplay').textContent = file.name;
+            }
+        });
+    }
+}
+
+// Auto-Scroll
+function scrollToBottom() {
+    const messageContainer = document.getElementById('messageContainer');
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+}
+
+// Message Reactions
+function addReaction(messageId, reaction) {
+    const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+    if (messageElement) {
+        const reactionsContainer = messageElement.querySelector('.message-reactions') || document.createElement('div');
+        reactionsContainer.className = 'message-reactions';
+        const reactionButton = document.createElement('button');
+        reactionButton.className = 'reaction-button';
+        reactionButton.textContent = reaction;
+        reactionsContainer.appendChild(reactionButton);
+        messageElement.appendChild(reactionsContainer);
+    }
+}
+
+// Initialize new features
+document.addEventListener('DOMContentLoaded', function () {
+    // Dark Mode Toggle
+    const darkModeToggle = document.createElement('button');
+    darkModeToggle.className = 'dark-mode-toggle';
+    darkModeToggle.textContent = 'Toggle Dark Mode';
+    darkModeToggle.addEventListener('click', toggleDarkMode);
+    document.querySelector('.chat-header').appendChild(darkModeToggle);
+
+    // Sound Toggle
+    const soundToggle = document.createElement('button');
+    soundToggle.className = 'sound-toggle';
+    soundToggle.textContent = 'Toggle Sound';
+    soundToggle.addEventListener('click', toggleSound);
+    document.querySelector('.chat-header').appendChild(soundToggle);
+
+    // Setup Drag & Drop
+    setupDragAndDrop();
+
+    // Auto-Scroll
+    const messageContainer = document.getElementById('messageContainer');
+    messageContainer.classList.add('auto-scroll');
+
+    // Load saved preferences
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+    }
+    if (localStorage.getItem('soundEnabled') === 'true') {
+        document.body.classList.add('sound-enabled');
+        soundEnabled = true;
+    }
+});
 });

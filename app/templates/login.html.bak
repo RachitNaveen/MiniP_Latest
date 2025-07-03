@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - SecureChatApp</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    .container {
+      max-width: 400px; margin: 50px auto; padding: 20px; background-color: #f9f9f9; 
+      border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+    .form-group input {
+      width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;
+    }
+    /* Ensure password field is always visible */
+    #password, #username {
+      display: block !important;
+    }
+    /* Ensure password field container is always visible */
+    #password-container, .form-group {
+      display: block !important;
+    }
+    #risk-panel {
+      background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; 
+      padding: 15px; margin-top: 20px; margin-bottom: 20px; display: none;
+    }
+    .risk-score { font-size: 18px; margin-bottom: 15px; }
+    .btn {
+      width: 100%; padding: 10px; background-color: #4CAF50; color: white; 
+      border: none; border-radius: 4px; cursor: pointer; font-size: 16px;
+    }
+    .btn:hover { background-color: #45a049; }
+    .security-selection { margin-top: 20px; }
+    .error {
+      color: #dc3545; margin: 10px 0; padding: 10px; border-radius: 4px; background-color: #f8d7da;
+    }
+  </style>
+  <script defer src="{{ url_for('static', filename='face-api.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='face_auth.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='security_level.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='login_security.js') }}"></script>
+</head>
+<body>
+  <div class="container auth-container">
+    <h1>Login to SecureChat</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <form id="loginForm" method="POST" action="{{ url_for('auth.login') }}">
+      <!-- Always include a CSRF token -->
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      
+      <!-- Always visible username field -->
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" class="form-control" id="username" name="username" autocomplete="username" required>
+        {% if form and form.username and form.username.errors %}
+          <div class="error">{{ form.username.errors[0] }}</div>
+        {% endif %}
+      </div>
+      
+      <!-- Always visible password field - with forced CSS -->
+      <div class="form-group" id="password-container" style="display: block !important; visibility: visible !important;">
+        <label for="password" style="display: block !important;">Password</label>
+        <input type="password" class="form-control" id="password" name="password" autocomplete="current-password" required
+               style="display: block !important; visibility: visible !important;">
+        {% if form and form.password and form.password.errors %}
+          <div class="error">{{ form.password.errors[0] }}</div>
+        {% endif %}
+      </div>
+      
+      <!-- Conditionally visible CAPTCHA field - without Jinja in style attribute -->
+      <div id="captchaSection" class="form-group">
+        {% if form and form.recaptcha %}
+          {{ form.recaptcha.label }}
+          {{ form.recaptcha }}
+          {% if form.recaptcha.errors %}
+            <div class="error">{{ form.recaptcha.errors[0] }}</div>
+          {% endif %}
+        {% endif %}
+      </div>
+      
+      <button type="submit" class="btn">Login</button>
+    </form>
+    <p class="auth-toggle">
+      Don't have an account? <a href="{{ url_for('main.register') }}">Register</a>
+    </p>
+  </div>
+
+  <div class="container security-selection">
+    <h2>Security Level Control</h2>
+    <div class="form-group">
+      <label for="security-level">Select Security Level:</label>
+      <select id="security-level" class="form-control">
+        <option value="ai" selected>AI-Based Risk Assessment</option>
+        <option value="low">Low (Password only)</option>
+        <option value="medium">Medium (Password + CAPTCHA)</option>
+        <option value="high">High (Password + CAPTCHA + Face Verification)</option>
+      </select>
+    </div>
+    <button id="set-level-btn" class="btn">Apply Level</button>
+    <div id="security-info" style="margin-top: 15px; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
+      <p style="margin: 0;">Current Mode: <strong>AI-Based</strong></p>
+      <p style="margin: 5px 0 0 0;">Required factors based on AI risk assessment</p>
+    </div>
+    <div style="margin-top: 15px; padding: 10px; background-color: #e8f4fd; border-left: 4px solid #3498db; border-radius: 4px;">
+      <h4 style="margin-top: 0;">Face Verification</h4>
+      <p>For high-security sessions, face verification provides additional protection.</p>
+      <p>Set up face verification during <a href="{{ url_for('auth.register') }}">registration</a> for face-locked messages.</p>
+      <p>Test user: <strong>testface</strong> (password: Face123!)</p>
+    </div>
+  </div>
+
+  <div id="risk-panel" class="container">
+    <h2>Risk Assessment</h2>
+    <div id="risk-score" class="risk-score"></div>
+    <div id="risk-factors"></div>
+    <div id="required-factors" style="margin-top: 15px;"></div>
+  </div>
+
+  <div id="risk-data"
+       data-has-risk-details="{% if session.get('risk_details') %}true{% else %}false{% endif %}"
+       style="display: none;">
+  </div>
+
+  <!-- Safely convert risk_details to a string, then parse into an object -->
+  <script>
+  (function() {
+    // Create a default empty risk details object
+    window.RISK_DETAILS = {
+      security_level: 'Low',
+      security_level_num: 0,
+      risk_score: 0.1,
+      required_factors: ['Password'],
+      risk_factors: {
+        login_time: {score: 0.1, description: 'Normal login time'},
+        ip_address: {score: 0.1, description: 'Known IP address'},
+        login_frequency: {score: 0.1, description: 'Normal login frequency'}
+      }
+    };
+    
+    console.log('Default risk details set:', window.RISK_DETAILS);
+  })();
+  </script>
+
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+  var riskPanel = document.getElementById('risk-panel');
+  var riskDetails = window.RISK_DETAILS;
+  
+  if (riskDetails && Object.keys(riskDetails).length > 0) {
+    riskPanel.style.display = 'block';
+    document.getElementById('risk-score').innerText = 'Risk Score: ' + riskDetails.risk_score;
+  }
+
+  var setLevelBtn = document.getElementById('set-level-btn');
+  setLevelBtn.addEventListener('click', function() {
+    var selectedLevel = document.getElementById('security-level').value;
+    fetch('/security/set_security_level_login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify({ level: selectedLevel })
+    })
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(data) {
+      if (data.success) {
+        document.getElementById('security-info').innerHTML =
+          '<p>Current Mode: <strong>' + data.levelName + '</strong></p>' +
+          '<p>Required factors: <strong>' + data.requiredFactors + '</strong></p>';
+          
+        // Add debug output and don't reload page
+        console.log('[DEBUG-HIGH-SECURITY] Security level set to: ' + data.levelName);
+        console.log('[DEBUG-HIGH-SECURITY] Required factors: ' + data.requiredFactors);
+      }
+    });
+  });
+});
+</script>
+
+<!-- Single unified script for form management -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('[FORM-DEBUG] DOM content loaded for login form');
+  
+  // Get form elements
+  const loginForm = document.getElementById('loginForm');
+  const usernameField = document.getElementById('username');
+  const passwordField = document.getElementById('password');
+  const captchaSection = document.getElementById('captchaSection');
+  const securityLevelSelect = document.getElementById('security-level');
+  const faceVerificationInfo = document.querySelector('.security-selection div:nth-child(4)');
+  
+  // Debug what elements we found
+  console.log('[FORM-DEBUG] Login form found:', !!loginForm);
+  console.log('[FORM-DEBUG] Username field found:', !!usernameField);
+  console.log('[FORM-DEBUG] Password field found:', !!passwordField);
+  console.log('[FORM-DEBUG] CAPTCHA section found:', !!captchaSection);
+  console.log('[FORM-DEBUG] Security level select found:', !!securityLevelSelect);
+  
+  // Fix form configuration
+  if (loginForm) {
+    // Make sure form method is POST
+    loginForm.setAttribute('method', 'POST');
+    
+    // Ensure form has the correct action
+    if (!loginForm.getAttribute('action')) {
+      loginForm.setAttribute('action', '/auth/login');
+      console.log('[FORM-DEBUG] Set form action to /auth/login');
+    }
+  }
+  
+  // Function to update the form UI based on security level
+  function updateFormForSecurityLevel(level) {
+    console.log(`[FORM-DEBUG] Updating form for security level: ${level}`);
+    
+    // ALWAYS ensure username field is visible and enabled
+    if (usernameField) {
+      usernameField.style.display = '';
+      usernameField.disabled = false;
+      usernameField.readOnly = false;
+      usernameField.tabIndex = 0;
+      usernameField.required = true;
+      usernameField.parentElement.style.display = '';
+    }
+    
+    // ALWAYS ensure password field is visible and enabled - critical!
+    if (passwordField) {
+      // Use inline styles with !important to override any CSS
+      passwordField.style = "display: block !important;";
+      passwordField.disabled = false;
+      passwordField.readOnly = false;
+      passwordField.tabIndex = 0;
+      passwordField.required = true;
+      
+      // Also fix parent element visibility
+      if (passwordField.parentElement) {
+        passwordField.parentElement.style = "display: block !important;";
+      }
+      
+      console.log('[FORM-DEBUG] Password field enabled and made visible with !important');
+    } else {
+      console.error('[FORM-DEBUG] CRITICAL: Password field not found!');
+    }
+    
+    // Show/hide CAPTCHA based on security level
+    if (captchaSection) {
+      if (level === 'medium' || level === 'high') {
+        captchaSection.style.display = 'block';
+        console.log('[FORM-DEBUG] CAPTCHA section shown for level:', level);
+      } else {
+        captchaSection.style.display = 'none';
+        console.log('[FORM-DEBUG] CAPTCHA section hidden for level:', level);
+      }
+    }
+    
+    // Show/hide face verification info based on security level
+    if (faceVerificationInfo) {
+      if (level === 'high') {
+        faceVerificationInfo.style.display = 'block';
+      } else {
+        faceVerificationInfo.style.display = 'none';
+      }
+    }
+  }
+  
+  // Get current security level from localStorage or default to 'ai'
+  const currentLevel = localStorage.getItem('selectedSecurityLevel') || 'ai';
+  
+  // If security level is specified, set it in the selector
+  if (securityLevelSelect && currentLevel) {
+    securityLevelSelect.value = currentLevel;
+  }
+  
+  // Initialize form for the current security level
+  updateFormForSecurityLevel(currentLevel);
+  
+  // Listen for security level changes
+  if (securityLevelSelect) {
+    securityLevelSelect.addEventListener('change', function() {
+      updateFormForSecurityLevel(this.value);
+    });
+  }
+  
+  // Add form submission validation
+  if (loginForm) {
+    loginForm.addEventListener('submit', function(event) {
+      // Always log submission attempts
+      console.log('[FORM-DEBUG] Form submission attempt');
+      
+      // For all security levels, always validate username and password
+      if (!usernameField || !usernameField.value.trim()) {
+        event.preventDefault();
+        console.error('[FORM-DEBUG] Username validation failed');
+        alert('Please enter a username');
+        if (usernameField) usernameField.focus();
+        return;
+      }
+      
+      if (!passwordField || !passwordField.value.trim()) {
+        event.preventDefault();
+        console.error('[FORM-DEBUG] Password validation failed');
+        alert('Please enter a password');
+        if (passwordField) passwordField.focus();
+        return;
+      }
+      
+      console.log('[FORM-DEBUG] Form validation passed, submitting');
+    });
+  }
+});
+</script>
+</body>
+</html>

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Face Verification</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- Load face-api.js library -->
+    <script src="{{ url_for('static', filename='face-api.js') }}"></script>
     <style>
         .verification-container {
             max-width: 600px;
@@ -117,8 +119,16 @@
     <div class="verification-container">
         <h2>Face Verification Required</h2>
         <p>High security level detected - please verify your face to continue</p>
+        {% if username %}
+        <div class="user-info" style="background-color: #e7f3fe; border-left: 6px solid #2196F3; padding: 10px; margin: 15px 0;">
+            <p style="font-size: 18px; margin: 0;"><strong>Verifying User:</strong> {{ username }}</p>
+        </div>
+        {% endif %}
         <div id="message" class="message"></div>
-        <video id="verification-video" autoplay width="400" height="300"></video>
+        <div style="position: relative; width: 400px; margin: 0 auto;">
+            <video id="verification-video" autoplay width="400" height="300"></video>
+            <canvas id="face-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+        </div>
         <div class="verification-buttons">
             <button id="verify-btn">Verify Face</button>
             <button id="cancel-btn">Cancel</button>
@@ -167,18 +177,167 @@
     </div>
 
     <script>
-        // Access camera
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function(stream) {
+        // Global variables
+        let modelLoadingStarted = false;
+        let modelsLoaded = false;
+        let faceApiModels = null;
+        
+        // Helper function to show messages
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            if (messageDiv) {
+                messageDiv.textContent = message;
+                messageDiv.className = `message ${type || 'info'}`;
+            }
+        }
+        
+        // Debug function to add more logging
+        function debugLog(message) {
+            console.log(`[FACE-DEBUG] ${message}`);
+            // Also show in messages for user visibility during testing
+            showMessage(message, 'info');
+        }
+        
+        // Parse the risk details from server
+        let riskDetails;
+        try {
+            riskDetails = JSON.parse('{{ risk_details|tojson|safe }}');
+            console.log('[FACE-DEBUG] Risk details loaded:', riskDetails);
+            
+            // Ensure we have the right security level for high security
+            if (riskDetails.security_level !== "High") {
+                console.warn('[FACE-DEBUG] Security level is not set to HIGH:', riskDetails.security_level);
+                riskDetails.security_level = "High";
+                riskDetails.security_level_num = 3; // HIGH level
+                riskDetails.required_factors = ['Password', 'CAPTCHA', 'Face Verification'];
+                console.log('[FACE-DEBUG] Force-set security level to HIGH for face verification');
+            }
+        } catch (e) {
+            console.error('[FACE-DEBUG] Error parsing risk details:', e);
+            riskDetails = {
+                security_level: 'High',
+                security_level_num: 3, // HIGH level
+                risk_score: 0.85,
+                risk_factors: {
+                    login_time: {score: 0.8, description: 'Login at unusual time'},
+                    ip_address: {score: 0.9, description: 'Connection from unusual location'}
+                },
+                required_factors: ['Password', 'CAPTCHA', 'Face Verification']
+            };
+        }
+        
+        // Show initial debug message
+        debugLog('Face verification page loaded. Starting initialization...');
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if faceapi is loaded
+            if (typeof faceapi === 'undefined') {
+                console.error('[FACE-DEBUG] face-api.js library is not loaded!');
+                debugLog('Error: face-api.js library not loaded. Please check your internet connection and try again.');
+                showMessage('Error loading face detection library. Please refresh the page.', 'error');
+                
+                // Try to reload the script
+                const script = document.createElement('script');
+                script.src = "{{ url_for('static', filename='face-api.js') }}";
+                script.onload = function() {
+                    console.log('[FACE-DEBUG] face-api.js library loaded successfully after retry');
+                    debugLog('Face detection library loaded. Initializing...');
+                    initializeApp();
+                };
+                script.onerror = function() {
+                    console.error('[FACE-DEBUG] Failed to load face-api.js library after retry');
+                    debugLog('Failed to load face detection library. Please check your connection.');
+                };
+                document.head.appendChild(script);
+            } else {
+                console.log('[FACE-DEBUG] face-api.js library is loaded!');
+                initializeApp();
+            }
+        });
+        
+        async function initializeApp() {
+            try {
+                // Check again if faceapi is available
+                if (typeof faceapi === 'undefined') {
+                    throw new Error('face-api.js library is not available');
+                }
+                
+                debugLog('Loading face detection models...');
+                showMessage('Loading face detection models...', 'info');
+                
+                // Load face detection models
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri('/static/face-api-models'),
+                    faceapi.nets.faceLandmark68Net.loadFromUri('/static/face-api-models'),
+                    faceapi.nets.faceRecognitionNet.loadFromUri('/static/face-api-models')
+                ]);
+                
+                modelsLoaded = true;
+                debugLog('Face detection models loaded successfully!');
+                console.log('[FACE-DEBUG] Face-api models loaded:', 
+                    'TinyFaceDetector:', faceapi.nets.tinyFaceDetector.isLoaded,
+                    'FaceLandmark68Net:', faceapi.nets.faceLandmark68Net.isLoaded,
+                    'FaceRecognitionNet:', faceapi.nets.faceRecognitionNet.isLoaded
+                );
+                showMessage('Face detection models loaded. Accessing camera...', 'success');
+                
+                // Set up camera
+                debugLog('Requesting camera access...');
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        facingMode: 'user'
+                    }
+                });
+                
+                debugLog('Camera accessed successfully');
                 const video = document.getElementById('verification-video');
                 video.srcObject = stream;
-
-                // Handle verification
+                
+                // Add video load event
+                video.onloadedmetadata = function() {
+                    video.play();
+                    debugLog('Video stream loaded. Ready for verification.');
+                    showMessage('Camera ready. Please center your face and click "Verify Face".', 'success');
+                };
+                
+                // Handle verify button click
                 document.getElementById('verify-btn').onclick = async function() {
                     try {
-                        // Show loading message
-                        showMessage('Verifying face...', 'success');
+                        showMessage('Verifying face...', 'info');
+                        debugLog('Starting face verification process');
                         
+                        // Check if a face is visible with more sensitive settings
+                        const detections = await faceapi.detectSingleFace(video, 
+                            new faceapi.TinyFaceDetectorOptions({
+                                inputSize: 320,    // Smaller input size increases detection rate
+                                scoreThreshold: 0.4 // Lower threshold makes detection more sensitive
+                            }));
+                            
+                        if (!detections) {
+                            debugLog('No face detected in the current frame');
+                            showMessage('No face detected. Please position your face clearly in the frame and ensure good lighting.', 'error');
+                            return;
+                        }
+                        
+                        debugLog(`Face detected at position: ${JSON.stringify(detections.box)}, score: ${detections.score}`);
+                        showMessage('Face detected! Processing verification...', 'info');
+                        
+                        // Visualize the detected face with a box
+                        const displaySize = { width: video.width, height: video.height };
+                        const overlayCanvas = document.getElementById('face-overlay');
+                        if (overlayCanvas) {
+                            const ctx = overlayCanvas.getContext('2d');
+                            overlayCanvas.width = video.videoWidth;
+                            overlayCanvas.height = video.videoHeight;
+                            ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+                            const resizedDetection = faceapi.resizeResults(detections, displaySize);
+                            faceapi.draw.drawDetections(overlayCanvas, [resizedDetection]);
+                        }
+                        
+                        // Capture image
                         const canvas = document.createElement('canvas');
                         const videoWidth = video.videoWidth || 400;
                         const videoHeight = video.videoHeight || 300;
@@ -187,9 +346,10 @@
                         canvas.getContext('2d').drawImage(video, 0, 0);
                         
                         const faceImage = canvas.toDataURL('image/jpeg');
+                        debugLog(`Captured image size: ${faceImage.length} characters`);
                         
                         // Send verification request
-                        const response = await fetch('/verify_face', {
+                        const response = await fetch('/face/face_verification', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -208,79 +368,106 @@
                             stream.getTracks().forEach(track => track.stop());
                             
                             showMessage('Face verified! Redirecting...', 'success');
+                            debugLog('Face verified successfully');
                             
-                            // Redirect to chat
+                            // Redirect to chat or next page
                             setTimeout(() => {
-                                window.location.href = '/chat';
+                                window.location.href = data.redirect_url || '/chat';
                             }, 1500);
-                        } else if (data.match_percentage) {
+                        } else if (data.redirect_url) {
+                            // Session error - needs to redirect to login
+                            showMessage(`${data.message} Redirecting to login...`, 'error');
+                            debugLog(`Authentication error: ${data.message}`);
+                            
+                            // Stop video stream
+                            stream.getTracks().forEach(track => track.stop());
+                            
+                            // Redirect to login
+                            setTimeout(() => {
+                                window.location.href = data.redirect_url;
+                            }, 2000);
+                        } else if (data.match_percentage !== undefined) {
                             showMessage(`Face verification failed (${data.match_percentage.toFixed(1)}% match, 80% required)`, 'error');
-                            showRiskDetails(data.risk_details);
+                            debugLog(`Face verification failed: ${data.match_percentage.toFixed(1)}% match`);
+                            
+                            // If there are updated risk details, show them
+                            if (data.risk_details) {
+                                displayRiskDetails(data.risk_details);
+                            }
                         } else {
                             showMessage(data.message || 'Error during face verification', 'error');
+                            debugLog(`Error during face verification: ${data.message}`);
                         }
                     } catch (error) {
                         console.error('Error:', error);
                         showMessage('Error during face verification. Please try again.', 'error');
+                        debugLog(`Error during face verification: ${error.message}`);
                     }
                 };
-
-                // Handle cancel
+                
+                // Handle cancel button
                 document.getElementById('cancel-btn').onclick = function() {
                     stream.getTracks().forEach(track => track.stop());
                     window.location.href = '/login';
                 };
-            })
-            .catch(function(err) {
-                console.error('Error accessing camera:', err);
-                showMessage('Error accessing camera. Please allow camera access to continue.', 'error');
-            });
-
-        function showMessage(message, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = message;
-            messageDiv.className = `message ${type}`;
+            } catch (err) {
+                console.error('Error:', err);
+                showMessage('Error initializing face verification. Please try again.', 'error');
+                debugLog(`Error: ${err.message}`);
+            }
         }
 
-        function showRiskDetails(riskDetails) {
+        // Function to display risk details
+        function displayRiskDetails(riskDetails) {
             if (!riskDetails) return;
             
-            const riskPanel = document.getElementById('risk-panel');
-            const riskScore = document.getElementById('risk-score');
-            const riskFactors = document.getElementById('risk-factors');
-            const requiredFactors = document.getElementById('required-factors');
-
-            // Clear previous risk details
-            if (riskFactors) {
-                riskFactors.innerHTML = '';
+            // Display risk score and level
+            const riskScoreElement = document.querySelector('.risk-score');
+            if (riskScoreElement && typeof riskDetails.risk_score === 'number') {
+                const scoreValue = riskDetails.risk_score.toFixed(2);
+                const levelName = riskDetails.security_level || 'High';
+                riskScoreElement.innerHTML = `Risk Score: <strong>${scoreValue}</strong> <span class="risk-level ${levelName.toLowerCase()}">${levelName} Security</span>`;
             }
             
-            if (requiredFactors) {
-                requiredFactors.style.display = 'none';
+            // Display risk factors
+            const riskFactorsElement = document.querySelector('.risk-factors');
+            if (riskFactorsElement && riskDetails.risk_factors) {
+                riskFactorsElement.innerHTML = '';
+                
+                for (const [factorName, factorData] of Object.entries(riskDetails.risk_factors)) {
+                    if (!factorData) continue;
+                    
+                    const displayName = factorName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    const factorElement = document.createElement('div');
+                    factorElement.className = 'risk-factor';
+                    
+                    const score = typeof factorData.score === 'number' ? factorData.score.toFixed(2) : 'N/A';
+                    const description = factorData.description || 'No description available';
+                    
+                    factorElement.innerHTML = `
+                        <span class="risk-factor-name">${displayName}:</span> 
+                        <span class="risk-factor-value">${score}</span>
+                        <div>${description}</div>
+                    `;
+                    riskFactorsElement.appendChild(factorElement);
+                }
             }
-
-            // Set risk score
-            if (riskScore && riskDetails.score !== undefined) {
-                riskScore.textContent = `Risk Score: ${riskDetails.score}`;
-                riskScore.className = `risk-score ${riskDetails.level || 'medium'}`;
+            
+            // Display required factors
+            const requiredFactorsElement = document.querySelector('.required-factors');
+            if (requiredFactorsElement && Array.isArray(riskDetails.required_factors)) {
+                requiredFactorsElement.innerHTML = '<strong>Required Authentication Factors:</strong><br>';
+                
+                for (const factor of riskDetails.required_factors) {
+                    const factorSpan = document.createElement('span');
+                    factorSpan.className = 'required-factor';
+                    factorSpan.textContent = factor;
+                    requiredFactorsElement.appendChild(factorSpan);
+                }
             }
-
-            // Show risk factors
-            if (riskFactors && riskDetails.factors && Array.isArray(riskDetails.factors)) {
-                riskDetails.factors.forEach(factor => {
-                    const factorDiv = document.createElement('div');
-                    factorDiv.className = 'risk-factor';
-                    factorDiv.innerHTML = `<span class="risk-factor-name">${factor.name || 'Unknown'}:</span> <span class="risk-factor-value">${factor.value || '0.00'}</span>`;
-                    riskFactors.appendChild(factorDiv);
-                });
-            }
-
-            // Show required factors if verification failed
-            if (requiredFactors && riskDetails.verified === false) {
-                requiredFactors.style.display = 'block';
-            }
-
-            // Show risk panel
+            
+            // Make sure the risk panel is visible
+            const riskPanel = document.querySelector('.risk-panel');
             if (riskPanel) {
                 riskPanel.style.display = 'block';
             }

@@ -688,3 +688,260 @@ button:disabled, .button-like-label.disabled {
     left: 50%;
     transform: translateX(-50%);
 }
+
+/* Micro-Interactions & Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.message, .file-message {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.message.received, .file-message.received {
+    animation: slideIn 0.3s ease-in-out;
+}
+
+button, .button-like-label {
+    transition: transform 0.1s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+button:active, .button-like-label:active {
+    transform: scale(0.98);
+}
+
+/* Modal Transitions */
+.security-details-modal {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.security-details-modal.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Real-Time Visual Feedback */
+.typing-indicator {
+    display: inline-block;
+    margin-left: 10px;
+    font-style: italic;
+    color: var(--light-text);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Live Status Badges */
+.status-badge {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.status-badge.online {
+    background-color: var(--success-color);
+}
+
+.status-badge.offline {
+    background-color: var(--secondary-color);
+}
+
+/* Risk Level Animation */
+.risk-indicator-dot {
+    transition: background-color 0.3s ease;
+}
+
+/* Immersive UI Enhancements */
+/* Dark Mode */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+body.dark-mode .chat-container {
+    background-color: #1e1e1e;
+    box-shadow: 0 0 25px rgba(0,0,0,0.3);
+}
+
+body.dark-mode .chat-header {
+    background-color: #2c2c2c;
+}
+
+body.dark-mode .chat-messages {
+    background-color: #2c2c2c;
+}
+
+body.dark-mode .message.received {
+    background-color: #3a3a3a;
+    border-color: #4a4a4a;
+}
+
+body.dark-mode .message.sent {
+    background-color: #007bff;
+}
+
+body.dark-mode .message-input, body.dark-mode .message-select {
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    border-color: #4a4a4a;
+}
+
+body.dark-mode .security-details-modal {
+    background-color: #2c2c2c;
+}
+
+body.dark-mode .security-details-content {
+    background-color: #3a3a3a;
+}
+
+/* Customizable Chat Backgrounds */
+.chat-messages {
+    background-image: var(--chat-bg-image, none);
+    background-size: cover;
+    background-position: center;
+}
+
+/* Sound Effects */
+.sound-enabled {
+    position: relative;
+}
+
+.sound-enabled::after {
+    content: "🔊";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.2rem;
+}
+
+/* Enhanced Usability */
+/* Drag & Drop File Upload */
+.drag-drop-zone {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    text-align: center;
+    transition: border-color 0.3s ease;
+}
+
+.drag-drop-zone.dragover {
+    border-color: var(--primary-color);
+}
+
+/* Auto-Scroll */
+.auto-scroll {
+    scroll-behavior: smooth;
+}
+
+/* Message Reactions */
+.message-reactions {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.reaction-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: transform 0.2s ease;
+}
+
+.reaction-button:hover {
+    transform: scale(1.2);
+}
+
+/* Accessibility & Responsiveness */
+/* Keyboard Navigation */
+button:focus, .button-like-label:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* ARIA Labels */
+[aria-label] {
+    position: relative;
+}
+
+[aria-label]::after {
+    content: attr(aria-label);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--dark-text);
+    color: var(--white-bg);
+    padding: 5px 10px;
+    border-radius: var(--border-radius);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+[aria-label]:hover::after {
+    opacity: 1;
+}
+
+/* Responsive Tweaks */
+@media (max-width: 768px) {
+    .chat-container {
+        max-width: 100%;
+        border-radius: 0;
+    }
+    .chat-header {
+        padding: 0.5rem 1rem;
+    }
+    .chat-messages {
+        padding: 0.5rem 1rem;
+    }
+    .message {
+        max-width: 85%;
+    }
+    .message-form {
+        padding: 0.5rem 1rem;
+    }
+    .message-input-container .input-with-button {
+        flex-direction: column;
+    }
+    .input-with-button .message-input {
+        width: 100%;
+    }
+    .input-with-button .send-button {
+        width: 100%;
+        margin-top: 5px;
+    }
+    .face-checkbox {
+        margin-top: 5px;
+    }
+    .options-and-actions-bar {
+        flex-direction: column;
+    }
+    .options-and-actions-bar .file-input-wrapper,
+    .options-and-actions-bar .send-file-button {
+        width: 100%;
+    }
+    .send-file-button {
+        margin-top: 5px;
+    }
+    .risk-indicator {
+        bottom: 10px;
+        right: 10px;
+    }
+    .security-details-content {
+        width: 90%;
+    }
+    .security-details-header h3 {
+        font-size: 1.2rem;
+    }
+}

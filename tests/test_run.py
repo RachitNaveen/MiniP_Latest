@@ -48,18 +48,3 @@ def print_test_instructions():
     print("This will show detailed risk assessments for each scenario")
     print()
     print("To simulate different security levels:")
-    print("- Low: First login, normal conditions")
-    print("- Medium: Few failed login attempts (run the script)")
-    print("- High: Multiple failed login attempts + unusual location")
-    print("======================================================\n")
-
-if __name__ == '__main__':
-    with app.app_context():
-        # Setup test user
-        test_user = setup_test_user()
-        
-        # Print testing instructions
-        print_test_instructions()
-        
-        # Run the app
-        app.run(debug=True)

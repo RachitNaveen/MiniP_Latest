@@ -79,6 +79,7 @@ class FaceVerificationLog(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     success = db.Column(db.Boolean, default=False)
+    match_percentage = db.Column(db.Float, nullable=True)
 
     def __repr__(self):
         return f'<FaceLog User {self.user_id} at {self.timestamp}>'

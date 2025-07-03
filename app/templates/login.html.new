@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - SecureChatApp</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    .container {
+      max-width: 400px; margin: 50px auto; padding: 20px; background-color: #f9f9f9; 
+      border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+    .form-group input {
+      width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;
+    }
+    #risk-panel {
+      background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; 
+      padding: 15px; margin-top: 20px; margin-bottom: 20px; display: none;
+    }
+    .risk-score { font-size: 18px; margin-bottom: 15px; }
+    .btn {
+      width: 100%; padding: 10px; background-color: #4CAF50; color: white; 
+      border: none; border-radius: 4px; cursor: pointer; font-size: 16px;
+    }
+    .btn:hover { background-color: #45a049; }
+    .security-selection { margin-top: 20px; }
+    .error {
+      color: #dc3545; margin: 10px 0; padding: 10px; border-radius: 4px; background-color: #f8d7da;
+    }
+  </style>
+</head>
+<body>
+  <div class="container auth-container">
+    <h1>Login to SecureChat</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <!-- Login Form - Simplified -->
+    <form id="loginForm" method="POST" action="{{ url_for('auth.login') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      
+      <!-- Username field - Always visible -->
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+      
+      <!-- Password field - Always visible -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      
+      <!-- CAPTCHA field - Only for Medium and High security -->
+      {% if show_captcha and form and form.recaptcha %}
+      <div class="form-group">
+        {{ form.recaptcha.label }}
+        {{ form.recaptcha }}
+      </div>
+      {% endif %}
+      
+      <button type="submit" class="btn">Login</button>
+    </form>
+    
+    <p class="auth-toggle">
+      Don't have an account? <a href="{{ url_for('main.register') }}">Register</a>
+    </p>
+  </div>
+
+  <div class="container security-selection">
+    <h2>Security Level Control</h2>
+    <div class="form-group">
+      <label for="security-level">Select Security Level:</label>
+      <select id="security-level" class="form-control">
+        <option value="ai" selected>AI-Based Risk Assessment</option>
+        <option value="low">Low (Password only)</option>
+        <option value="medium">Medium (Password + CAPTCHA)</option>
+        <option value="high">High (Password + CAPTCHA + Face Verification)</option>
+      </select>
+    </div>
+    <button id="set-level-btn" class="btn">Apply Level</button>
+    <div id="security-info" style="margin-top: 15px; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
+      <p style="margin: 0;">Current Mode: <strong>AI-Based</strong></p>
+      <p style="margin: 5px 0 0 0;">Required factors based on AI risk assessment</p>
+    </div>
+  </div>
+
+  <div id="risk-panel" class="container">
+    <h2>Risk Assessment</h2>
+    <div id="risk-score" class="risk-score"></div>
+    <div id="risk-factors"></div>
+    <div id="required-factors" style="margin-top: 15px;"></div>
+  </div>
+
+  <!-- Load scripts at the end to ensure DOM is fully loaded -->
+  <script>
+    // Simple script to handle security level changes
+    document.addEventListener('DOMContentLoaded', function() {
+      var securityLevelSelect = document.getElementById('security-level');
+      var setLevelBtn = document.getElementById('set-level-btn');
+      var captchaSection = document.querySelector('.form-group:nth-child(3)');
+      
+      // Load saved security level
+      var savedLevel = localStorage.getItem('selectedSecurityLevel');
+      if (savedLevel) {
+        securityLevelSelect.value = savedLevel;
+      }
+      
+      // Apply button handler
+      if (setLevelBtn) {
+        setLevelBtn.addEventListener('click', function() {
+          var level = securityLevelSelect.value;
+          localStorage.setItem('selectedSecurityLevel', level);
+          
+          // Send to server
+          fetch('/security/set_security_level_login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ level: level })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert('Security level set to ' + data.levelName);
+              document.getElementById('security-info').innerHTML = 
+                '<p>Current Mode: <strong>' + data.levelName + '</strong></p>' +
+                '<p>Required factors: <strong>' + data.requiredFactors + '</strong></p>';
+              
+              // Reload the page to update form
+              location.reload();
+            }
+          })
+          .catch(error => console.error('Error:', error));
+        });
+      }
+    });
+  </script>
+</body>
+</html>

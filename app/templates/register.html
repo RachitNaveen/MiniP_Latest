@@ -120,6 +120,7 @@
 
         <form id="registerForm" method="POST" action="{{ url_for('auth.register') }}">
             {{ form.hidden_tag() }}
+            <!-- Only need one CSRF token -->
 
             <div class="form-group">
                 <label for="username">Username</label>
@@ -155,7 +156,9 @@
             </div>
             
             <!-- Hidden input for face data -->
-            {{ form.face_data(id="face-data-input") }}
+            <input type="hidden" id="face-data-input" name="face_data">
+            <!-- Backup hidden input in case the above doesn't work -->
+            <input type="hidden" id="face-data-backup" name="face_data_backup">
             
             <!-- Face Registration Section -->
             <div id="face-registration-container">
@@ -185,8 +188,14 @@
                 </div>
             </div>
 
-            <button type="submit" id="register-btn" class="btn btn-primary">Register</button>
-            <p class="face-requirement" style="color: #856404; margin-top: 5px;">Note: Face registration is recommended but optional</p>
+            <button type="submit" id="register-btn" class="btn btn-primary" disabled>Register</button>
+            <p class="face-requirement" style="color: #dc3545; margin-top: 5px;">Note: Face registration is required for account creation</p>
+            
+            <!-- Debug information to show the face data is being captured -->
+            <div id="debug-info" style="margin-top: 10px; font-size: 12px; color: #666; display: none;">
+                <p>Face data captured: <span id="face-data-status">No</span></p>
+                <p>Face data size: <span id="face-data-size">0</span> bytes</p>
+            </div>
         </form>
 
         <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
@@ -210,11 +219,41 @@
             async function loadFaceDetectionModels() {
                 showStatus('Loading face detection models...', 'warning');
                 try {
-                    await faceapi.nets.tinyFaceDetector.loadFromUri('/static/face-api-models');
-                    await faceapi.nets.faceLandmark68Net.loadFromUri('/static/face-api-models');
-                    await faceapi.nets.faceRecognitionNet.loadFromUri('/static/face-api-models');
-                    showStatus('Face detection models loaded!', 'success');
-                    return true;
+                    // Make sure the path to models is correct
+                    const modelPath = '/static/face-api-models';
+                    console.log("Loading face-api.js models from:", modelPath);
+                    
+                    // Check if we already have the models loaded
+                    if (faceapi.nets.tinyFaceDetector.isLoaded && 
+                        faceapi.nets.faceLandmark68Net.isLoaded && 
+                        faceapi.nets.faceRecognitionNet.isLoaded) {
+                        console.log("Models already loaded!");
+                        showStatus('Face detection models already loaded!', 'success');
+                        return true;
+                    }
+                    
+                    // Load models sequentially for better reliability
+                    console.log("Loading TinyFaceDetector...");
+                    await faceapi.nets.tinyFaceDetector.loadFromUri(modelPath);
+                    console.log("TinyFaceDetector loaded:", faceapi.nets.tinyFaceDetector.isLoaded);
+                    
+                    console.log("Loading FaceLandmark68Net...");
+                    await faceapi.nets.faceLandmark68Net.loadFromUri(modelPath);
+                    console.log("FaceLandmark68Net loaded:", faceapi.nets.faceLandmark68Net.isLoaded);
+                    
+                    console.log("Loading FaceRecognitionNet...");
+                    await faceapi.nets.faceRecognitionNet.loadFromUri(modelPath);
+                    console.log("FaceRecognitionNet loaded:", faceapi.nets.faceRecognitionNet.isLoaded);
+                    
+                    // Verify all models loaded
+                    if (faceapi.nets.tinyFaceDetector.isLoaded && 
+                        faceapi.nets.faceLandmark68Net.isLoaded && 
+                        faceapi.nets.faceRecognitionNet.isLoaded) {
+                        showStatus('Face detection models loaded successfully!', 'success');
+                        return true;
+                    } else {
+                        throw new Error("Not all models were loaded successfully");
+                    }
                 } catch (error) {
                     console.error('Error loading face detection models:', error);
                     showStatus('Failed to load face models. Please try again.', 'error');
@@ -243,33 +282,64 @@
             
             // Start face detection on video
             function startFaceDetection() {
-                const displaySize = { width: faceVideo.width, height: faceVideo.height };
+                // Make sure video dimensions are set correctly
+                const videoWidth = faceVideo.videoWidth || 400;
+                const videoHeight = faceVideo.videoHeight || 300;
+                const displaySize = { width: videoWidth, height: videoHeight };
+                
+                // Ensure canvas has the right dimensions
+                faceCanvas.width = videoWidth;
+                faceCanvas.height = videoHeight;
                 faceapi.matchDimensions(faceCanvas, displaySize);
+                
+                console.log(`Video dimensions: ${videoWidth}x${videoHeight}`);
                 
                 // Check for faces every 100ms
                 const interval = setInterval(async () => {
-                    if (!faceVideo.paused && !faceVideo.ended) {
-                        const detections = await faceapi.detectAllFaces(
-                            faceVideo, 
-                            new faceapi.TinyFaceDetectorOptions()
-                        ).withFaceLandmarks().withFaceDescriptors();
+                    if (!faceVideo.paused && !faceVideo.ended && faceVideo.readyState >= 2) {
+                        try {
+                            // First try with TinyFaceDetector which is faster
+                            let detections = await faceapi.detectAllFaces(
+                                faceVideo, 
+                                new faceapi.TinyFaceDetectorOptions({ 
+                                    inputSize: 320,     // Smaller input size increases detection rate
+                                    scoreThreshold: 0.3 // Even lower threshold for better detection
+                                })
+                            ).withFaceLandmarks();
                         
-                        // Clear previous drawings
-                        const ctx = faceCanvas.getContext('2d');
-                        ctx.clearRect(0, 0, faceCanvas.width, faceCanvas.height);
-                        
-                        // Draw detections
-                        const resizedDetections = faceapi.resizeResults(detections, displaySize);
-                        faceapi.draw.drawDetections(faceCanvas, resizedDetections);
-                        faceapi.draw.drawFaceLandmarks(faceCanvas, resizedDetections);
-                        
-                        // Update face detected status
-                        if (detections.length > 0) {
-                            faceDetected = true;
-                            showStatus('Face detected! You can now capture your face.', 'success');
-                        } else {
-                            faceDetected = false;
-                            showStatus('No face detected. Please position your face in the camera.', 'warning');
+                            // If no detections, try with lower threshold
+                            if (detections.length === 0) {
+                                console.log("No faces detected with default settings, trying with lower threshold...");
+                                detections = await faceapi.detectAllFaces(
+                                    faceVideo,
+                                    new faceapi.TinyFaceDetectorOptions({
+                                        inputSize: 320,
+                                        scoreThreshold: 0.2 // Try with even lower threshold
+                                    })
+                                ).withFaceLandmarks();
+                            }
+                            
+                            // Clear previous drawings
+                            const ctx = faceCanvas.getContext('2d');
+                            ctx.clearRect(0, 0, faceCanvas.width, faceCanvas.height);
+                            
+                            // Draw detections
+                            const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                            faceapi.draw.drawDetections(faceCanvas, resizedDetections);
+                            faceapi.draw.drawFaceLandmarks(faceCanvas, resizedDetections);
+                            
+                            // Update face detected status
+                            if (detections.length > 0) {
+                                faceDetected = true;
+                                console.log("Face detected with confidence:", detections[0].score);
+                                showStatus('Face detected! You can now capture your face.', 'success');
+                            } else {
+                                faceDetected = false;
+                                showStatus('No face detected. Please position your face in the camera and ensure good lighting.', 'warning');
+                            }
+                        } catch (error) {
+                            console.error("Error in face detection:", error);
+                            showStatus('Error detecting face. Please try again.', 'error');
                         }
                     }
                 }, 100);
@@ -283,18 +353,62 @@
                 }
                 
                 try {
+                    showStatus('Processing face image...', 'warning');
+                    
+                    // Double-check face detection before capturing
+                    const detections = await faceapi.detectAllFaces(
+                        faceVideo,
+                        new faceapi.TinyFaceDetectorOptions({
+                            inputSize: 320,
+                            scoreThreshold: 0.3
+                        })
+                    ).withFaceLandmarks();
+                    
+                    if (detections.length === 0) {
+                        showStatus('No face detected during capture. Please try again.', 'error');
+                        return;
+                    }
+                    
+                    console.log("Face detected for capture with score:", detections[0].score);
+                    
                     // Capture the current video frame
                     const canvas = document.createElement('canvas');
-                    canvas.width = faceVideo.videoWidth;
-                    canvas.height = faceVideo.videoHeight;
+                    canvas.width = faceVideo.videoWidth || 400;
+                    canvas.height = faceVideo.videoHeight || 300;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(faceVideo, 0, 0, canvas.width, canvas.height);
                     
-                    // Convert to data URL
-                    const dataURL = canvas.toDataURL('image/jpeg');
+                    // Convert to data URL with higher quality
+                    const dataURL = canvas.toDataURL('image/jpeg', 0.95);
                     
                     // Store the image data in the hidden input
                     faceDataInput.value = dataURL;
+                    
+                    // Also store in the backup field
+                    const backupField = document.getElementById('face-data-backup');
+                    if (backupField) {
+                        backupField.value = dataURL;
+                        console.log('Face data also stored in backup field');
+                    }
+                    
+                    // Double-check the data was stored correctly
+                    console.log('Face data set in form field. Length:', dataURL.length);
+                    console.log('Value actually in input field length:', faceDataInput.value.length);
+                    
+                    // Verify the field exists in the DOM
+                    const faceDataField = document.getElementById('face-data-input');
+                    console.log('Face data input field found in DOM:', faceDataField !== null);
+                    if (faceDataField) {
+                        console.log('Face data field name:', faceDataField.name);
+                        console.log('Face data field ID:', faceDataField.id);
+                        console.log('Face data field type:', faceDataField.type);
+                    }
+                    
+                    // Show debug info
+                    document.getElementById('debug-info').style.display = 'block';
+                    document.getElementById('face-data-status').textContent = 'Yes';
+                    document.getElementById('face-data-size').textContent = dataURL.length;
+                    console.log('Face data set in form field. Length:', dataURL.length);
                     
                     // Stop the camera
                     if (stream) {
@@ -312,6 +426,9 @@
                     img.style.borderRadius = '5px';
                     videoContainer.appendChild(img);
                     
+                    // Enable the register button
+                    registerBtn.disabled = false;
+                    
                     // Clear canvas drawings
                     const canvasCtx = faceCanvas.getContext('2d');
                     canvasCtx.clearRect(0, 0, faceCanvas.width, faceCanvas.height);
@@ -327,6 +444,126 @@
                 captureStatus.className = type;
                 captureStatus.style.display = 'block';
             }
+            
+            // Add form submission check
+            document.getElementById('registerForm').addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent default submission to handle it ourselves
+                console.log('Form submission started');
+                
+                const faceData = faceDataInput.value;
+                if (!faceData || faceData.trim() === '') {
+                    alert('Face data is required. Please capture your face before submitting.');
+                    console.log('Submission prevented: No face data');
+                    return false;
+                }
+                
+                console.log('Form submitted with face data length:', faceData.length);
+                
+                // Check if the form field is actually included in the submission
+                let formData = new FormData(this);
+                
+                // Use explicit field names for clarity
+                console.log('Form contains face_data field:', formData.has('face_data'));
+                console.log('Form contains face_data_backup field:', formData.has('face_data_backup'));
+                console.log('Form contains csrf_token field:', formData.has('csrf_token'));
+                
+                // IMPORTANT FIX: Always set both face data fields in the form
+                // This ensures the face data is actually sent with the form
+                console.log('Setting face_data in form with length:', faceData.length);
+                formData.set('face_data', faceData);
+                formData.set('face_data_backup', faceData);
+                
+                // Also add it to the backup field
+                const backupField = document.getElementById('face-data-backup');
+                if (backupField) {
+                    formData.set('face_data_backup', faceData);
+                    console.log('Face data also set in backup field in form submission');
+                }
+                
+                // Add a hidden debug field to help track what's happening
+                formData.append('debug_info', 'Face data size: ' + faceData.length + ' bytes');
+                
+                // Create a variable to store the URLs outside the fetch call
+                const registerUrl = document.getElementById('registerForm').action;
+                const loginUrl = document.querySelector('a[href*="login"]').href;
+                
+                // Log the keys and values in the form before submission
+                console.log('Form keys before submission:');
+                for (let [key, value] of formData.entries()) {
+                    if (key === 'face_data' || key === 'face_data_backup') {
+                        console.log(`${key}: [data length: ${value.length}]`);
+                    } else {
+                        console.log(`${key}: ${value}`);
+                    }
+                }
+                
+                // Try to submit the form using the regular form method first
+                fetch(registerUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    console.log('Response received:', response);
+                    if (response.redirected) {
+                        // If we're redirected to login page, follow the redirect
+                        window.location.href = response.url;
+                        return;
+                    } 
+                    
+                    // Parse response for error messages
+                    return response.text().then(html => {
+                        // Check if registration was successful
+                        if (html.includes('Account created!')) {
+                            alert('Account created successfully! Please log in.');
+                            window.location.href = loginUrl;
+                        } else {
+                            console.log('Form submission was not successful, trying API endpoint instead');
+                            
+                            // Try the direct API endpoint instead
+                            return fetch('/auth/register_with_face', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify({
+                                    username: document.getElementById('username').value,
+                                    password: document.getElementById('password').value,
+                                    confirm_password: document.getElementById('confirm_password').value,
+                                    face_data: faceDataInput.value
+                                })
+                            })
+                            .then(apiResponse => apiResponse.json())
+                            .then(data => {
+                                if (data.success) {
+                                    alert('Account created successfully! Please log in.');
+                                    window.location.href = data.redirect || loginUrl;
+                                } else {
+                                    alert('Registration failed: ' + data.message);
+                                }
+                            })
+                            .catch(apiError => {
+                                console.error('API error:', apiError);
+                                alert('Error during registration. Please try again.');
+                                
+                                // Display the original response for debugging
+                                document.open();
+                                document.write(html);
+                                document.close();
+                            });
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error submitting form:', error);
+                    alert('Error submitting form. Please try again.');
+                });
+                
+                return false; // We're handling the submission ourselves
+            });
         });
     </script>
 </body>

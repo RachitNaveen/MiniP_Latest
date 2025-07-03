@@ -51,6 +51,9 @@ COPY . .
 # For data persistence across container restarts, mount a volume to /app/instance.
 RUN mkdir -p /app/instance
 
+# Create the logs directory with proper permissions
+RUN mkdir -p /app/logs && chmod 777 /app/logs
+
 # Expose the port the app runs on (Flask default is 5000)
 EXPOSE 5000
 
@@ -64,5 +67,8 @@ CMD ["python", "run.py"]
 # Build the Docker image
 # docker build -t securechat .
 
-# Run the Docker container
-# docker run -p 5000:5000 -v $(pwd)/instance:/app/instance securechat
+# Run the Docker container with volumes for both instance data and logs
+# docker run -p 5000:5000 \
+#   -v $(pwd)/instance:/app/instance \
+#   -v $(pwd)/logs:/app/logs \
+#   securechat

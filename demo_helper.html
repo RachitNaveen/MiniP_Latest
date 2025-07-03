@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureChat Demo Helper</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+        .user-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .user-section h2 {
+            margin-top: 0;
+            color: #444;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .note {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SecureChat Demo Helper</h1>
+        <p>This page helps you test multiple user sessions for your demo.</p>
+        
+        <div class="user-section">
+            <h2>User 1</h2>
+            <a href="http://127.0.0.1:5000/?user_id=user1" class="btn" target="_blank">Open as User 1</a>
+            <p>This will open SecureChat with a session for User 1.</p>
+        </div>
+        
+        <div class="user-section">
+            <h2>User 2</h2>
+            <a href="http://127.0.0.1:5000/?user_id=user2" class="btn" target="_blank">Open as User 2</a>
+            <p>This will open SecureChat with a separate session for User 2.</p>
+        </div>
+        
+        <div class="note">
+            <strong>How it works:</strong> The <code>user_id</code> parameter in the URL tells the server to use a different session cookie name,
+            allowing you to have separate logins in the same browser.
+        </div>
+    </div>
+</body>
+</html>

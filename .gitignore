@@ -1,6 +1,11 @@
 __pycache__/
 *.pyc
 instance/chat.db
+instance/*.db
 venv/
 .env
+
+# Log files
 logs/
+*.log
+/logs/*

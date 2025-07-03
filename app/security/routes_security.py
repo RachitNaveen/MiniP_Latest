@@ -10,10 +10,21 @@ def set_security_level_login():
     """
     try:
         data = request.get_json()
-        if not data or 'level' not in data:
-            return jsonify({'success': False, 'message': 'Invalid request data'}), 400
+        print(f"[DEBUG] Received data: {data}")
+        
+        if not data:
+            print("[DEBUG] No JSON data received")
+            return jsonify({'success': False, 'message': 'No JSON data received'}), 400
             
-        level = data.get('level')
+        # Support both 'level' and 'security_level' keys for backwards compatibility
+        level_key = 'level' if 'level' in data else 'security_level'
+        
+        if level_key not in data:
+            print(f"[DEBUG] Neither 'level' nor 'security_level' in data: {list(data.keys())}")
+            return jsonify({'success': False, 'message': 'Invalid request data: missing security level parameter'}), 400
+            
+        level = data.get(level_key)
+        print(f"[DEBUG] Selected level: {level}")
         
         # Map the level string to a security level number and name
         if level == 'low':
@@ -50,9 +61,18 @@ def set_security_level_login():
             else:
                 print("[SECURITY] Using AI-based security assessment")
                 
+        # Debugging logs
+        print(f"[DEBUG] Received security level: {level}")
+        print(f"[DEBUG] CAPTCHA enabled: {level in ['medium', 'high']}")
+        print(f"[DEBUG] Face verification enabled: {level == 'high'}")
+
         # Update session with required factors for medium and high levels
         session['captcha_enabled'] = level in ['medium', 'high']
         session['face_verification_enabled'] = level == 'high'
+
+        # Debugging logs for session
+        print(f"[DEBUG] Session captcha_enabled: {session.get('captcha_enabled')}")
+        print(f"[DEBUG] Session face_verification_enabled: {session.get('face_verification_enabled')}")
         
         # Force the session to update
         session.modified = True
@@ -113,3 +133,25 @@ def get_security_metrics():
             'success': False, 
             'message': 'Error retrieving security metrics'
         }), 500
+
+@security_blueprint.route('/api/security_assessment', methods=['GET'])
+def security_assessment():
+    """
+    Perform AI-based security assessment and return the security level.
+    """
+    try:
+        from app.security.security_ai import get_risk_details
+        username = session.get('username')
+        if not username:
+            return jsonify({'success': False, 'message': 'No user logged in'}), 400
+
+        risk_details = get_risk_details(username)
+
+        # Update session security level based on AI risk assessment
+        session['security_level'] = risk_details['security_level_num']
+        print(f"[SECURITY] Updated session security level to {session['security_level']}")
+        
+        return jsonify({'success': True, 'details': risk_details}), 200
+    except Exception as e:
+        print(f"Error during security assessment: {str(e)}")
+        return jsonify({'success': False, 'message': 'Error during security assessment'}), 500

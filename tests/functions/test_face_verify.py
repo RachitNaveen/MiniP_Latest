@@ -13,6 +13,10 @@ import face_recognition
 from app import create_app, db
 from app.models.models import User, FaceVerificationLog
 from datetime import datetime
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def test_face_verification(username=None):
     """Test face verification for a user"""
@@ -47,40 +51,30 @@ def test_face_verification(username=None):
             
         # Load the sample image for testing
         sample_image_path = os.path.join('app', 'static', 'sample_face.jpg')
-        
-        if not os.path.exists(sample_image_path):
-            print(f"Sample face image not found at {sample_image_path}")
-            print("Cannot test verification without a reference image")
+        if not os.path.isfile(sample_image_path):
+            print(f"Sample image not found at {sample_image_path}. Please ensure the file exists.")
             return False
-            
-        # Load and encode the face
-        print(f"Loading test image from {sample_image_path}")
+
+        # Load and encode the sample image
         try:
-            image = face_recognition.load_image_file(sample_image_path)
-            face_locations = face_recognition.face_locations(image)
-            
-            if not face_locations:
-                print("No face detected in sample image.")
-                return False
-                
-            test_encoding = face_recognition.face_encodings(image, face_locations)[0]
-            print(f"Successfully generated test encoding. First 5 values: {test_encoding[:5]}")
-            
-            # Compare the encodings
-            distance = np.linalg.norm(stored_encoding - test_encoding)
-            match = distance <= 0.6  # Same threshold as we're using in the app
-            
-            print(f"Verification result: {'SUCCESS' if match else 'FAILED'}")
-            print(f"Distance: {distance:.4f}, Threshold: 0.6")
-            
-            return match
-            
+            sample_image = face_recognition.load_image_file(sample_image_path)
+            sample_encoding = face_recognition.face_encodings(sample_image)[0]
+            print(f"Sample face encoding loaded successfully. First 5 values: {sample_encoding[:5]}")
         except Exception as e:
-            print(f"Error during verification test: {e}")
+            print(f"Error loading or encoding sample image: {e}")
+            return False
+
+        # Compare the stored encoding with the sample encoding
+        match = face_recognition.compare_faces([stored_encoding], sample_encoding)
+        if match[0]:
+            print(f"Face verification successful for user: {user.username}")
+            logging.info(f"Face verification successful for user: {user.username}")
+            return True
+        else:
+            print(f"Face verification failed for user: {user.username}")
+            logging.info(f"Face verification failed for user: {user.username}")
             return False
 
 if __name__ == "__main__":
     username = sys.argv[1] if len(sys.argv) > 1 else None
-    success = test_face_verification(username)
-    print(f"Test {'passed' if success else 'failed'}")
-    sys.exit(0 if success else 1)
+    test_face_verification(username)

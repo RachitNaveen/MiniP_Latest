@@ -109,101 +109,828 @@
 2025-06-09 18:35:15,948 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:15] "[32mGET / HTTP/1.1[0m" 302 -
 2025-06-09 18:35:15,986 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:15] "GET /login HTTP/1.1" 200 -
 2025-06-09 18:35:16,002 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:16] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
-2025-06-09 18:35:16,003 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:16] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
-2025-06-09 18:35:16,003 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:16] "[36mGET /static/face_auth.js HTTP/1.1[0m" 304 -
-2025-06-09 18:35:16,013 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:16] "[36mGET /static/security_level.js HTTP/1.1[0m" 304 -
-2025-06-09 18:35:16,042 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:16] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:35:16,042 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:16] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:35:16,043 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:16] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:35:16,066 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:16] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:35:16,066 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:16] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:35:16,067 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:16] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:35:16,069 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:16] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
-2025-06-09 18:35:22,244 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
-2025-06-09 18:35:22,257 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "GET /chat HTTP/1.1" 200 -
-2025-06-09 18:35:22,269 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
-2025-06-09 18:35:22,271 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
-2025-06-09 18:35:22,272 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "[36mGET /static/face_modal.js HTTP/1.1[0m" 304 -
-2025-06-09 18:35:22,274 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "[36mGET /static/security_metrics.js HTTP/1.1[0m" 304 -
-2025-06-09 18:35:22,275 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "[36mGET /static/chat.js HTTP/1.1[0m" 304 -
-2025-06-09 18:35:22,301 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:35:22,301 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "GET /socket.io/?EIO=4&transport=polling&t=PTKowTv HTTP/1.1" 200 -
-2025-06-09 18:35:22,313 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:35:22,316 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "GET /security/get_security_metrics HTTP/1.1" 200 -
-2025-06-09 18:35:22,316 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "GET /socket.io/?EIO=4&transport=polling&t=PTKowU2&sid=VwRprgzrVO6KJxeRAAAA HTTP/1.1" 200 -
-2025-06-09 18:35:22,319 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "POST /socket.io/?EIO=4&transport=polling&t=PTKowU1&sid=VwRprgzrVO6KJxeRAAAA HTTP/1.1" 200 -
-2025-06-09 18:35:22,320 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:35:22,323 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "GET /security/get_security_metrics HTTP/1.1" 200 -
-2025-06-09 18:35:22,323 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:35:22,343 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:35:22,354 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:35:22,355 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:35:22,357 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:22] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:35:25,192 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:25] "GET /socket.io/?EIO=4&transport=websocket&sid=VwRprgzrVO6KJxeRAAAA HTTP/1.1" 200 -
-2025-06-09 18:57:58,174 - INFO - 127.0.0.1 - - [09/Jun/2025 18:57:58] "[32mGET / HTTP/1.1[0m" 302 -
-2025-06-09 18:57:58,196 - INFO - 127.0.0.1 - - [09/Jun/2025 18:57:58] "GET /login HTTP/1.1" 200 -
-2025-06-09 18:57:58,223 - INFO - 127.0.0.1 - - [09/Jun/2025 18:57:58] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
-2025-06-09 18:57:58,223 - INFO - 127.0.0.1 - - [09/Jun/2025 18:57:58] "[36mGET /static/face_auth.js HTTP/1.1[0m" 304 -
-2025-06-09 18:57:58,223 - INFO - 127.0.0.1 - - [09/Jun/2025 18:57:58] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
-2025-06-09 18:57:58,227 - INFO - 127.0.0.1 - - [09/Jun/2025 18:57:58] "[36mGET /static/security_level.js HTTP/1.1[0m" 304 -
-2025-06-09 18:57:58,244 - INFO - 127.0.0.1 - - [09/Jun/2025 18:57:58] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:57:58,244 - INFO - 127.0.0.1 - - [09/Jun/2025 18:57:58] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:57:58,244 - INFO - 127.0.0.1 - - [09/Jun/2025 18:57:58] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:57:58,256 - INFO - 127.0.0.1 - - [09/Jun/2025 18:57:58] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:57:58,256 - INFO - 127.0.0.1 - - [09/Jun/2025 18:57:58] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:57:58,257 - INFO - 127.0.0.1 - - [09/Jun/2025 18:57:58] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:57:58,258 - INFO - 127.0.0.1 - - [09/Jun/2025 18:57:58] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
-2025-06-09 18:58:02,838 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:02] "[32mGET / HTTP/1.1[0m" 302 -
-2025-06-09 18:58:02,843 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:02] "GET /login HTTP/1.1" 200 -
-2025-06-09 18:58:02,891 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:02] "GET /static/styles.css HTTP/1.1" 200 -
-2025-06-09 18:58:02,891 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:02] "GET /static/face-api.js HTTP/1.1" 200 -
-2025-06-09 18:58:02,892 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:02] "GET /static/face_auth.js HTTP/1.1" 200 -
-2025-06-09 18:58:02,897 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:02] "GET /static/security_level.js HTTP/1.1" 200 -
-2025-06-09 18:58:02,913 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:02] "GET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1" 200 -
-2025-06-09 18:58:02,913 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:02] "GET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1" 200 -
-2025-06-09 18:58:02,913 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:02] "GET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1" 200 -
-2025-06-09 18:58:02,924 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:02] "GET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1" 200 -
-2025-06-09 18:58:02,924 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:02] "GET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1" 200 -
-2025-06-09 18:58:02,925 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:02] "GET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1" 200 -
-2025-06-09 18:58:02,925 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:02] "GET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1" 200 -
-2025-06-09 18:58:06,858 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:06] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
-2025-06-09 18:58:06,864 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:06] "GET /chat HTTP/1.1" 200 -
-2025-06-09 18:58:06,877 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:06] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
-2025-06-09 18:58:06,959 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:06] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
-2025-06-09 18:58:06,965 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:06] "GET /static/face_modal.js HTTP/1.1" 200 -
-2025-06-09 18:58:06,968 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:06] "GET /static/chat.js HTTP/1.1" 200 -
-2025-06-09 18:58:06,971 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:06] "GET /static/security_metrics.js HTTP/1.1" 200 -
-2025-06-09 18:58:07,134 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:07] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:58:07,135 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:07] "GET /socket.io/?EIO=4&transport=polling&t=PTKu7hS HTTP/1.1" 200 -
-2025-06-09 18:58:07,140 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:07] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:58:07,141 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:07] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:58:07,144 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:07] "GET /security/get_security_metrics HTTP/1.1" 200 -
-2025-06-09 18:58:07,147 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:07] "POST /socket.io/?EIO=4&transport=polling&t=PTKu7hc&sid=GmxfxJQhw0zDw4aYAAAC HTTP/1.1" 200 -
-2025-06-09 18:58:07,148 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:07] "GET /socket.io/?EIO=4&transport=polling&t=PTKu7hd&sid=GmxfxJQhw0zDw4aYAAAC HTTP/1.1" 200 -
-2025-06-09 18:58:07,150 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:07] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:58:07,152 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:07] "GET /security/get_security_metrics HTTP/1.1" 200 -
-2025-06-09 18:58:07,166 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:07] "GET /socket.io/?EIO=4&transport=polling&t=PTKu7hz&sid=GmxfxJQhw0zDw4aYAAAC HTTP/1.1" 200 -
-2025-06-09 18:58:07,166 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:07] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:58:07,179 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:07] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:58:07,182 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:07] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:58:07,183 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:07] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:58:10,847 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
-2025-06-09 18:58:10,856 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "GET /chat HTTP/1.1" 200 -
-2025-06-09 18:58:10,870 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
-2025-06-09 18:58:10,880 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
-2025-06-09 18:58:10,882 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/face_modal.js HTTP/1.1[0m" 304 -
-2025-06-09 18:58:10,882 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/security_metrics.js HTTP/1.1[0m" 304 -
-2025-06-09 18:58:10,883 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/chat.js HTTP/1.1[0m" 304 -
-2025-06-09 18:58:10,910 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:58:10,913 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "GET /socket.io/?EIO=4&transport=polling&t=PTKu8cR HTTP/1.1" 200 -
-2025-06-09 18:58:10,916 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:58:10,921 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "GET /security/get_security_metrics HTTP/1.1" 200 -
-2025-06-09 18:58:10,921 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:58:10,923 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "GET /socket.io/?EIO=4&transport=polling&t=PTKu8ca&sid=q5cUr4wgbBAfmWGtAAAE HTTP/1.1" 200 -
-2025-06-09 18:58:10,926 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "POST /socket.io/?EIO=4&transport=polling&t=PTKu8cZ&sid=q5cUr4wgbBAfmWGtAAAE HTTP/1.1" 200 -
-2025-06-09 18:58:10,927 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:58:10,929 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "GET /security/get_security_metrics HTTP/1.1" 200 -
-2025-06-09 18:58:10,945 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:58:10,956 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
-2025-06-09 18:58:10,958 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
-2025-06-09 18:58:10,961 - INFO - 127.0.0.1 - - [09/Jun/2025 18:58:10] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-06-09 18:35:16,003 - INFO - 127.0.0.1 - - [09/Jun/2025 18:35:16] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -2025-07-02 17:19:08,612 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-02 17:19:08,613 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 17:19:14,805 - INFO - 127.0.0.1 - - [02/Jul/2025 17:19:14] "[32mGET /login HTTP/1.1[0m" 302 -
+2025-07-02 17:19:14,810 - INFO - Using session security level: 1
+2025-07-02 17:19:14,810 - INFO - Session contents: manual_security_level=None, security_level=1, face_verification_enabled=None
+2025-07-02 17:19:14,810 - INFO - Final security level for this login attempt: 1
+2025-07-02 17:19:14,813 - ERROR - Exception on /auth/login [GET]
+Traceback (most recent call last):
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/tshreek/MiniP_Latest/app/auth/auth.py", line 155, in login
+    from ml_mfa.ml_security import increment_failed_attempts, reset_failed_attempts, get_security_level
+ImportError: cannot import name 'increment_failed_attempts' from 'ml_mfa.ml_security' (/Users/tshreek/MiniP_Latest/ml_mfa/ml_security.py)
+2025-07-02 17:19:14,815 - INFO - 127.0.0.1 - - [02/Jul/2025 17:19:14] "[35m[1mGET /auth/login HTTP/1.1[0m" 500 -
+2025-07-02 17:22:51,395 - INFO - Using session security level: 1
+2025-07-02 17:22:51,395 - INFO - Session contents: manual_security_level=None, security_level=1, face_verification_enabled=None
+2025-07-02 17:22:51,395 - INFO - Final security level for this login attempt: 1
+2025-07-02 17:22:51,396 - ERROR - Exception on /auth/login [GET]
+Traceback (most recent call last):
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/tshreek/MiniP_Latest/app/auth/auth.py", line 155, in login
+    if not face_locations:
+ImportError: cannot import name 'increment_failed_attempts' from 'ml_mfa.ml_security' (/Users/tshreek/MiniP_Latest/ml_mfa/ml_security.py)
+2025-07-02 17:22:51,399 - INFO - 127.0.0.1 - - [02/Jul/2025 17:22:51] "[35m[1mGET /auth/login HTTP/1.1[0m" 500 -
+2025-07-02 17:26:37,027 - INFO - Using session security level: 1
+2025-07-02 17:26:37,036 - INFO - Session contents: manual_security_level=None, security_level=1, face_verification_enabled=None
+2025-07-02 17:26:37,036 - INFO - Final security level for this login attempt: 1
+2025-07-02 17:26:37,037 - ERROR - Exception on /auth/login [GET]
+Traceback (most recent call last):
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/tshreek/MiniP_Latest/app/auth/auth.py", line 155, in login
+    if not face_locations:
+ImportError: cannot import name 'increment_failed_attempts' from 'ml_mfa.ml_security' (/Users/tshreek/MiniP_Latest/ml_mfa/ml_security.py)
+2025-07-02 17:26:37,039 - INFO - 127.0.0.1 - - [02/Jul/2025 17:26:37] "[35m[1mGET /auth/login HTTP/1.1[0m" 500 -
+2025-07-02 17:39:26,245 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-02 17:39:26,245 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 17:39:28,183 - INFO - Security level set to HIGH for login.
+2025-07-02 17:39:28,213 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:28] "GET /auth/login HTTP/1.1" 200 -
+2025-07-02 17:39:28,263 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:28] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 17:39:35,368 - INFO - Security level set to HIGH for login.
+2025-07-02 17:39:35,371 - INFO - Login attempt for user: tshreek
+2025-07-02 17:39:35,445 - INFO - High security login validated for user: tshreek. Proceeding to face verification.
+2025-07-02 17:39:35,446 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-02 17:39:35,450 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[32mGET /face/face_verification HTTP/1.1[0m" 302 -
+2025-07-02 17:39:35,460 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "GET /chat HTTP/1.1" 200 -
+2025-07-02 17:39:35,477 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 17:39:35,481 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 17:39:35,483 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[36mGET /static/chat.js HTTP/1.1[0m" 304 -
+2025-07-02 17:39:35,486 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[36mGET /static/face_modal.js HTTP/1.1[0m" 304 -
+2025-07-02 17:39:35,488 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[36mGET /static/security_metrics.js HTTP/1.1[0m" 304 -
+2025-07-02 17:39:35,510 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "GET /socket.io/?EIO=4&transport=polling&t=PVB2jeJ HTTP/1.1" 200 -
+2025-07-02 17:39:35,518 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:39:35,530 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 17:39:35,532 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "POST /socket.io/?EIO=4&transport=polling&t=PVB2jeV&sid=fMEbzIiYYL1LrMmHAAAA HTTP/1.1" 200 -
+2025-07-02 17:39:35,532 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:39:35,532 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "GET /socket.io/?EIO=4&transport=polling&t=PVB2jeW&sid=fMEbzIiYYL1LrMmHAAAA HTTP/1.1" 200 -
+2025-07-02 17:39:35,534 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:35,541 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:35,542 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 17:39:35,579 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:39:35,590 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:39:35,591 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:35,593 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:35] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:37,401 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:37] "GET /socket.io/?EIO=4&transport=websocket&sid=fMEbzIiYYL1LrMmHAAAA HTTP/1.1" 200 -
+2025-07-02 17:39:39,910 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:39] "POST /security/set_security_level_login HTTP/1.1" 200 -
+2025-07-02 17:39:40,993 - INFO - Security level set to HIGH for login.
+2025-07-02 17:39:41,002 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:41] "GET /auth/login HTTP/1.1" 200 -
+2025-07-02 17:39:41,017 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:41] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 17:39:45,436 - INFO - Security level set to HIGH for login.
+2025-07-02 17:39:45,437 - INFO - Login attempt for user: tshreek
+2025-07-02 17:39:45,514 - INFO - High security login validated for user: tshreek. Proceeding to face verification.
+2025-07-02 17:39:45,516 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:45] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-02 17:39:45,521 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:45] "[32mGET /face/face_verification HTTP/1.1[0m" 302 -
+2025-07-02 17:39:45,524 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:45] "[32mGET /chat HTTP/1.1[0m" 302 -
+2025-07-02 17:39:45,531 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:45] "GET /face/face_verification HTTP/1.1" 200 -
+2025-07-02 17:39:45,543 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:45] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 17:39:45,544 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:45] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 17:39:45,561 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:45] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:39:45,562 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:45] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:39:45,562 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:45] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:39:45,578 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:45] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:45,579 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:45] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:45,579 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:45] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:45,579 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:45] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:51,550 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:51] "POST /face/face_verification HTTP/1.1" 200 -
+2025-07-02 17:39:53,077 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "GET /chat HTTP/1.1" 200 -
+2025-07-02 17:39:53,092 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 17:39:53,093 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 17:39:53,096 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "[36mGET /static/face_modal.js HTTP/1.1[0m" 304 -
+2025-07-02 17:39:53,098 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "[36mGET /static/security_metrics.js HTTP/1.1[0m" 304 -
+2025-07-02 17:39:53,098 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "[36mGET /static/chat.js HTTP/1.1[0m" 304 -
+2025-07-02 17:39:53,105 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:39:53,105 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "GET /socket.io/?EIO=4&transport=polling&t=PVB2nxE HTTP/1.1" 200 -
+2025-07-02 17:39:53,109 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:39:53,111 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 17:39:53,122 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "POST /socket.io/?EIO=4&transport=polling&t=PVB2nxR&sid=jlV4SYCl4NsnIrTcAAAC HTTP/1.1" 200 -
+2025-07-02 17:39:53,123 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 17:39:53,123 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "GET /socket.io/?EIO=4&transport=polling&t=PVB2nxS&sid=jlV4SYCl4NsnIrTcAAAC HTTP/1.1" 200 -
+2025-07-02 17:39:53,126 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:53,128 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "GET /socket.io/?EIO=4&transport=polling&t=PVB2nxd&sid=jlV4SYCl4NsnIrTcAAAC HTTP/1.1" 200 -
+2025-07-02 17:39:53,130 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:53,147 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:39:53,163 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:39:53,163 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:53,166 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:53] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:54,821 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:54] "[32mGET /face/face_verification HTTP/1.1[0m" 302 -
+2025-07-02 17:39:54,831 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:54] "GET /socket.io/?EIO=4&transport=websocket&sid=jlV4SYCl4NsnIrTcAAAC HTTP/1.1" 200 -
+2025-07-02 17:39:54,832 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:54] "GET /socket.io/?EIO=4&transport=polling&t=PVB2oMD HTTP/1.1" 200 -
+2025-07-02 17:39:54,841 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:54] "GET /socket.io/?EIO=4&transport=polling&t=PVB2oMI.0&sid=tw_YBsuY23V1naAkAAAE HTTP/1.1" 200 -
+2025-07-02 17:39:54,841 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:54] "POST /socket.io/?EIO=4&transport=polling&t=PVB2oMI&sid=tw_YBsuY23V1naAkAAAE HTTP/1.1" 200 -
+2025-07-02 17:39:54,842 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:54] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:54,844 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:54] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:54,861 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:54] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:39:54,872 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:54] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:39:54,873 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:54] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:54,875 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:54] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:39:56,281 - INFO - 127.0.0.1 - - [02/Jul/2025 17:39:56] "GET /socket.io/?EIO=4&transport=websocket&sid=tw_YBsuY23V1naAkAAAE HTTP/1.1" 200 -
+2025-07-02 17:42:57,871 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-02 17:42:57,871 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 17:43:01,081 - INFO - Security level set to HIGH for login.
+2025-07-02 17:43:01,103 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:01] "GET /auth/login HTTP/1.1" 200 -
+2025-07-02 17:43:01,158 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:01] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 17:43:06,599 - INFO - Security level set to HIGH for login.
+2025-07-02 17:43:06,600 - INFO - Login attempt for user: tshreek
+2025-07-02 17:43:06,698 - INFO - High security login validated for user: tshreek. Proceeding to face verification.
+2025-07-02 17:43:06,699 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:06] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-02 17:43:06,703 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:06] "[32mGET /face/face_verification HTTP/1.1[0m" 302 -
+2025-07-02 17:43:06,706 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:06] "[32mGET /chat HTTP/1.1[0m" 302 -
+2025-07-02 17:43:06,712 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:06] "GET /face/face_verification HTTP/1.1" 200 -
+2025-07-02 17:43:06,726 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:06] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 17:43:06,728 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:06] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 17:43:06,750 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:06] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:43:06,751 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:06] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:43:06,752 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:06] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:43:06,768 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:06] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:43:06,768 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:06] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:43:06,769 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:06] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:43:06,770 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:06] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 17:43:09,156 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:09] "[32mGET /login HTTP/1.1[0m" 302 -
+2025-07-02 17:43:09,159 - INFO - Security level set to HIGH for login.
+2025-07-02 17:43:09,161 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:09] "GET /auth/login HTTP/1.1" 200 -
+2025-07-02 17:43:09,171 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:09] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 17:43:13,258 - INFO - Security level set to HIGH for login.
+2025-07-02 17:43:13,259 - INFO - Login attempt for user: tshreek
+2025-07-02 17:43:13,330 - INFO - High security login validated for user: tshreek. Proceeding to face verification.
+2025-07-02 17:43:13,331 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:13] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-02 17:43:13,333 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:13] "GET /face/face_verification HTTP/1.1" 200 -
+2025-07-02 17:43:13,343 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:13] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 17:43:13,343 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:13] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 17:43:13,360 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:13] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:43:13,363 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:13] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:43:13,363 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:13] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:43:13,366 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:13] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 17:43:13,366 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:13] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:43:13,368 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:13] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:43:13,369 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:13] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:43:22,540 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:22] "[31m[1mPOST /face/face_verification HTTP/1.1[0m" 401 -
+2025-07-02 17:43:28,303 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:28] "[31m[1mPOST /face/face_verification HTTP/1.1[0m" 401 -
+2025-07-02 17:43:38,794 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:38] "POST /face/face_verification HTTP/1.1" 200 -
+2025-07-02 17:43:40,335 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "GET /chat HTTP/1.1" 200 -
+2025-07-02 17:43:40,358 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 17:43:40,361 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 17:43:40,364 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "[36mGET /static/face_modal.js HTTP/1.1[0m" 304 -
+2025-07-02 17:43:40,368 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "[36mGET /static/chat.js HTTP/1.1[0m" 304 -
+2025-07-02 17:43:40,368 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "[36mGET /static/security_metrics.js HTTP/1.1[0m" 304 -
+2025-07-02 17:43:40,393 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:43:40,396 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "GET /socket.io/?EIO=4&transport=polling&t=PVB3fQc HTTP/1.1" 200 -
+2025-07-02 17:43:40,399 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:43:40,407 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:43:40,410 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 17:43:40,412 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "POST /socket.io/?EIO=4&transport=polling&t=PVB3fQl&sid=bd-M_cOscleN_MVWAAAA HTTP/1.1" 200 -
+2025-07-02 17:43:40,412 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "GET /socket.io/?EIO=4&transport=polling&t=PVB3fQn&sid=bd-M_cOscleN_MVWAAAA HTTP/1.1" 200 -
+2025-07-02 17:43:40,415 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:43:40,417 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 17:43:40,432 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "GET /socket.io/?EIO=4&transport=polling&t=PVB3fRE&sid=bd-M_cOscleN_MVWAAAA HTTP/1.1" 200 -
+2025-07-02 17:43:40,433 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:43:40,445 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 17:43:40,447 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:43:40,449 - INFO - 127.0.0.1 - - [02/Jul/2025 17:43:40] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 17:44:40,494 - INFO - 127.0.0.1 - - [02/Jul/2025 17:44:40] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 17:44:40,507 - INFO - 127.0.0.1 - - [02/Jul/2025 17:44:40] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 18:46:17,937 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-02 18:46:17,937 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 18:46:20,128 - INFO - Security level set to HIGH for login.
+2025-07-02 18:46:20,148 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:20] "GET /auth/login HTTP/1.1" 200 -
+2025-07-02 18:46:20,193 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:20] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 18:46:30,699 - INFO - Security level set to HIGH for login.
+2025-07-02 18:46:30,701 - INFO - Login attempt for user: tshreek
+2025-07-02 18:46:30,806 - INFO - High security login validated for user: tshreek. Proceeding to face verification.
+2025-07-02 18:46:30,807 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:30] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-02 18:46:30,814 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:30] "[32mGET /face/face_verification HTTP/1.1[0m" 302 -
+2025-07-02 18:46:30,817 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:30] "[32mGET /chat HTTP/1.1[0m" 302 -
+2025-07-02 18:46:30,828 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:30] "GET /face/face_verification HTTP/1.1" 200 -
+2025-07-02 18:46:30,842 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:30] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 18:46:30,842 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:30] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 18:46:30,875 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:30] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:46:30,875 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:30] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:46:30,875 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:30] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:46:30,884 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:30] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:46:30,884 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:30] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:46:30,885 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:30] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:46:30,886 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:30] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 18:46:34,606 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:34] "POST /face/face_verification HTTP/1.1" 200 -
+2025-07-02 18:46:36,136 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "GET /chat HTTP/1.1" 200 -
+2025-07-02 18:46:36,154 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 18:46:36,156 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 18:46:36,158 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "[36mGET /static/face_modal.js HTTP/1.1[0m" 304 -
+2025-07-02 18:46:36,159 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "[36mGET /static/chat.js HTTP/1.1[0m" 304 -
+2025-07-02 18:46:36,161 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "[36mGET /static/security_metrics.js HTTP/1.1[0m" 304 -
+2025-07-02 18:46:36,169 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:46:36,173 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:46:36,181 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "GET /socket.io/?EIO=4&transport=polling&t=PVBI3F9 HTTP/1.1" 200 -
+2025-07-02 18:46:36,187 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 18:46:36,192 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:46:36,199 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "GET /socket.io/?EIO=4&transport=polling&t=PVBI3FU&sid=VZp3xnDA953BkYEeAAAA HTTP/1.1" 200 -
+2025-07-02 18:46:36,200 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 18:46:36,202 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "POST /socket.io/?EIO=4&transport=polling&t=PVBI3FT&sid=VZp3xnDA953BkYEeAAAA HTTP/1.1" 200 -
+2025-07-02 18:46:36,203 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:46:36,225 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:46:36,226 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "GET /socket.io/?EIO=4&transport=polling&t=PVBI3G0&sid=VZp3xnDA953BkYEeAAAA HTTP/1.1" 200 -
+2025-07-02 18:46:36,240 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:46:36,241 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:46:36,243 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:36] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:46:37,484 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:37] "[32mGET /face/face_verification HTTP/1.1[0m" 302 -
+2025-07-02 18:46:37,491 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:37] "GET /socket.io/?EIO=4&transport=websocket&sid=VZp3xnDA953BkYEeAAAA HTTP/1.1" 200 -
+2025-07-02 18:46:37,495 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:37] "GET /socket.io/?EIO=4&transport=polling&t=PVBI3Zr HTTP/1.1" 200 -
+2025-07-02 18:46:37,502 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:37] "POST /socket.io/?EIO=4&transport=polling&t=PVBI3Zv&sid=fBuV23D6__1AwB7SAAAC HTTP/1.1" 200 -
+2025-07-02 18:46:37,503 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:37] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:46:37,504 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:37] "GET /socket.io/?EIO=4&transport=polling&t=PVBI3Zv.0&sid=fBuV23D6__1AwB7SAAAC HTTP/1.1" 200 -
+2025-07-02 18:46:37,505 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:37] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:46:37,522 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:37] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:46:37,536 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:37] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:46:37,536 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:37] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:46:37,538 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:37] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:46:38,296 - INFO - 127.0.0.1 - - [02/Jul/2025 18:46:38] "GET /socket.io/?EIO=4&transport=websocket&sid=fBuV23D6__1AwB7SAAAC HTTP/1.1" 200 -
+2025-07-02 18:47:09,211 - INFO - Security level set to HIGH for login.
+2025-07-02 18:47:09,212 - INFO - Login attempt for user: tshreek
+2025-07-02 18:47:09,284 - INFO - High security login validated for user: tshreek. Proceeding to face verification.
+2025-07-02 18:47:09,287 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:09] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-02 18:47:09,295 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:09] "[32mGET /face/face_verification HTTP/1.1[0m" 302 -
+2025-07-02 18:47:09,302 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:09] "[32mGET /chat HTTP/1.1[0m" 302 -
+2025-07-02 18:47:09,309 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:09] "GET /face/face_verification HTTP/1.1" 200 -
+2025-07-02 18:47:09,328 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:09] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 18:47:09,328 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:09] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 18:47:09,366 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:09] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:47:09,368 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:09] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:47:09,370 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:09] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:47:09,374 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:09] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:09,378 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:09] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:09,381 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:09] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:09,381 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:09] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:14,464 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:14] "POST /face/face_verification HTTP/1.1" 200 -
+2025-07-02 18:47:15,982 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:15] "GET /chat HTTP/1.1" 200 -
+2025-07-02 18:47:15,996 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:15] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 18:47:15,997 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:15] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 18:47:16,000 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "[36mGET /static/face_modal.js HTTP/1.1[0m" 304 -
+2025-07-02 18:47:16,002 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "[36mGET /static/chat.js HTTP/1.1[0m" 304 -
+2025-07-02 18:47:16,002 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "[36mGET /static/security_metrics.js HTTP/1.1[0m" 304 -
+2025-07-02 18:47:16,007 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:47:16,010 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "GET /socket.io/?EIO=4&transport=polling&t=PVBICze HTTP/1.1" 200 -
+2025-07-02 18:47:16,011 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:47:16,013 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 18:47:16,015 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 18:47:16,028 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "GET /socket.io/?EIO=4&transport=polling&t=PVBICzu&sid=9Yov76Mlyo4B-3sWAAAE HTTP/1.1" 200 -
+2025-07-02 18:47:16,028 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "POST /socket.io/?EIO=4&transport=polling&t=PVBICzt&sid=9Yov76Mlyo4B-3sWAAAE HTTP/1.1" 200 -
+2025-07-02 18:47:16,029 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:16,030 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:16,058 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:47:16,075 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:47:16,076 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:16,079 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:16] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:18,834 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:18] "[32mGET / HTTP/1.1[0m" 302 -
+2025-07-02 18:47:18,837 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:18] "[32mGET /login HTTP/1.1[0m" 302 -
+2025-07-02 18:47:18,839 - INFO - Security level set to HIGH for login.
+2025-07-02 18:47:18,842 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:18] "GET /auth/login HTTP/1.1" 200 -
+2025-07-02 18:47:18,877 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:18] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 18:47:27,494 - INFO - Security level set to HIGH for login.
+2025-07-02 18:47:27,495 - INFO - Login attempt for user: demo
+2025-07-02 18:47:27,600 - INFO - High security login validated for user: demo. Proceeding to face verification.
+2025-07-02 18:47:27,601 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:27] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-02 18:47:27,605 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:27] "[32mGET /face/face_verification HTTP/1.1[0m" 302 -
+2025-07-02 18:47:27,609 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:27] "[32mGET /chat HTTP/1.1[0m" 302 -
+2025-07-02 18:47:27,613 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:27] "GET /face/face_verification HTTP/1.1" 200 -
+2025-07-02 18:47:27,623 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:27] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 18:47:27,623 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:27] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 18:47:27,663 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:27] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:47:27,663 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:27] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:47:27,664 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:27] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:47:27,668 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:27] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:27,669 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:27] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:27,669 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:27] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:27,669 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:27] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:32,658 - INFO - Security level set to HIGH for login.
+2025-07-02 18:47:32,659 - INFO - Login attempt for user: demo
+2025-07-02 18:47:32,761 - INFO - High security login validated for user: demo. Proceeding to face verification.
+2025-07-02 18:47:32,761 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:32] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-02 18:47:32,767 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:32] "GET /face/face_verification HTTP/1.1" 200 -
+2025-07-02 18:47:32,778 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:32] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 18:47:32,778 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:32] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 18:47:32,801 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:32] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:47:32,801 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:32] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:47:32,802 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:32] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:47:32,806 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:32] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:32,807 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:32] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:32,809 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:32] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:32,810 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:32] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 18:47:36,185 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:36] "[31m[1mPOST /face/face_verification HTTP/1.1[0m" 400 -
+2025-07-02 18:47:41,933 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:41] "[31m[1mPOST /face/face_verification HTTP/1.1[0m" 400 -
+2025-07-02 18:47:43,549 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:43] "[31m[1mPOST /face/face_verification HTTP/1.1[0m" 400 -
+2025-07-02 18:47:44,481 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:44] "[31m[1mPOST /face/face_verification HTTP/1.1[0m" 400 -
+2025-07-02 18:47:52,314 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:52] "GET /register HTTP/1.1" 200 -
+2025-07-02 18:47:52,330 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:52] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 18:47:52,330 - INFO - 127.0.0.1 - - [02/Jul/2025 18:47:52] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 18:48:03,521 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:03] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:48:03,542 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:03] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:48:03,579 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:03] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:48:03,583 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:03] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:48:03,612 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:03] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:48:03,616 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:03] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:48:03,616 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:03] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 18:48:16,256 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:16] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:48:16,259 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:16] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:48:19,449 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:19] "GET /register HTTP/1.1" 200 -
+2025-07-02 18:48:19,473 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:19] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 18:48:19,476 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:19] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 18:48:22,334 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:22] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:48:22,357 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:22] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:48:22,392 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:22] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:48:22,394 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:22] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:48:22,425 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:22] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:48:22,428 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:22] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:48:22,428 - INFO - 127.0.0.1 - - [02/Jul/2025 18:48:22] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 18:49:16,258 - INFO - 127.0.0.1 - - [02/Jul/2025 18:49:16] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:49:16,262 - INFO - 127.0.0.1 - - [02/Jul/2025 18:49:16] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:50:16,254 - INFO - 127.0.0.1 - - [02/Jul/2025 18:50:16] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:50:16,258 - INFO - 127.0.0.1 - - [02/Jul/2025 18:50:16] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:51:16,255 - INFO - 127.0.0.1 - - [02/Jul/2025 18:51:16] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:51:16,260 - INFO - 127.0.0.1 - - [02/Jul/2025 18:51:16] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:52:16,255 - INFO - 127.0.0.1 - - [02/Jul/2025 18:52:16] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:52:16,260 - INFO - 127.0.0.1 - - [02/Jul/2025 18:52:16] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:53:16,251 - INFO - 127.0.0.1 - - [02/Jul/2025 18:53:16] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:53:16,256 - INFO - 127.0.0.1 - - [02/Jul/2025 18:53:16] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:54:16,248 - INFO - 127.0.0.1 - - [02/Jul/2025 18:54:16] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:54:16,255 - INFO - 127.0.0.1 - - [02/Jul/2025 18:54:16] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:55:17,244 - INFO - 127.0.0.1 - - [02/Jul/2025 18:55:17] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:55:17,249 - INFO - 127.0.0.1 - - [02/Jul/2025 18:55:17] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:55:38,249 - INFO - 127.0.0.1 - - [02/Jul/2025 18:55:38] "GET /socket.io/?EIO=4&transport=websocket&sid=9Yov76Mlyo4B-3sWAAAE HTTP/1.1" 200 -
+2025-07-02 18:55:40,251 - INFO - 127.0.0.1 - - [02/Jul/2025 18:55:40] "GET /socket.io/?EIO=4&transport=polling&t=PVBK84L HTTP/1.1" 200 -
+2025-07-02 18:55:40,255 - INFO - 127.0.0.1 - - [02/Jul/2025 18:55:40] "POST /socket.io/?EIO=4&transport=polling&t=PVBK84T&sid=_zcnr1pel1_CVpeYAAAG HTTP/1.1" 200 -
+2025-07-02 18:55:40,259 - INFO - 127.0.0.1 - - [02/Jul/2025 18:55:40] "GET /socket.io/?EIO=4&transport=polling&t=PVBK84T.0&sid=_zcnr1pel1_CVpeYAAAG HTTP/1.1" 200 -
+2025-07-02 18:55:40,262 - INFO - 127.0.0.1 - - [02/Jul/2025 18:55:40] "GET /socket.io/?EIO=4&transport=polling&t=PVBK84a&sid=_zcnr1pel1_CVpeYAAAG HTTP/1.1" 200 -
+2025-07-02 18:56:37,964 - INFO - Security level set to HIGH for login.
+2025-07-02 18:56:37,968 - INFO - 127.0.0.1 - - [02/Jul/2025 18:56:37] "GET /auth/login HTTP/1.1" 200 -
+2025-07-02 18:56:38,013 - INFO - 127.0.0.1 - - [02/Jul/2025 18:56:38] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 18:56:47,896 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-02 18:56:47,896 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 18:56:48,651 - INFO - 127.0.0.1 - - [02/Jul/2025 18:56:48] "GET /socket.io/?EIO=4&transport=polling&t=PVBKOn5 HTTP/1.1" 200 -
+2025-07-02 18:56:48,662 - INFO - 127.0.0.1 - - [02/Jul/2025 18:56:48] "POST /socket.io/?EIO=4&transport=polling&t=PVBKOnE&sid=1hf4KANGxGO8WLKnAAAA HTTP/1.1" 200 -
+2025-07-02 18:56:48,665 - INFO - 127.0.0.1 - - [02/Jul/2025 18:56:48] "GET /socket.io/?EIO=4&transport=polling&t=PVBKOnG&sid=1hf4KANGxGO8WLKnAAAA HTTP/1.1" 200 -
+2025-07-02 18:56:48,671 - INFO - 127.0.0.1 - - [02/Jul/2025 18:56:48] "GET /socket.io/?EIO=4&transport=polling&t=PVBKOnS&sid=1hf4KANGxGO8WLKnAAAA HTTP/1.1" 200 -
+2025-07-02 18:56:55,649 - INFO - 127.0.0.1 - - [02/Jul/2025 18:56:55] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:56:55,652 - INFO - 127.0.0.1 - - [02/Jul/2025 18:56:55] "[31m[1mGET /security/get_security_metrics HTTP/1.1[0m" 401 -
+2025-07-02 18:57:10,556 - INFO - Security level set to HIGH for login.
+2025-07-02 18:57:10,560 - INFO - Login attempt for user: tshreek
+2025-07-02 18:57:10,672 - INFO - High security login validated for user: tshreek. Proceeding to face verification.
+2025-07-02 18:57:10,673 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:10] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-02 18:57:10,686 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:10] "GET /face/face_verification HTTP/1.1" 200 -
+2025-07-02 18:57:10,704 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:10] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 18:57:10,704 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:10] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 18:57:10,738 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:10] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:57:10,738 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:10] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:57:10,739 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:10] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:57:10,745 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:10] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:57:10,746 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:10] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:57:10,748 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:10] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 18:57:10,748 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:10] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:57:24,775 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:24] "[31m[1mPOST /face/face_verification HTTP/1.1[0m" 400 -
+2025-07-02 18:57:32,333 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:32] "POST /face/face_verification HTTP/1.1" 200 -
+2025-07-02 18:57:33,857 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "GET /chat HTTP/1.1" 200 -
+2025-07-02 18:57:33,871 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 18:57:33,873 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 18:57:33,873 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "[36mGET /static/face_modal.js HTTP/1.1[0m" 304 -
+2025-07-02 18:57:33,877 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "[36mGET /static/chat.js HTTP/1.1[0m" 304 -
+2025-07-02 18:57:33,878 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "[36mGET /static/security_metrics.js HTTP/1.1[0m" 304 -
+2025-07-02 18:57:33,887 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:57:33,890 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "GET /socket.io/?EIO=4&transport=polling&t=PVBKZp_ HTTP/1.1" 200 -
+2025-07-02 18:57:33,891 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:57:33,899 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 18:57:33,901 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 18:57:33,931 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "POST /socket.io/?EIO=4&transport=polling&t=PVBKZqb&sid=GeNujcD8G6tXSwgIAAAC HTTP/1.1" 200 -
+2025-07-02 18:57:33,931 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "GET /socket.io/?EIO=4&transport=polling&t=PVBKZqd&sid=GeNujcD8G6tXSwgIAAAC HTTP/1.1" 200 -
+2025-07-02 18:57:33,934 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:57:33,936 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:57:33,939 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "GET /socket.io/?EIO=4&transport=polling&t=PVBKZqj&sid=GeNujcD8G6tXSwgIAAAC HTTP/1.1" 200 -
+2025-07-02 18:57:33,964 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:57:33,981 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:57:33,981 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:57:33,984 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:33] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:57:35,690 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:35] "[32mGET /face/face_verification HTTP/1.1[0m" 302 -
+2025-07-02 18:57:35,699 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:35] "GET /socket.io/?EIO=4&transport=websocket&sid=GeNujcD8G6tXSwgIAAAC HTTP/1.1" 200 -
+2025-07-02 18:57:35,706 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:35] "GET /socket.io/?EIO=4&transport=polling&t=PVBKaGO HTTP/1.1" 200 -
+2025-07-02 18:57:35,711 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:35] "POST /socket.io/?EIO=4&transport=polling&t=PVBKaGS&sid=t9y_PF3XciVMkws2AAAE HTTP/1.1" 200 -
+2025-07-02 18:57:35,712 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:35] "GET /socket.io/?EIO=4&transport=polling&t=PVBKaGS.0&sid=t9y_PF3XciVMkws2AAAE HTTP/1.1" 200 -
+2025-07-02 18:57:35,713 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:35] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:57:35,715 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:35] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:57:35,732 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:35] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:57:35,747 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:35] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 18:57:35,747 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:35] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:57:35,749 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:35] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 18:57:36,318 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:36] "GET /socket.io/?EIO=4&transport=websocket&sid=t9y_PF3XciVMkws2AAAE HTTP/1.1" 200 -
+2025-07-02 18:57:37,881 - ERROR - Exception on /register [GET]
+Traceback (most recent call last):
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/tshreek/MiniP_Latest/app/routes/routes.py", line 170, in register
+    return render_template('register.html', form=form)
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/flask/templating.py", line 149, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/jinja2/environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/jinja2/environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/jinja2/environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/jinja2/loaders.py", line 138, in load
+    code = environment.compile(source, name, filename)
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/jinja2/environment.py", line 771, in compile
+    self.handle_exception(source=source_hint)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tshreek/MiniP_Latest/venv/lib/python3.13/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/tshreek/MiniP_Latest/app/templates/register.html", line 8, in template
+    <link rel="stylesheet" href="{{ url_for('static', filename                    // Show success message
+    ^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.TemplateSyntaxError: expected token ',', got 'success'
+2025-07-02 18:57:37,885 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:37] "[35m[1mGET /register HTTP/1.1[0m" 500 -
+2025-07-02 18:57:56,663 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:56] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 18:57:56,668 - INFO - 127.0.0.1 - - [02/Jul/2025 18:57:56] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 18:58:57,656 - INFO - 127.0.0.1 - - [02/Jul/2025 18:58:57] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 18:58:57,663 - INFO - 127.0.0.1 - - [02/Jul/2025 18:58:57] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 18:59:46,150 - INFO - 127.0.0.1 - - [02/Jul/2025 18:59:46] "HEAD /register HTTP/1.1" 200 -
+2025-07-02 18:59:58,652 - INFO - 127.0.0.1 - - [02/Jul/2025 18:59:58] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 18:59:58,658 - INFO - 127.0.0.1 - - [02/Jul/2025 18:59:58] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:00:59,652 - INFO - 127.0.0.1 - - [02/Jul/2025 19:00:59] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:00:59,658 - INFO - 127.0.0.1 - - [02/Jul/2025 19:00:59] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:01:02,997 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:02] "GET /register HTTP/1.1" 200 -
+2025-07-02 19:01:03,026 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:03] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 19:01:03,031 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:03] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 19:01:35,533 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:35] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:01:35,548 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:35] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:01:35,605 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:35] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:01:35,608 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:35] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:01:35,633 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:35] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:01:35,637 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:35] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:01:35,637 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:35] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 19:01:44,388 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:44] "GET /register HTTP/1.1" 200 -
+2025-07-02 19:01:44,439 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:44] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 19:01:44,444 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:44] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 19:01:45,970 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:45] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:01:45,992 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:45] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:01:46,014 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:46] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:01:46,017 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:46] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:01:46,037 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:46] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:01:46,041 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:46] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:01:46,041 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:46] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 19:01:56,370 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:56] "GET /register HTTP/1.1" 200 -
+2025-07-02 19:01:56,387 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:56] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 19:01:56,387 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:56] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 19:01:57,606 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:57] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:01:57,612 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:57] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:01:57,654 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:57] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:01:57,657 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:57] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:01:57,685 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:57] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:01:57,689 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:57] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 19:01:57,689 - INFO - 127.0.0.1 - - [02/Jul/2025 19:01:57] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:02:00,643 - INFO - 127.0.0.1 - - [02/Jul/2025 19:02:00] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:02:00,648 - INFO - 127.0.0.1 - - [02/Jul/2025 19:02:00] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:02:12,263 - INFO - 127.0.0.1 - - [02/Jul/2025 19:02:12] "GET /register HTTP/1.1" 200 -
+2025-07-02 19:02:12,289 - INFO - 127.0.0.1 - - [02/Jul/2025 19:02:12] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 19:02:12,290 - INFO - 127.0.0.1 - - [02/Jul/2025 19:02:12] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 19:03:01,652 - INFO - 127.0.0.1 - - [02/Jul/2025 19:03:01] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:03:01,657 - INFO - 127.0.0.1 - - [02/Jul/2025 19:03:01] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:04:02,651 - INFO - 127.0.0.1 - - [02/Jul/2025 19:04:02] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:04:02,658 - INFO - 127.0.0.1 - - [02/Jul/2025 19:04:02] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:04:57,738 - INFO - 127.0.0.1 - - [02/Jul/2025 19:04:57] "GET /socket.io/?EIO=4&transport=websocket&sid=1hf4KANGxGO8WLKnAAAA HTTP/1.1" 200 -
+2025-07-02 19:04:58,636 - INFO - 127.0.0.1 - - [02/Jul/2025 19:04:58] "GET /socket.io/?EIO=4&transport=polling&t=PVBMGP1 HTTP/1.1" 200 -
+2025-07-02 19:04:58,656 - INFO - 127.0.0.1 - - [02/Jul/2025 19:04:58] "POST /socket.io/?EIO=4&transport=polling&t=PVBMGPE&sid=3slpRWukTDv-wUAfAAAG HTTP/1.1" 200 -
+2025-07-02 19:04:58,660 - INFO - 127.0.0.1 - - [02/Jul/2025 19:04:58] "GET /socket.io/?EIO=4&transport=polling&t=PVBMGPF&sid=3slpRWukTDv-wUAfAAAG HTTP/1.1" 200 -
+2025-07-02 19:04:58,664 - INFO - 127.0.0.1 - - [02/Jul/2025 19:04:58] "GET /socket.io/?EIO=4&transport=polling&t=PVBMGPc&sid=3slpRWukTDv-wUAfAAAG HTTP/1.1" 200 -
+2025-07-02 19:05:10,606 - INFO - 127.0.0.1 - - [02/Jul/2025 19:05:10] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:05:10,609 - INFO - 127.0.0.1 - - [02/Jul/2025 19:05:10] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:06:11,607 - INFO - 127.0.0.1 - - [02/Jul/2025 19:06:11] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:06:11,613 - INFO - 127.0.0.1 - - [02/Jul/2025 19:06:11] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:07:12,600 - INFO - 127.0.0.1 - - [02/Jul/2025 19:07:12] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:07:12,604 - INFO - 127.0.0.1 - - [02/Jul/2025 19:07:12] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:08:13,603 - INFO - 127.0.0.1 - - [02/Jul/2025 19:08:13] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:08:13,609 - INFO - 127.0.0.1 - - [02/Jul/2025 19:08:13] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:09:14,593 - INFO - 127.0.0.1 - - [02/Jul/2025 19:09:14] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:09:14,598 - INFO - 127.0.0.1 - - [02/Jul/2025 19:09:14] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:09:35,070 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-02 19:09:35,070 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-02 19:09:36,585 - INFO - 127.0.0.1 - - [02/Jul/2025 19:09:36] "GET /socket.io/?EIO=4&transport=polling&t=PVBNKG2 HTTP/1.1" 200 -
+2025-07-02 19:09:36,616 - INFO - 127.0.0.1 - - [02/Jul/2025 19:09:36] "POST /socket.io/?EIO=4&transport=polling&t=PVBNKGC&sid=iDbgdKLWgyp16iHHAAAA HTTP/1.1" 200 -
+2025-07-02 19:09:36,616 - INFO - 127.0.0.1 - - [02/Jul/2025 19:09:36] "GET /socket.io/?EIO=4&transport=polling&t=PVBNKGE&sid=iDbgdKLWgyp16iHHAAAA HTTP/1.1" 200 -
+2025-07-02 19:09:36,619 - INFO - 127.0.0.1 - - [02/Jul/2025 19:09:36] "GET /socket.io/?EIO=4&transport=polling&t=PVBNKGg&sid=iDbgdKLWgyp16iHHAAAA HTTP/1.1" 200 -
+2025-07-02 19:09:42,865 - INFO - 127.0.0.1 - - [02/Jul/2025 19:09:42] "GET /register HTTP/1.1" 200 -
+2025-07-02 19:09:42,908 - INFO - 127.0.0.1 - - [02/Jul/2025 19:09:42] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 19:09:42,908 - INFO - 127.0.0.1 - - [02/Jul/2025 19:09:42] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 19:10:10,167 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:10] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:10:10,173 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:10] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:10:10,216 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:10] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:10:10,218 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:10] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:10:10,240 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:10] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:10:10,242 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:10] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 19:10:10,242 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:10] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:10:15,603 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:15] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:10:15,609 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:15] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:10:34,479 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:34] "[32mPOST /auth/register HTTP/1.1[0m" 302 -
+2025-07-02 19:10:34,498 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:34] "GET /auth/register HTTP/1.1" 200 -
+2025-07-02 19:10:34,526 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:34] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 19:10:34,526 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:34] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 19:10:40,285 - INFO - Security level set to HIGH for login.
+2025-07-02 19:10:40,297 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:40] "GET /auth/login HTTP/1.1" 200 -
+2025-07-02 19:10:40,313 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:40] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 19:10:57,327 - INFO - Security level set to HIGH for login.
+2025-07-02 19:10:57,330 - INFO - Login attempt for user: nayak
+2025-07-02 19:10:57,345 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:57] "POST /auth/login HTTP/1.1" 200 -
+2025-07-02 19:10:57,363 - INFO - 127.0.0.1 - - [02/Jul/2025 19:10:57] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 19:11:02,721 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:02] "GET /register HTTP/1.1" 200 -
+2025-07-02 19:11:02,741 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:02] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 19:11:02,741 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:02] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 19:11:16,581 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:16] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:11:16,588 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:16] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-02 19:11:18,798 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:18] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:11:18,803 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:18] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:11:18,848 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:18] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:11:18,851 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:18] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:11:18,880 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:18] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-02 19:11:18,884 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:18] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-02 19:11:18,884 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:18] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-02 19:11:32,219 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:32] "[32mPOST /auth/register HTTP/1.1[0m" 302 -
+2025-07-02 19:11:32,228 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:32] "GET /auth/register HTTP/1.1" 200 -
+2025-07-02 19:11:32,243 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:32] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 19:11:32,243 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:32] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-02 19:11:37,880 - INFO - Security level set to HIGH for login.
+2025-07-02 19:11:37,885 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:37] "GET /auth/login HTTP/1.1" 200 -
+2025-07-02 19:11:37,900 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:37] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 19:11:44,066 - INFO - Security level set to HIGH for login.
+2025-07-02 19:11:44,067 - INFO - Login attempt for user: nayak
+2025-07-02 19:11:44,072 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:44] "POST /auth/login HTTP/1.1" 200 -
+2025-07-02 19:11:44,096 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:44] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-02 19:11:52,273 - INFO - 127.0.0.1 - - [02/Jul/2025 19:11:52] "GET /socket.io/?EIO=4&transport=websocket&sid=iDbgdKLWgyp16iHHAAAA HTTP/1.1" 200 -
+2025-07-03 08:54:50,455 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-03 08:54:50,455 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-03 08:54:53,258 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:53] "GET /socket.io/?EIO=4&transport=polling&t=PVEKDHi HTTP/1.1" 200 -
+2025-07-03 08:54:53,360 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:53] "POST /socket.io/?EIO=4&transport=polling&t=PVEKDJK&sid=vs7CqXTcsAUs5OLpAAAA HTTP/1.1" 200 -
+2025-07-03 08:54:53,422 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:53] "GET /socket.io/?EIO=4&transport=polling&t=PVEKDK1&sid=vs7CqXTcsAUs5OLpAAAA HTTP/1.1" 200 -
+2025-07-03 08:54:53,489 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:53] "GET /socket.io/?EIO=4&transport=polling&t=PVEKDLQ&sid=vs7CqXTcsAUs5OLpAAAA HTTP/1.1" 200 -
+2025-07-03 08:54:55,143 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "GET /chat HTTP/1.1" 200 -
+2025-07-03 08:54:55,154 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "GET /socket.io/?EIO=4&transport=websocket&sid=vs7CqXTcsAUs5OLpAAAA HTTP/1.1" 200 -
+2025-07-03 08:54:55,188 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-03 08:54:55,188 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-03 08:54:55,190 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "[36mGET /static/face_modal.js HTTP/1.1[0m" 304 -
+2025-07-03 08:54:55,191 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "[36mGET /static/chat.js HTTP/1.1[0m" 304 -
+2025-07-03 08:54:55,192 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "[36mGET /static/security_metrics.js HTTP/1.1[0m" 304 -
+2025-07-03 08:54:55,254 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:54:55,257 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "GET /socket.io/?EIO=4&transport=polling&t=PVEKDnN HTTP/1.1" 200 -
+2025-07-03 08:54:55,259 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:54:55,262 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 08:54:55,265 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 08:54:55,270 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "POST /socket.io/?EIO=4&transport=polling&t=PVEKDnY&sid=6qS3T8fmsj6pwKItAAAC HTTP/1.1" 200 -
+2025-07-03 08:54:55,271 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "GET /socket.io/?EIO=4&transport=polling&t=PVEKDnZ&sid=6qS3T8fmsj6pwKItAAAC HTTP/1.1" 200 -
+2025-07-03 08:54:55,272 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:54:55,274 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "GET /socket.io/?EIO=4&transport=polling&t=PVEKDne&sid=6qS3T8fmsj6pwKItAAAC HTTP/1.1" 200 -
+2025-07-03 08:54:55,274 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:54:55,319 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:54:55,331 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:54:55,332 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:54:55,333 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:55] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:54:58,390 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:58] "[32mGET / HTTP/1.1[0m" 302 -
+2025-07-03 08:54:58,394 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:58] "[32mGET /login HTTP/1.1[0m" 302 -
+2025-07-03 08:54:58,396 - INFO - Security level set to HIGH for login.
+2025-07-03 08:54:58,405 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:58] "GET /auth/login HTTP/1.1" 200 -
+2025-07-03 08:54:58,964 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:58] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-03 08:54:58,965 - INFO - 127.0.0.1 - - [03/Jul/2025 08:54:58] "GET /socket.io/?EIO=4&transport=websocket&sid=6qS3T8fmsj6pwKItAAAC HTTP/1.1" 200 -
+2025-07-03 08:55:14,478 - INFO - Security level set to HIGH for login.
+2025-07-03 08:55:14,480 - INFO - Login attempt for user: tshreek
+2025-07-03 08:55:14,584 - INFO - High security login validated for user: tshreek (ID: 7). Proceeding to face verification.
+2025-07-03 08:55:14,585 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-03 08:55:14,591 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[32mGET /face/face_verification HTTP/1.1[0m" 302 -
+2025-07-03 08:55:14,595 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "GET /chat HTTP/1.1" 200 -
+2025-07-03 08:55:14,606 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-03 08:55:14,610 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-03 08:55:14,611 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[36mGET /static/face_modal.js HTTP/1.1[0m" 304 -
+2025-07-03 08:55:14,615 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[36mGET /static/chat.js HTTP/1.1[0m" 304 -
+2025-07-03 08:55:14,615 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[36mGET /static/security_metrics.js HTTP/1.1[0m" 304 -
+2025-07-03 08:55:14,638 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:55:14,643 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "GET /socket.io/?EIO=4&transport=polling&t=PVEKIWD HTTP/1.1" 200 -
+2025-07-03 08:55:14,649 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:55:14,649 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:55:14,650 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 08:55:14,654 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "POST /socket.io/?EIO=4&transport=polling&t=PVEKIWP&sid=AdLTHYm86PrMG9CCAAAE HTTP/1.1" 200 -
+2025-07-03 08:55:14,655 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "GET /socket.io/?EIO=4&transport=polling&t=PVEKIWP.0&sid=AdLTHYm86PrMG9CCAAAE HTTP/1.1" 200 -
+2025-07-03 08:55:14,657 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:55:14,662 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 08:55:14,682 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "GET /socket.io/?EIO=4&transport=polling&t=PVEKIWu&sid=AdLTHYm86PrMG9CCAAAE HTTP/1.1" 200 -
+2025-07-03 08:55:14,682 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:55:14,694 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:55:14,695 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:55:14,697 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:14] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:55:18,340 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:18] "[32mGET / HTTP/1.1[0m" 302 -
+2025-07-03 08:55:18,343 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:18] "[32mGET /login HTTP/1.1[0m" 302 -
+2025-07-03 08:55:18,345 - INFO - Security level set to HIGH for login.
+2025-07-03 08:55:18,348 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:18] "GET /auth/login HTTP/1.1" 200 -
+2025-07-03 08:55:18,389 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:18] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-03 08:55:27,054 - INFO - Security level set to HIGH for login.
+2025-07-03 08:55:27,055 - INFO - Login attempt for user: demo
+2025-07-03 08:55:27,160 - INFO - High security login validated for user: demo (ID: 8). Proceeding to face verification.
+2025-07-03 08:55:27,160 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-03 08:55:27,165 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[32mGET /face/face_verification HTTP/1.1[0m" 302 -
+2025-07-03 08:55:27,168 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "GET /chat HTTP/1.1" 200 -
+2025-07-03 08:55:27,181 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-03 08:55:27,183 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-03 08:55:27,183 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[36mGET /static/face_modal.js HTTP/1.1[0m" 304 -
+2025-07-03 08:55:27,187 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[36mGET /static/chat.js HTTP/1.1[0m" 304 -
+2025-07-03 08:55:27,188 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[36mGET /static/security_metrics.js HTTP/1.1[0m" 304 -
+2025-07-03 08:55:27,214 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:55:27,215 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "GET /socket.io/?EIO=4&transport=polling&t=PVEKLaj HTTP/1.1" 200 -
+2025-07-03 08:55:27,226 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 08:55:27,228 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:55:27,229 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:55:27,232 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "POST /socket.io/?EIO=4&transport=polling&t=PVEKLau&sid=IqeOaeJjhX9b25zBAAAG HTTP/1.1" 200 -
+2025-07-03 08:55:27,233 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "GET /socket.io/?EIO=4&transport=polling&t=PVEKLav&sid=IqeOaeJjhX9b25zBAAAG HTTP/1.1" 200 -
+2025-07-03 08:55:27,238 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 08:55:27,257 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:55:27,257 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:55:27,260 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:55:27,272 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:55:27,290 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:27] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:55:29,014 - INFO - 127.0.0.1 - - [03/Jul/2025 08:55:29] "GET /socket.io/?EIO=4&transport=websocket&sid=IqeOaeJjhX9b25zBAAAG HTTP/1.1" 200 -
+2025-07-03 08:56:15,241 - INFO - 127.0.0.1 - - [03/Jul/2025 08:56:15] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 08:56:15,248 - INFO - 127.0.0.1 - - [03/Jul/2025 08:56:15] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 08:57:15,238 - INFO - 127.0.0.1 - - [03/Jul/2025 08:57:15] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 08:57:15,244 - INFO - 127.0.0.1 - - [03/Jul/2025 08:57:15] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 08:58:15,233 - INFO - 127.0.0.1 - - [03/Jul/2025 08:58:15] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 08:58:15,240 - INFO - 127.0.0.1 - - [03/Jul/2025 08:58:15] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 08:59:15,250 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:15] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 08:59:15,257 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:15] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 08:59:45,990 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:45] "[32mGET / HTTP/1.1[0m" 302 -
+2025-07-03 08:59:45,996 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:45] "[32mGET /login HTTP/1.1[0m" 302 -
+2025-07-03 08:59:45,998 - INFO - Security level set to HIGH for login.
+2025-07-03 08:59:45,999 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:45] "GET /auth/login HTTP/1.1" 200 -
+2025-07-03 08:59:46,097 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:46] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-03 08:59:56,359 - INFO - Security level set to HIGH for login.
+2025-07-03 08:59:56,361 - INFO - Login attempt for user: amma
+2025-07-03 08:59:56,629 - INFO - High security login validated for user: amma (ID: 14). Proceeding to face verification.
+2025-07-03 08:59:56,630 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:56] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-03 08:59:56,644 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:56] "GET /face/face_verification HTTP/1.1" 200 -
+2025-07-03 08:59:56,663 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:56] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-03 08:59:56,664 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:56] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-03 08:59:56,710 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:56] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:59:56,713 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:56] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:59:56,713 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:56] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 08:59:56,740 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:56] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:59:56,740 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:56] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:59:56,743 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:56] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 08:59:56,746 - INFO - 127.0.0.1 - - [03/Jul/2025 08:59:56] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:09,375 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "GET /chat HTTP/1.1" 200 -
+2025-07-03 09:00:09,390 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "GET /socket.io/?EIO=4&transport=websocket&sid=AdLTHYm86PrMG9CCAAAE HTTP/1.1" 200 -
+2025-07-03 09:00:09,395 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-03 09:00:09,396 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-03 09:00:09,398 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "[36mGET /static/face_modal.js HTTP/1.1[0m" 304 -
+2025-07-03 09:00:09,402 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "[36mGET /static/chat.js HTTP/1.1[0m" 304 -
+2025-07-03 09:00:09,402 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "[36mGET /static/security_metrics.js HTTP/1.1[0m" 304 -
+2025-07-03 09:00:09,431 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:09,434 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "GET /socket.io/?EIO=4&transport=polling&t=PVELQUN HTTP/1.1" 200 -
+2025-07-03 09:00:09,436 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:09,437 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:09,439 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 09:00:09,441 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "POST /socket.io/?EIO=4&transport=polling&t=PVELQUT&sid=zfkm192-Ct19_ILkAAAI HTTP/1.1" 200 -
+2025-07-03 09:00:09,441 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "GET /socket.io/?EIO=4&transport=polling&t=PVELQUU&sid=zfkm192-Ct19_ILkAAAI HTTP/1.1" 200 -
+2025-07-03 09:00:09,444 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 09:00:09,444 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:09,466 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "GET /socket.io/?EIO=4&transport=polling&t=PVELQUv&sid=zfkm192-Ct19_ILkAAAI HTTP/1.1" 200 -
+2025-07-03 09:00:09,466 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:09,478 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:09,479 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:09,482 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:09] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:12,958 - INFO - Security level set to HIGH for login.
+2025-07-03 09:00:12,959 - INFO - Login attempt for user: demo
+2025-07-03 09:00:13,054 - INFO - High security login validated for user: demo (ID: 8). Proceeding to face verification.
+2025-07-03 09:00:13,055 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:13] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-03 09:00:13,058 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:13] "GET /face/face_verification HTTP/1.1" 200 -
+2025-07-03 09:00:13,068 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:13] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-03 09:00:13,068 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:13] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-03 09:00:13,085 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:13] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:13,087 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:13] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:13,088 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:13] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:13,089 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:13] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:13,096 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:13] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:13,097 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:13] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:13,097 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:13] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:20,141 - INFO - Security level set to HIGH for login.
+2025-07-03 09:00:20,144 - INFO - Login attempt for user: demo
+2025-07-03 09:00:20,215 - INFO - High security login validated for user: demo (ID: 8). Proceeding to face verification.
+2025-07-03 09:00:20,216 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:20] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-03 09:00:20,223 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:20] "GET /face/face_verification HTTP/1.1" 200 -
+2025-07-03 09:00:20,236 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:20] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-03 09:00:20,236 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:20] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-03 09:00:20,250 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:20] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:20,251 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:20] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:20,253 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:20] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:20,257 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:20] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:20,257 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:20] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:20,257 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:20] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:20,259 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:20] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:25,019 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:25] "[32mGET /register HTTP/1.1[0m" 302 -
+2025-07-03 09:00:25,034 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:25] "GET /auth/register HTTP/1.1" 200 -
+2025-07-03 09:00:25,045 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:25] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-03 09:00:25,049 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:25] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-03 09:00:38,121 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:38] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:38,125 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:38] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:38,147 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:38] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:38,150 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:38] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:38,174 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:38] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:38,180 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:38] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:38,181 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:38] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:45,659 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:45] "[32mPOST /auth/register HTTP/1.1[0m" 302 -
+2025-07-03 09:00:45,663 - INFO - Security level set to HIGH for login.
+2025-07-03 09:00:45,664 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:45] "GET /auth/login HTTP/1.1" 200 -
+2025-07-03 09:00:45,675 - INFO - Security level set to HIGH for login.
+2025-07-03 09:00:45,676 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:45] "GET /auth/login HTTP/1.1" 200 -
+2025-07-03 09:00:45,693 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:45] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-03 09:00:54,636 - INFO - Security level set to HIGH for login.
+2025-07-03 09:00:54,638 - INFO - Login attempt for user: new
+2025-07-03 09:00:54,894 - INFO - High security login validated for user: new (ID: 15). Proceeding to face verification.
+2025-07-03 09:00:54,895 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:54] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-07-03 09:00:54,903 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:54] "GET /face/face_verification HTTP/1.1" 200 -
+2025-07-03 09:00:54,919 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:54] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-03 09:00:54,921 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:54] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-03 09:00:54,948 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:54] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:54,952 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:54] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:54,957 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:54] "[36mGET /static/face-api-models/face_recognition_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:00:54,962 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:54] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:54,963 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:54] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:54,966 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:54] "[36mGET /static/face-api-models/face_recognition_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:54,966 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:54] "[36mGET /static/face-api-models/face_recognition_model-shard2 HTTP/1.1[0m" 304 -
+2025-07-03 09:00:58,634 - INFO - 127.0.0.1 - - [03/Jul/2025 09:00:58] "POST /face/face_verification HTTP/1.1" 200 -
+2025-07-03 09:01:00,151 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "GET /chat HTTP/1.1" 200 -
+2025-07-03 09:01:00,165 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-07-03 09:01:00,168 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "[36mGET /static/face-api.js HTTP/1.1[0m" 304 -
+2025-07-03 09:01:00,170 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "[36mGET /static/chat.js HTTP/1.1[0m" 304 -
+2025-07-03 09:01:00,172 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "[36mGET /static/face_modal.js HTTP/1.1[0m" 304 -
+2025-07-03 09:01:00,172 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "[36mGET /static/security_metrics.js HTTP/1.1[0m" 304 -
+2025-07-03 09:01:00,179 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:01:00,181 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "GET /socket.io/?EIO=4&transport=polling&t=PVELctJ HTTP/1.1" 200 -
+2025-07-03 09:01:00,187 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 09:01:00,187 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "[36mGET /static/face-api-models/tiny_face_detector_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:01:00,192 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 09:01:00,240 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "POST /socket.io/?EIO=4&transport=polling&t=PVELctm&sid=JY-Ots94FHW-RnQjAAAK HTTP/1.1" 200 -
+2025-07-03 09:01:00,241 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "GET /socket.io/?EIO=4&transport=polling&t=PVELcts&sid=JY-Ots94FHW-RnQjAAAK HTTP/1.1" 200 -
+2025-07-03 09:01:00,245 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:01:00,251 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "[36mGET /static/face-api-models/tiny_face_detector_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:01:00,272 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:01:00,288 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "[36mGET /static/face-api-models/face_landmark_68_model-weights_manifest.json HTTP/1.1[0m" 304 -
+2025-07-03 09:01:00,289 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:01:00,292 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:00] "[36mGET /static/face-api-models/face_landmark_68_model-shard1 HTTP/1.1[0m" 304 -
+2025-07-03 09:01:09,622 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:09] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 09:01:09,628 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:09] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 09:01:27,488 - INFO - Face comparison for new: Match=False, Distance=0.7269 (Tolerance is 0.6)
+2025-07-03 09:01:27,489 - WARNING - Face verification FAILED for user new.
+2025-07-03 09:01:27,489 - WARNING - [FAILURE] Face verification failed for user new, message 141. Attempts: 1
+2025-07-03 09:01:27,492 - INFO - [INTRUDER] Notified sender tshreek of the failed attempt.
+2025-07-03 09:01:27,494 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:27] "[31m[1mPOST /face/unlock_item HTTP/1.1[0m" 403 -
+2025-07-03 09:01:27,538 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:27] "GET /static/intruder_snaps/failed_attempt_205cad93e13d46c8acaf39e1d27f6359.jpg HTTP/1.1" 200 -
+2025-07-03 09:01:32,067 - INFO - Face comparison for new: Match=True, Distance=0.2268 (Tolerance is 0.6)
+2025-07-03 09:01:32,067 - INFO - Face verification SUCCESS for user new.
+2025-07-03 09:01:32,069 - INFO - 127.0.0.1 - - [03/Jul/2025 09:01:32] "POST /face/unlock_item HTTP/1.1" 200 -
+2025-07-03 09:02:00,224 - INFO - 127.0.0.1 - - [03/Jul/2025 09:02:00] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 09:02:00,228 - INFO - 127.0.0.1 - - [03/Jul/2025 09:02:00] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 09:02:10,218 - INFO - 127.0.0.1 - - [03/Jul/2025 09:02:10] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 09:02:10,225 - INFO - 127.0.0.1 - - [03/Jul/2025 09:02:10] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 09:03:00,231 - INFO - 127.0.0.1 - - [03/Jul/2025 09:03:00] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 09:03:00,237 - INFO - 127.0.0.1 - - [03/Jul/2025 09:03:00] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 09:03:09,447 - INFO - 127.0.0.1 - - [03/Jul/2025 09:03:09] "GET /security/get_security_metrics HTTP/1.1" 200 -
+2025-07-03 09:03:09,454 - INFO - 127.0.0.1 - - [03/Jul/2025 09:03:09] "GET /security/get_security_metrics HTTP/1.1" 200 -
